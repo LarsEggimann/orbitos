@@ -1,0 +1,9 @@
+{
+  "max_velocity": 4.0,
+  "max_acceleration": 1.0,
+  "max_current": 150,
+  "standby_current": 0,
+  "boost_current": 0,
+  "healthy": "False",
+  "filename": "/home/lars/Nextcloud/Uni/8-Semester-MSc/MasterThesis/code/data/cw/2024-11-01.csv"
+}

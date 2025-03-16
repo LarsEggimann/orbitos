@@ -1,0 +1,65 @@
+[
+  {
+    "type": "Bug - Bad Example",
+    "description": "I have found a bug",
+    "steps_to_reproduce": "I opened the software and then there was a bug",
+    "expected_behavior": "I expected there to be no bug",
+    "status": "To Do"
+  },
+  {
+    "type": "Bug - Good Example",
+    "description": "On the /stages page the x and y move field is not saved when refreshing the page",
+    "steps_to_reproduce": "Go to /stages page, change the x and y move field, refresh the page",
+    "expected_behavior": "I expect the x and y move field to be saved, at least for the current session",
+    "status": "To Do"
+  },
+  {
+    "type": "Feature Request",
+    "description": "it would be really useful to have the integrated charge for the current run indicated somewhere on the plot :) this is a really important value for cross section measurements",
+    "steps_to_reproduce": "",
+    "expected_behavior": "",
+    "status": "Done"
+  },
+  {
+    "type": "Feature Request",
+    "description": "after the chopper wheel returns to home, can you make the line on the chopper wheel plot grey out somehow so that we can tell what the latest line is? Or maybe make the plot \"velocity vs time\" instead of \"velocity vs angle\"? Again, so that it's clear when the wheel is done turning without having to clear the data each time",
+    "steps_to_reproduce": "",
+    "expected_behavior": "",
+    "status": "Done"
+  },
+  {
+    "type": "Feature Request",
+    "description": "Eva's brainstorming :)\n\nif the \"lab notes\" tab had a \"copy settings -- (chopper wheel, electrometer 1, and/or electrometer 2)\" button, that would make taking notes super easy. ",
+    "steps_to_reproduce": "",
+    "expected_behavior": "For example, i'm doing some irradiations with the chopper wheel and the speed of the wheel is important for what i'm doing. I go to write in the lab notes a summary of my setup, and then I click \n\nPaste Settings -> Chopper Wheel\n\nand it writes\n \nMax Velocity: 0.5\nMax Accel: 1\nMax Motor Current: 150\nFilename: cw_data.csv\n",
+    "status": "Done"
+  },
+  {
+    "type": "Bug",
+    "description": "When performing a triggered measurement, the button \"Save, download and clear\" uses the data source file name to name the downloaded file, instead of the filename in the dedicated textbox.",
+    "steps_to_reproduce": "Perform a triggered measurement with the electrometer, click \"Save download and clear\"",
+    "expected_behavior": "",
+    "status": "Done"
+  },
+  {
+    "type": "Feature Request",
+    "description": "When performing a triggered measurement with the electrometer and saving the data, the timestamps in the file's time column are relative (starting at 0)",
+    "steps_to_reproduce": "Perform a triggered measurement, press Save, Dowload and clear.",
+    "expected_behavior": "It would be useful to have absolute timestamps, like for the continuous measurement. Maybe take as initial timestamp the instant when the user presses \"triggered measurement\"? To be discussed.",
+    "status": "Done"
+  },
+  {
+    "type": "Feature Request",
+    "description": "It would be useful to collect positional data for the stages",
+    "steps_to_reproduce": "",
+    "expected_behavior": "Take a position measurement every few seconds to have a timeline of the x and y positions",
+    "status": "To Do"
+  },
+  {
+    "type": "Other",
+    "description": "can we get the size of the top and bottom bars reduced to have more screen size available for the interface itself?",
+    "steps_to_reproduce": "",
+    "expected_behavior": "",
+    "status": "To Do"
+  }
+]

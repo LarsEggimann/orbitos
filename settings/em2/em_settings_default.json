@@ -1,0 +1,12 @@
+{
+    "filename": "default",
+    "continuous_measurement_interval": "0.1",
+    "trigger_time_interval": "0.01",
+    "trigger_count": "10",
+    "aperture_integration_time": "0.000200",
+    "current_range": "0.000000100",
+    "current_range_auto": "OFF",
+    "current_range_auto_upper_limit": "0.000100000",
+    "current_range_auto_lower_limit": "0.000000010"
+
+}

@@ -1,0 +1,23 @@
+numpy 
+pandas 
+plotly 
+nicegui 
+pyserial 
+pytrinamic 
+pyvisa 
+pyvisa-py 
+# pylablib
+pylablib-lightweight
+scikit-image 
+uptime 
+
+black 
+isort 
+autoflake 
+mypy 
+setuptools 
+
+open-meteo 
+openmeteo-requests 
+requests-cache 
+retry-requests 

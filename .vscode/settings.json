@@ -1,0 +1,22 @@
+{
+    "editor.lineDecorationsWidth": 0,
+    "editor.glyphMargin": true,
+    "editor.folding": true,
+
+    // "editor.scrollbar.verticalScrollbarSize": 5,
+    "editor.scrollbar.horizontalScrollbarSize": 3,
+
+    "python.analysis.extraPaths": [
+    ],
+
+    "pylint.args": [
+        "--disable=missing-function-docstring",
+        "--disable=missing-module-docstring",
+        "--disable=missing-class-docstring",
+        "--extension-pkg-allow-list=orjson",
+    ],
+    "cSpell.words": [
+        "Omnipurpose",
+        "ORBITOS"
+    ],
+}

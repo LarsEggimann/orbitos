@@ -1,0 +1,11 @@
+{
+  "filename": "/home/lars/Nextcloud/Uni/8-Semester-MSc/MasterThesis/code/data/em1/2024-11-01.csv",
+  "continuous_measurement_interval": 0.0001,
+  "trigger_time_interval": 0.0005,
+  "trigger_count": 50000.0,
+  "aperture_integration_time": 0.0005,
+  "current_range": 1.0000000000000002e-6,
+  "current_range_auto": "OFF",
+  "current_range_auto_upper_limit": 100000.0,
+  "current_range_auto_lower_limit": 1e-8
+}

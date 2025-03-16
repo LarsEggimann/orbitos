@@ -1,0 +1,9 @@
+{
+    "max_velocity": 0.5,
+    "max_acceleration": 0.5,
+    "max_current": 150,
+    "standby_current": 0,
+    "boost_current": 0,
+    "healthy": "False",
+    "filename": "default"
+  }
