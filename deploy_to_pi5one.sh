@@ -3,7 +3,7 @@
 # OPTIONS
 REMOTE_HOST="pi5one" # tailscale hostname
 REMOTE_USER="pi5one"
-REMOTE_PORT=20
+REMOTE_PORT=22
 
 echo "Copying files from local machine to $REMOTE_HOST .........."
 
