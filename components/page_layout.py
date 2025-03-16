@@ -230,14 +230,14 @@ def create_layout(further_components=[]):
             nonlocal times_clicked
             times_clicked += 1
             if times_clicked > 2:
-                audio.seek(103)
+                # audio.seek(103)
                 audio.play()
                 audio.props("controls")
                 ui.notify("You found an easter egg! 🥚")
 
         with ui.row().classes("items-center"):
             ui.label("Made with")
-            audio = ui.audio(src=str("audio/spinme.mp3"), controls=False)
+            audio = ui.audio(src=str("audio/waiting.mp3"), controls=False)
             ui.button(" ❤️ ", on_click=mysterious_button, color=None).tooltip(
                 "Whats this?"
             )
