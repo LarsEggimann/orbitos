@@ -358,7 +358,7 @@ class ICComponent(ComponentBase):
 
                 ui.label("Trigger time interval: ")
                 ui.number(
-                    min=0.0001,
+                    min=0.000001,
                     max=1,
                     step=0.01,
                     suffix="[s]",
