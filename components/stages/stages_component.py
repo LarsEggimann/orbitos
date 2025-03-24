@@ -254,13 +254,13 @@ class StagesComponent(ComponentBase):
 
     def log_position(self):
         if self.fully_connected():
-            filename = self.file_handler.filename
+            filename = self.file_handler.full_filename
             # check positions of last log
             x = 0
             y = 0
             with open(filename, "r", newline="", encoding="utf-8") as f:
                 lines = f.readlines()
-                if len(lines) > 0:
+                if len(lines) > 1:
                     last_line = lines[-1]
                     _, x, y = last_line.split(",")
                     x = float(x)
