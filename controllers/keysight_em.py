@@ -17,12 +17,12 @@ from util.settings_handler import SettingsHandler
 logger = logging.getLogger()
 main_working_directory = Path(__file__).parent.parent
 
+OVERFLOW_UPPER_LIMIT = 1e+35
 
 class KeysightEM(ControllerBase):
     def __init__(self, address, pipe: Connection, settings_handler: SettingsHandler):
         super().__init__(address, pipe, settings_handler)
 
-        self.measure_time_estimate: float = 1
         self.rm = pyvisa.ResourceManager("@py")
         self.my_instrument: TCPIPSocket = self.connect_to_keysight_em(self.address)  # type: ignore
 
@@ -316,7 +316,13 @@ class KeysightEM(ControllerBase):
 
         with open(self.filename, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerows(zip(self.time_list, self.current_list))
+
+            # remove overflow values from the data
+            current_array = np.array(self.current_list, dtype=float)
+            indexes = np.where(current_array < OVERFLOW_UPPER_LIMIT)
+            cl = np.array(self.current_list)[indexes]
+            tl = np.array(self.time_list)[indexes]
+            writer.writerows(zip(tl, cl))
 
         self.time_list.clear()
         self.current_list.clear()
@@ -328,7 +334,7 @@ class KeysightEM(ControllerBase):
         current_list = cur.split(",")
         try:
             time_arr = np.array(time_list, dtype=float) + start_time
-            self.time_list = time_arr.tolist()
+            self.time_list = time_arr.tolist() # type: ignore
             self.current_list = current_list
             self.save_data_to_file()
             self.turn_off_io()
