@@ -8,6 +8,7 @@ from nicegui import ui
 from controllers.stage.arcus_performax_DMX_J_SA_stage import ArcusPerformaxDMXJSAStage
 from util.connection_manager_base import ConnectionManagerBase
 from util.connection_status_chip import ConnectionStatusChip
+from util.data_file_handler import DataFileHandler
 from util.settings_handler import SettingsHandler
 
 from static.global_ui_props import props_select
@@ -23,6 +24,12 @@ class StagesConnectionManager(ConnectionManagerBase):
         self.settings_handler = SettingsHandler(
             "stages_settings.json", None, additional_path=additional_path
         )
+        self.data_file_handler = DataFileHandler(
+            None,
+            self.settings_handler,
+            additional_path=additional_path,
+            headers=["time", "x", "y"],
+        )
 
         self.stage_x = ArcusPerformaxDMXJSAStage("Stage X")
         self.stage_y = ArcusPerformaxDMXJSAStage("Stage Y")
@@ -31,7 +38,7 @@ class StagesConnectionManager(ConnectionManagerBase):
         self.healthy_y: ReactiveHealthIndicator = ReactiveHealthIndicator(False)
 
         self.component: StagesComponent = StagesComponent(
-            self.settings_handler, self.stage_x, self.stage_y
+            self.data_file_handler, self.settings_handler, self.stage_x, self.stage_y
         )
 
         self.check_health_x_timer = ui.timer(1, self.check_health_x, active=False)
@@ -39,6 +46,9 @@ class StagesConnectionManager(ConnectionManagerBase):
 
         self.port_x = None
         self.port_y = None
+
+        self.select_x = None
+        self.select_y = None
 
     @ui.refreshable
     def connection_menu_ui(self):

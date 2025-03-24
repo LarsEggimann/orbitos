@@ -44,7 +44,8 @@ class SettingsHandler:
 
     def settings_changed(self):
         self._write_settings()
-        self.pipe.send("settings_changed")
+        if self.pipe:
+            self.pipe.send("settings_changed")
 
     def _write_settings(self):
         with open(self.filename, "w", encoding="utf-8") as f:

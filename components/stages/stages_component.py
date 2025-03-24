@@ -9,9 +9,12 @@ import plotly.graph_objects as go  # type: ignore
 import asyncio
 from nicegui import events, ui, app
 from util import ComponentBase
+from datetime import datetime
+import csv
 
 from controllers.stage import ArcusPerformaxDMXJSAStage
 from util.settings_handler import SettingsHandler
+from util.data_file_handler import DataFileHandler
 from static.global_ui_props import *
 
 logger = logging.getLogger()
@@ -21,11 +24,12 @@ work_dir = Path(__file__).parent
 class StagesComponent(ComponentBase):
     def __init__(
         self,
+        datafile_handler: DataFileHandler,
         settings_handler: SettingsHandler,
         stage_x: ArcusPerformaxDMXJSAStage,
         stage_y: ArcusPerformaxDMXJSAStage,
     ):
-        super().__init__(None, None, settings_handler)  # type: ignore
+        super().__init__(None, datafile_handler, settings_handler)  # type: ignore
 
         self.stage_x = stage_x
         self.stage_y = stage_y
@@ -58,6 +62,9 @@ class StagesComponent(ComponentBase):
         ui.timer(0.1, self.update_plot)
         self.x_prev = None
         self.y_prev = None
+
+        # log position every 5 seconds
+        ui.timer(5, self.log_position)
 
     def update_plot(self):
         
@@ -143,6 +150,15 @@ class StagesComponent(ComponentBase):
                     with ui.card().classes("w-full mb-2"):
                         ui.label("Stage Y").classes("center justify-self-center")
                         self.stage_ui(self.stage_y, "y")
+                
+                    with ui.card().classes("w-full mb-2"):
+                        with ui.expansion("Position Log File Settings", icon="analytics", value=False).classes( "w-full justify-items-center"):
+                            self.file_handler.alternative_filename_ui()
+                            with ui.grid(columns=3, rows=1).classes("w-full gap-2 justify-items-stretch"):
+                                self.file_handler.download_file_button_ui()
+                                self.file_handler.save_download_clear_button_ui()
+                                self.file_handler.delete_file_button_ui()
+                            self.file_handler.create_ui()
 
             with splitter.after:
                 with ui.element().classes("flex w-full justify-center items-center"):
@@ -235,6 +251,26 @@ class StagesComponent(ComponentBase):
 
         except AttributeError as e:
             pass
+
+    def log_position(self):
+        if self.fully_connected():
+            filename = self.file_handler.filename
+            # check positions of last log
+            x = 0
+            y = 0
+            with open(filename, "r", newline="", encoding="utf-8") as f:
+                lines = f.readlines()
+                if len(lines) > 0:
+                    last_line = lines[-1]
+                    _, x, y = last_line.split(",")
+                    x = float(x)
+                    y = float(y)
+
+            # compare with current position
+            if x != self.stage_x.position or y != self.stage_y.position:
+                with open(filename, "a", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([datetime.now(), self.stage_x.position, self.stage_y.position])
 
     def main_page_ui(self):
         pass
