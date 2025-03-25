@@ -185,7 +185,7 @@ class ICComponent(ComponentBase):
        
         times = np.array(self.time_list)
         currents = np.array(self.current_list)
-        if times.size == 0 or currents.size == 0:
+        if times.size == 0 or currents.size == 0 or self.xaxis_range_scale_factor is None:
             return
         
         self.xaxis_range = timedelta(seconds=self.xaxis_range_scale_factor * self.xaxis_range_slider_value)
