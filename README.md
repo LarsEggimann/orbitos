@@ -1,4 +1,16 @@
-# ORBITOS ☢️
+# ORBITOS - V2 ☢️
+THe goal of V2 is to split the software properly into a backend and a frontend. The backend will be responsible for all the device connections and data acquisition, while the frontend will be responsible for the user interface. The main goal of this is to improve UI responsiveness and data process performance. Currently NiceGUI is used for the UI, which is a great library, but it has some limitations. The main one is that it has to call the backend for every interaction (e.g. opening sidebars, changing themes, etc.) which results in a laggy feeling. With splitting the software into a backend and a frontend, we can use a more modern UI library (e.g. React) for the frontend, which will allow us to create a more responsive and modern UI.
+
+## Current Ideas
+### Backend
+- Use [FastAPI](https://fastapi.tiangolo.com/) for the backend. FastAPI is easy to use and and boasts high performance.
+- Use [SQLModel](https://sqlmodel.tiangolo.com/) for the database. SQLModel is a library for interacting with SQL databases using Python. It is built on top of SQLAlchemy and Pydantic, and provides a simple and intuitive API for working with databases.
+
+### Frontend
+- Use [React](https://reactjs.org/) for the frontend. This will allow us to create a more responsive and modern UI.
+
+
+# ORBITOS - V1 ☢️
 The development of the software ORBITOS (Omnipurpose Radiation Beam Instrumentation and Tuning Operational Software) was part of my Masters Thesis at the [Laboratory for High Energy Physics (LHEP)](https://www.lhep.unibe.ch/index_eng.html) of the [University of Bern](https://www.unibe.ch/index_eng.html) working within the [Medical Applications of Particle Physics Group](https://www.lhep.unibe.ch/research/medical_applications/index_eng.html). The core purpose of ORBITOS is to improve measurement control and reproducibility for radiobiology studies using the Bern Medical Cyclotron particle accelerator. Specifically, it is used for various cell irradiation studies at ultra-high dose rates, minibeam experiments and radiation hardness studies.
         
 The software successfully integrates multiple devices, including a chopper wheel and multiple electrometers, providing an intuitive and robust interface for controlling and acquiring data.
