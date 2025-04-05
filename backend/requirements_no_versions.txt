@@ -1,0 +1,11 @@
+# fastapi stuff
+fastapi[standard]
+sqlmodel # sql, also installs sqlalchemy and pydantic
+pyjwt # jwt bearer tokens
+passlib[bcrypt] # password hashing
+
+# useful stuff
+orjson
+
+# formatting stuff
+ruff
