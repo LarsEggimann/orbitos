@@ -29,7 +29,7 @@ Unlike most modern web applications, which typically separate the front and back
 ORBITOS is deployed on the local laboratory PC running Windows 11 (Lab-PC), to which all devices are connected, and can be accessed by any device connected to the same network. The web app is secured by a very basic authentication system, sufficient for its purpose since it is not intended to be publicly accessible. 
 
 The figure below shows a schematic overview of the currently integrated devices and the connections to the Lab-PC.
-![Schematic overview of the currently integrated devices and the connections to the Lab-PC.](static/images/flash-beamline-overview.png)
+![Schematic overview of the currently integrated devices and the connections to the Lab-PC.](orbitos-v1/static/images/flash-beamline-overview.png)
 
 
 The UI components and the web server are provided by the [NiceGUI](https://github.com/zauberzeug/nicegui) library, which is built on top of [FastAPI](https://github.com/tiangolo/fastapi), [Starlette](https://github.com/encode/starlette), and [Uvicorn](https://github.com/encode/uvicorn).
@@ -40,7 +40,7 @@ The UI components and the web server are provided by the [NiceGUI](https://githu
 The user must log in upon the first startup. This simple system prevents accidental access, with only one username and password hardcoded into the software.
 
 ### General Layout
-![Screenshot of the main page and expanded sidebars.](static/images/main_page.png)
+![Screenshot of the main page and expanded sidebars.](orbitos-v1/static/images/main_page.png)
 
 The general layout is divided into:
 - Left Sidebar: Contains navigation buttons.
@@ -51,7 +51,7 @@ The general layout is divided into:
 After login, the user is redirected to the main page, which contains a welcome message, a picture of the BTL, and device connection UI.
 
 ### Chopper Wheel Control
-![Screenshot of the CW control page.](static/images/cw_page.png)
+![Screenshot of the CW control page.](orbitos-v1/static/images/cw_page.png)
 
 The CW control page includes:
 - Connection menu
@@ -60,7 +60,7 @@ The CW control page includes:
 - Data and file management UI
 
 ### Electrometer Control
-![Screenshot of the Electrometer control page.](static/images/em_page_1.png)
+![Screenshot of the Electrometer control page.](orbitos-v1/static/images/em_page_1.png)
 
 The Electrometer control page includes:
 - Connection menu
@@ -69,7 +69,7 @@ The Electrometer control page includes:
 - Data and file management UI
 
 ### 2D Positioning Table Control
-![Screenshot of the 2D positioning table control page.](static/images/stages_page.png)
+![Screenshot of the 2D positioning table control page.](orbitos-v1/static/images/stages_page.png)
 
 This page contains:
 - Connection menu
@@ -78,27 +78,27 @@ This page contains:
 - Device control for each axis
 
 ### FlashUI
-![Screenshot of the Flash UI page with two devices selected.](static/images/flash_ui_page.png)
+![Screenshot of the Flash UI page with two devices selected.](orbitos-v1/static/images/flash_ui_page.png)
 
 The FlashUI page coordinates CW and electrometer controls, allowing multiple devices to be controlled simultaneously.
 
 ### Dose Calibration
-![Screenshot of the dose calibration page.](static/images/dose_calibration_page.png)
+![Screenshot of the dose calibration page.](orbitos-v1/static/images/dose_calibration_page.png)
 
 This page provides dose estimations based on GAFchromic film scans and visualizes dose distribution.
 
 ### Lab Notes and Settings Saver
-![Screenshot of the lab notes page.](static/images/lab_notes_page.png)
+![Screenshot of the lab notes page.](orbitos-v1/static/images/lab_notes_page.png)
 
 Users can write notes using Markdown syntax and save or import device settings.
 
 ### Combined Data View
-![Screenshot of the combined data view page.](static/images/combined_data_page.png)
+![Screenshot of the combined data view page.](orbitos-v1/static/images/combined_data_page.png)
 
 This page displays combined data from multiple devices in a single plot for verification purposes.
 
 ### Bug Reporting
-![Screenshot of the bug report and feature request page.](static/images/bug_report_page.png)
+![Screenshot of the bug report and feature request page.](orbitos-v1/static/images/bug_report_page.png)
 
 Users can submit bug reports or feature requests through this interface.
 
