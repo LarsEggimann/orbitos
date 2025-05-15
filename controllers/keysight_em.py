@@ -159,7 +159,7 @@ class KeysightEM(ControllerBase):
                     logger.info("filename set to %s", value)
 
     def init_settings(self):
-        self.write_and_log("*CLS")
+
         self.write_and_log("*RST")
 
         self.write_and_log(
@@ -262,7 +262,8 @@ class KeysightEM(ControllerBase):
 
                 if resp == "1170":
                     device_ready = True
-                    await asyncio.sleep(0.1)
+                
+                await asyncio.sleep(0.1)
 
             cur = self.my_instrument.query(":FETC:CURR? (@1);")
             print(f"current value: {cur}")
