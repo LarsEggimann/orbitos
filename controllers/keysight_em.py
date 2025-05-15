@@ -241,8 +241,8 @@ class KeysightEM(ControllerBase):
     async def measure(self):
         while True:
             self.my_instrument.write(":INIT:ACQ (@1);")
-            print(f"waiting for continuous_measurement_interval: {self.continuous_measurement_interval} s")
-            await asyncio.sleep(float(self.continuous_measurement_interval))
+            print("init aquire over")
+
 
             device_ready = False
             while not device_ready:
