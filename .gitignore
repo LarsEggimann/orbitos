@@ -1,0 +1,8 @@
+# exclude data files
+data
+
+
+# python stuff
+__pycache__
+.nicegui
+*.log
