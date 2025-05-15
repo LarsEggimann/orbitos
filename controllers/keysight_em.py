@@ -41,7 +41,6 @@ class KeysightEM(ControllerBase):
         self.FUNC = "CURR"
         self.APER = s["aperture_integration_time"]
         self.APER_AUTO = "OFF"
-        self.AUTO_MODE = "LONG"
         self.RANG = s["current_range"]
         self.RANG_AUTO = s["current_range_auto"]
         self.AUTO_ULIM = s["current_range_auto_upper_limit"]
@@ -176,9 +175,10 @@ class KeysightEM(ControllerBase):
         self.write_and_log(":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000")
 
 
+        self.set_trigger()
+
         self.set_sensor()
 
-        self.set_trigger()
 
     def print_settings(self):
         print(
@@ -207,23 +207,23 @@ class KeysightEM(ControllerBase):
 
     async def health_check(self) -> bool:
         try:
-            self.my_instrument.query("*IDN?")
-            error_request = self.my_instrument.query("SYST:ERR?")
-            if error_request != '+0,"No error"':
-                logger.error("Error: %s", error_request)
-                # clear error
-                self.write_and_log("*CLS")
+            # test = self.my_instrument.query("*IDN?")
+            # print(f"Connected to: {test}")
+            # error_request = self.my_instrument.query("SYST:ERR?")
+            # if error_request != '+0,"No error"':
+            #     logger.error("Error: %s", error_request)
+            #     # clear error
+            #     self.write_and_log("*CLS")
             return True
         except Exception as e:
             logger.error("Error during health check: %s", e)
             return False
 
     async def start_continuous_measurement(self):
-        await self.stop_continuous_measurement()
+        # await self.stop_continuous_measurement()
 
-        self.TIM = 0.01
-        self.COUN = 1
-        self.set_trigger()
+        self.set_sensor()
+
 
         self.enable_io()
         self.continuous_measurement_task = asyncio.create_task(self.measure())
@@ -239,6 +239,16 @@ class KeysightEM(ControllerBase):
             self.set_trigger()
 
     async def measure(self):
+        self.write_and_log("*CLS")
+        self.write_and_log("*RST")
+        self.write_and_log(":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;")
+        self.write_and_log(':SENS1:FUNC "CURR",;')
+        self.write_and_log(":OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;")
+        self.write_and_log(":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000")
+        self.write_and_log(":SENS1:CHAR:APER 0.2;APER:AUTO OFF;AUTO:MODE LONG;")
+        self.write_and_log(":SENS1:CURR:RANG 2.000000E-6;RANG:AUTO ON;AUTO:ULIM 100e-9;LLIM 1e-16")
+        self.write_and_log(":OUTP1 ON;")
+        self.write_and_log(":INP1 ON;")
         while True:
             self.my_instrument.write(":INIT:ACQ (@1);")
             print("init aquire over")
@@ -252,9 +262,7 @@ class KeysightEM(ControllerBase):
 
                 if resp == "1170":
                     device_ready = True
-
-                print(f"waiting for {self.APER} s for the device to be ready")
-                await asyncio.sleep(float(self.APER)/2)
+                    await asyncio.sleep(0.1)
 
             cur = self.my_instrument.query(":FETC:CURR? (@1);")
             print(f"current value: {cur}")
@@ -286,7 +294,7 @@ class KeysightEM(ControllerBase):
         #             ":SENS1:CURR:RANG 0.002000;RANG:AUTO OFF;AUTO:ULIM 0.020000;LLIM 0.0001"
 
         self.write_and_log(
-            f':SENS1:FUNC "{self.FUNC}",;:SENS1:CURR:APER {self.APER};APER:AUTO {self.APER_AUTO};AUTO:MODE {self.AUTO_MODE}'
+            f':SENS1:CHAR:APER {self.APER};APER:AUTO {self.APER_AUTO};AUTO:MODE LONG;'
         )
         if self.RANG_AUTO == "ON":
             self.write_and_log(
@@ -296,6 +304,9 @@ class KeysightEM(ControllerBase):
             self.write_and_log(
                 f":SENS1:CURR:RANG {self.RANG};RANG:AUTO {self.RANG_AUTO}"
             )
+
+        # test
+        self.write_and_log(":SENS1:CURR:RANG 2.000000E-6;RANG:AUTO ON;AUTO:ULIM 100e-9;LLIM 1e-16")
 
     def enable_io(self):
         self.write_and_log(":OUTP1 ON;")
