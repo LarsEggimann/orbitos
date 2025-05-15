@@ -242,6 +242,14 @@ class KeysightEM(ControllerBase):
         while True:
             self.my_instrument.write(":INIT:ACQ (@1);")
             await asyncio.sleep(float(self.continuous_measurement_interval))
+
+            device_ready = False
+            while not device_ready:
+                resp = self.my_instrument.query(":STAT:OPER:COND?")
+                if resp == "1170":
+                    device_ready = True
+                await asyncio.sleep(float(self.APER)/2)
+
             cur = self.my_instrument.query(":FETC:CURR? (@1)")
             # t = self.my_instrument.query(":FETC? (@1);")
             # print(f"Time: {t}")
