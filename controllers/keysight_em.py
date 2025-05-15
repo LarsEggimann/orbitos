@@ -166,15 +166,15 @@ class KeysightEM(ControllerBase):
         self.write_and_log(
             ":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
         )
+        self.write_and_log(":SENS1:FUNC \"CURR\",;")
 
         # TODO: Check if this is needed
         #                           :OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;
-        # self.write_and_log(":OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;")
+        self.write_and_log(":OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;")
 
         #                           :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000
-        # self.write_and_log(
-        #     ":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000"
-        # )
+        self.write_and_log(":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000")
+
 
         self.set_sensor()
 
@@ -241,18 +241,24 @@ class KeysightEM(ControllerBase):
     async def measure(self):
         while True:
             self.my_instrument.write(":INIT:ACQ (@1);")
+            print(f"waiting for continuous_measurement_interval: {self.continuous_measurement_interval} s")
             await asyncio.sleep(float(self.continuous_measurement_interval))
 
             device_ready = False
             while not device_ready:
                 resp = self.my_instrument.query(":STAT:OPER:COND?")
+
+                print(f"waiting for device to be ready, current status: {resp}")
+
                 if resp == "1170":
                     device_ready = True
+
+                print(f"waiting for {self.APER} s for the device to be ready")
                 await asyncio.sleep(float(self.APER)/2)
 
-            cur = self.my_instrument.query(":FETC:CURR? (@1)")
-            # t = self.my_instrument.query(":FETC? (@1);")
-            # print(f"Time: {t}")
+            cur = self.my_instrument.query(":FETC:CURR? (@1);")
+            print(f"current value: {cur}")
+
             try:
                 self.time_list = [time.time()]
                 self.current_list = [cur]
