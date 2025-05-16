@@ -86,17 +86,19 @@ class KeysightEM(ControllerBase):
 
             match command:
                 case "do_trigger_based_measurement":
-                    self.do_trigger_based_measurement()
+                    await self.do_trigger_based_measurement()
                 case "start_continuous_measurement":
                     await self.start_continuous_measurement()
                 case "stop_continuous_measurement":
                     await self.stop_continuous_measurement()
                 case "get_data":
-                    self.get_trigger_based_data()
+                    await self.get_trigger_based_data()
                 case "get_settings":
                     self.print_settings()
                 case "settings_changed":
                     await self.settings_changed()
+                case "init_trigger_based_measurement":
+                    await self.init_trigger_based_measurement()
                 case "exit":
                     logger.info("exiting...")
                     break
@@ -126,14 +128,17 @@ class KeysightEM(ControllerBase):
                     )
                     self.APER = value
                     await self.set_sensor()
+                    await self.restart_continuous_measurement_if_running()
                 case "current_range":
                     logger.info("attempting to set current_range set to %s", value)
                     self.RANG = value
                     await self.set_sensor()
+                    await self.restart_continuous_measurement_if_running()
                 case "current_range_auto":
                     logger.info("attempting to set current_range_auto set to %s", value)
                     self.RANG_AUTO = value
                     await self.set_sensor()
+                    await self.restart_continuous_measurement_if_running()
                 case "current_range_auto_upper_limit":
                     logger.info(
                         "attempting to set ccontinuous_measurement_intervalurrent_range_auto_upper_limit set to %s",
@@ -141,6 +146,7 @@ class KeysightEM(ControllerBase):
                     )
                     self.AUTO_ULIM = value
                     await self.set_sensor()
+                    await self.restart_continuous_measurement_if_running()
                 case "current_range_auto_lower_limit":
                     logger.info(
                         "attempting to set current_range_auto_lower_limit set to %s",
@@ -148,6 +154,7 @@ class KeysightEM(ControllerBase):
                     )
                     self.AUTO_LLIM = value
                     await self.set_sensor()
+                    await self.restart_continuous_measurement_if_running()
                 case "filename":
                     self.filename = value
                     logger.info("filename set to %s", value)
@@ -164,6 +171,8 @@ class KeysightEM(ControllerBase):
         await self.set_trigger()
 
         await self.set_sensor()
+
+        await self.enable_io()
 
 
     def print_settings(self):
@@ -183,7 +192,6 @@ class KeysightEM(ControllerBase):
 
     async def send_status_data(self):
         while True:
-            print("Sending status data to pipe...")
             self.pipe.send(
                 {
                     "status_data": {},
@@ -194,9 +202,7 @@ class KeysightEM(ControllerBase):
 
     async def health_check(self) -> bool:
         try:
-            print("Performing health check on Keysight EM...")
             error_request = self.my_instrument.query("SYST:ERR?", delay=0.1)
-            print(f"Health check response: {error_request}")
             if error_request != '+0,"No error"':
                 logger.error("Error: %s", error_request)
                 # clear error
@@ -221,8 +227,14 @@ class KeysightEM(ControllerBase):
         if self.continuous_measurement_task:
             self.continuous_measurement_task.cancel()
             self.settings_handler.read_settings()
-            
+        
+        self.continuous_measurement_task = None
         await self.turn_off_io()
+
+    async def restart_continuous_measurement_if_running(self):
+        if self.continuous_measurement_task:
+            logger.info("Restarting continuous measurement task")
+            await self.start_continuous_measurement()
 
     async def measure(self):
         while True:
@@ -240,16 +252,22 @@ class KeysightEM(ControllerBase):
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)
 
-    def do_trigger_based_measurement(self):
-        self.enable_io()
-        self.write_and_log(":INIT:ALL (@1);")
+    async def init_trigger_based_measurement(self):
+        logger.info("Initializing trigger based measurement")
+        await self.set_sensor()
+        await self.set_trigger()
+        await self.enable_io()
+
+    async def do_trigger_based_measurement(self):
+        # await self.init_trigger_based_measurement()
+        await self.write_and_log(":INIT:ALL (@1);")
         wait_time = int(float(self.COUN) * float(self.TIM))
         logger.info("Waiting for %s seconds to retrieve data", wait_time)
         start = time.time()
         while time.time() - start < wait_time:
-            time.sleep(0.2)
+            await asyncio.sleep(0.2)
             print(f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time", end="\r")
-        self.get_trigger_based_data(start)
+        await self.get_trigger_based_data(start)
 
     async def set_trigger(self):
         await self.write_and_log(
@@ -273,12 +291,11 @@ class KeysightEM(ControllerBase):
 
 
     async def enable_io(self):
-        await self.write_and_log(":OUTP1 ON;")
-        await self.write_and_log(":INP1 ON;")
+        await self.write_and_log(":OUTP1 ON;:INP1 ON;")
 
     async def turn_off_io(self):
-        await self.write_and_log(":OUTP1 OFF;")
-        await self.write_and_log(":INP1 OFF;")
+        # await self.write_and_log(":OUTP1 OFF;:INP1 OFF;")
+        logger.info("Turning off IO -> (disabled for now)")
 
     def connect_to_keysight_em(self, ip="192.168.113.72") -> TCPIPSocket:
         try:
@@ -316,7 +333,7 @@ class KeysightEM(ControllerBase):
         self.time_list.clear()
         self.current_list.clear()
 
-    def get_trigger_based_data(self, start_time: float = 0):
+    async def get_trigger_based_data(self, start_time: float = 0):
         times = self.my_instrument.query(":FETCH:ARR:TIME? (@1);")
         cur = self.my_instrument.query(":FETCH:ARR:CURR? (@1);")
         time_list = times.split(",")
@@ -326,7 +343,7 @@ class KeysightEM(ControllerBase):
             self.time_list = time_arr.tolist() # type: ignore
             self.current_list = current_list
             self.save_data_to_file()
-            self.turn_off_io()
+            await self.turn_off_io()
         except Exception as e:
             logger.error("Error in converting data to float: %s", e)
 
@@ -334,8 +351,14 @@ class KeysightEM(ControllerBase):
         device_ready = False
         while not device_ready:
             resp = self.my_instrument.query(":STAT:OPER:COND?")
-            print(f"waiting for device to be ready, response: {resp}, time {time.time()}")
-            if resp == "1170":
+            print(f"waiting for device to be ready, response: {resp}, bitwise 0b{int(resp):016b}, time {time.time()}")
+
+            await asyncio.sleep(0.05) # wait a bit ...
+
+            # 0b0000010010000010 means not ready -> 1154
+            # 0b0000010010010010 means idle -> 1170
+    
+            if resp == "1170": # 1170 means the device is idle, no pending triggers
                 device_ready = True
             else:
                 await asyncio.sleep(0.1)
