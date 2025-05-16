@@ -263,8 +263,10 @@ class ICComponent(ComponentBase):
         self.settings_handler.read_settings()
 
 
-        setting_continous_measurement = f"setting_continuous_measurement_{self.name}"
-        app.storage.general.get(setting_continous_measurement, True)
+        selected_tab_name = f"selected_tab_{self.name}"
+        trigger_tab_name = "Trigger Based Measurement"
+        continuous_tab_name = "Continuous Measurement"
+        tab_selected = app.storage.general.get(selected_tab_name, trigger_tab_name)
 
 
         with ui.card().classes("w-full mb-2"):
@@ -321,17 +323,85 @@ class ICComponent(ComponentBase):
                     ui.label().bind_text_from(self, "integrated_charge", backward=clac_dose)
 
 
+        with ui.card().classes("w-full mb-2"):
+
+            def switch_tab(tab_name):
+                app.storage.general[selected_tab_name] = tab_name.value
+                if tab_name.value == trigger_tab_name:
+                    self.pipe.send("init_trigger_based_measurement")
+
+            with ui.tabs(on_change=switch_tab).classes('w-full') as tabs:
+                trigger_tab = ui.tab(trigger_tab_name)
+                continuous_tab = ui.tab(continuous_tab_name)
+
+            with ui.tab_panels(tabs, value=tab_selected).classes('w-full'):
+                with ui.tab_panel(trigger_tab):
+                    ui.button(
+                        "Trigger based measurement",
+                        on_click=self.trigger_based_measurement,
+                    ).props(props_button).tooltip(
+                        "Do a single trigger based measurement"
+                    )
+
+                    ui.separator()
+                    with ui.grid(columns=2).classes(
+                        "w-full gap-2 justify-items-left items-center"
+                    ):
+
+                        ui.label("Continuous measurement: ")
+
+                        ui.label("Trigger time interval: ")
+                        ui.number(
+                            min=0.000001,
+                            max=1,
+                            step=0.01,
+                            suffix="[s]",
+                        ).bind_value(
+                            self.settings_handler.settings,
+                            "trigger_time_interval",
+                            backward=cast_to_float,
+                        ).on(
+                            "update:model-value",
+                            self.settings_handler.settings_changed,
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
+
+                        ui.label("Trigger count: ")
+                        ui.number(
+                            min=1,
+                            max=100000000,
+                            step=10,
+                        ).bind_value(
+                            self.settings_handler.settings,
+                            "trigger_count",
+                            backward=cast_to_float,
+                        ).on(
+                            "update:model-value",
+                            self.settings_handler.settings_changed,
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
+
+                        ui.label().bind_text_from(
+                            self.settings_handler.settings,
+                            "trigger_time_interval",
+                            backward=lambda x: "Total time for measurement: "
+                            + str(
+                                self.settings_handler.settings["trigger_time_interval"]
+                                * self.settings_handler.settings["trigger_count"]
+                            ),
+                        ).bind_visibility_from(app.storage.general, setting_continous_measurement, lambda x: not x)
+
+
+
+                with ui.tab_panel(continuous_tab):
+                    ui.label('continuous_tab')
 
         with ui.card().classes("w-full mb-2"):
             with ui.grid(columns=3).classes("w-full justify-items-stretch p-4"):
-                ui.button(
-                    "Trigger based measurement",
-                    on_click=self.trigger_based_measurement,
-                ).props(props_button).bind_enabled_from(
-                    app.storage.general, setting_continous_measurement, lambda x: not x
-                ).tooltip(
-                    "Do a single trigger based measurement"
-                )
 
                 ui.button(
                     "Start continuous",
@@ -346,67 +416,6 @@ class ICComponent(ComponentBase):
                     on_click=lambda: self.pipe.send("stop_continuous_measurement"),
                 ).props(props_button).tooltip("Stop continuous measurement")
 
-        with ui.card().classes("w-full mb-2"):
-            ui.label("Trigger settings")
-            ui.separator()
-            with ui.grid(columns=2).classes(
-                "w-full gap-2 justify-items-left items-center"
-            ):
-
-                ui.label("Continuous measurement: ")
-                ui.switch().bind_value(app.storage.general, setting_continous_measurement)
-
-                ui.label("Trigger time interval: ")
-                ui.number(
-                    min=0.000001,
-                    max=1,
-                    step=0.01,
-                    suffix="[s]",
-                ).bind_value(
-                    self.settings_handler.settings,
-                    "trigger_time_interval",
-                    backward=cast_to_float,
-                ).on(
-                    "update:model-value",
-                    self.settings_handler.settings_changed,
-                    throttle=1.0,
-                ).bind_enabled_from(
-                    app.storage.general, setting_continous_measurement, lambda x: not x
-                ).props(
-                    props_input
-                )
-
-                ui.label("Trigger count: ")
-                ui.number(
-                    min=1,
-                    max=100000000,
-                    step=10,
-                ).bind_value(
-                    self.settings_handler.settings,
-                    "trigger_count",
-                    backward=cast_to_float,
-                ).on(
-                    "update:model-value",
-                    self.settings_handler.settings_changed,
-                    throttle=1.0,
-                ).bind_enabled_from(
-                    app.storage.general, setting_continous_measurement, lambda x: not x
-                ).props(
-                    props_input
-                )
-
-                ui.label().bind_text_from(
-                    self.settings_handler.settings,
-                    "trigger_time_interval",
-                    backward=lambda x: "Total time for measurement: "
-                    + str(
-                        self.settings_handler.settings["trigger_time_interval"]
-                        * self.settings_handler.settings["trigger_count"]
-                    ),
-                ).bind_visibility_from(app.storage.general, setting_continous_measurement, lambda x: not x)
-
-
-        current_range_auto = 0
         auto_current_range = f"setting_contiauto_current_rangenuous_measurement_{self.name}"
         app.storage.general.get(auto_current_range, True)
 
@@ -420,7 +429,7 @@ class ICComponent(ComponentBase):
                 current_range = ReactiveNumber(
                     float(self.settings_handler.settings["current_range"]) * 1e9
                 )
-                
+
                 def get_auto_current_range_value():
                     value = self.settings_handler.settings["current_range_auto"]
                     if value in ["ON", True, 1, "True"]:
