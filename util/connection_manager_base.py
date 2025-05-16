@@ -25,7 +25,7 @@ class ConnectionManagerBase:
         self.address: str = None  # type: ignore
         self.healthy: ReactiveHealthIndicator = ReactiveHealthIndicator(False)
         self.status_data = None
-        self.status_data_timer = ui.timer(1.2, self.recv_status_data, active=False)
+        self.status_data_timer = ui.timer(5.2, self.recv_status_data, active=False)
 
     def connection_menu_ui(self):
         raise NotImplementedError

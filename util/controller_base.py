@@ -15,7 +15,7 @@ class ControllerBase:
         self.settings_handler = settings_handler
         self.filename = settings_handler.settings["filename"]
         self.address = address
-        self.send_status_data_timeout = 1  # seconds
+        self.send_status_data_timeout = 5  # seconds
         self.send_settings_within_next_update = False
 
         # self.clear_pipe()

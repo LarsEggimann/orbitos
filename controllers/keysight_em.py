@@ -48,7 +48,7 @@ class KeysightEM(ControllerBase):
 
         logger.info("Keysight EM Controller initialized")
 
-        self.init_settings()
+        asyncio.run(self.init_settings())
 
         self.listening_starter()
 
@@ -67,7 +67,7 @@ class KeysightEM(ControllerBase):
             logger.warning(
                 "restart the listening loop and reinitialize the settings..."
             )
-            self.init_settings()
+            asyncio.run(self.init_settings())
             time.sleep(2)
             self.pipe.send("restart")
             self.listening_starter()
@@ -96,88 +96,74 @@ class KeysightEM(ControllerBase):
                 case "get_settings":
                     self.print_settings()
                 case "settings_changed":
-                    self.settings_changed()
+                    await self.settings_changed()
                 case "exit":
                     logger.info("exiting...")
                     break
                 case _:
                     logger.info("Unknown command")
 
-    def settings_changed(self):
+    async def settings_changed(self):
         self.settings_handler.read_settings()
         changed_settings = self.settings_handler.get_changed_settings()
         for setting, value in changed_settings.items():
             match setting:
-                case "continuous_measurement_interval":
-                    logger.info(
-                        "attempting to set continuous_measurement_interval to %s",
-                        value,
-                    )
-                    self.continuous_measurement_interval = value
                 case "trigger_time_interval":
                     logger.info(
                         "attempting to set trigger_time_interval set to %s",
                         value,
                     )
                     self.TIM = value
-                    self.set_trigger()
+                    await self.set_trigger()
                 case "trigger_count":
                     logger.info("attempting to set trigger_count set to %s", value)
                     self.COUN = value
-                    self.set_trigger()
+                    await self.set_trigger()
                 case "aperture_integration_time":
                     logger.info(
                         "attempting to set aperture_integration_time set to %s",
                         value,
                     )
                     self.APER = value
-                    self.set_sensor()
+                    await self.set_sensor()
                 case "current_range":
                     logger.info("attempting to set current_range set to %s", value)
                     self.RANG = value
-                    self.set_sensor()
+                    await self.set_sensor()
                 case "current_range_auto":
                     logger.info("attempting to set current_range_auto set to %s", value)
                     self.RANG_AUTO = value
-                    self.set_sensor()
+                    await self.set_sensor()
                 case "current_range_auto_upper_limit":
                     logger.info(
                         "attempting to set ccontinuous_measurement_intervalurrent_range_auto_upper_limit set to %s",
                         value,
                     )
                     self.AUTO_ULIM = value
-                    self.set_sensor()
+                    await self.set_sensor()
                 case "current_range_auto_lower_limit":
                     logger.info(
                         "attempting to set current_range_auto_lower_limit set to %s",
                         value,
                     )
                     self.AUTO_LLIM = value
-                    self.set_sensor()
+                    await self.set_sensor()
                 case "filename":
                     self.filename = value
                     logger.info("filename set to %s", value)
 
-    def init_settings(self):
+    async def init_settings(self):
 
-        self.write_and_log("*RST")
+        await self.write_and_log("*RST")
 
-        self.write_and_log(
+        await self.write_and_log(
             ":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
         )
-        self.write_and_log(":SENS1:FUNC \"CURR\",;")
+        await self.write_and_log(":SENS1:FUNC \"CURR\",;")
 
-        # TODO: Check if this is needed
-        #                           :OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;
-        self.write_and_log(":OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;")
+        await self.set_trigger()
 
-        #                           :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000
-        self.write_and_log(":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000")
-
-
-        self.set_trigger()
-
-        self.set_sensor()
+        await self.set_sensor()
 
 
     def print_settings(self):
@@ -197,6 +183,7 @@ class KeysightEM(ControllerBase):
 
     async def send_status_data(self):
         while True:
+            print("Sending status data to pipe...")
             self.pipe.send(
                 {
                     "status_data": {},
@@ -207,63 +194,41 @@ class KeysightEM(ControllerBase):
 
     async def health_check(self) -> bool:
         try:
-            # test = self.my_instrument.query("*IDN?")
-            # print(f"Connected to: {test}")
-            # error_request = self.my_instrument.query("SYST:ERR?")
-            # if error_request != '+0,"No error"':
-            #     logger.error("Error: %s", error_request)
-            #     # clear error
-            #     self.write_and_log("*CLS")
+            print("Performing health check on Keysight EM...")
+            error_request = self.my_instrument.query("SYST:ERR?", delay=0.1)
+            print(f"Health check response: {error_request}")
+            if error_request != '+0,"No error"':
+                logger.error("Error: %s", error_request)
+                # clear error
+                self.my_instrument.write("*CLS")
             return True
         except Exception as e:
             logger.error("Error during health check: %s", e)
             return False
 
     async def start_continuous_measurement(self):
-        # await self.stop_continuous_measurement()
+        if self.continuous_measurement_task:
+            await self.stop_continuous_measurement()
 
-        self.set_sensor()
-
-
-        self.enable_io()
+        logger.info("Starting continuous measurement!")
+        await self.write_and_log("*RST")
+        await self.set_sensor()
+        await self.enable_io()
         self.continuous_measurement_task = asyncio.create_task(self.measure())
 
     async def stop_continuous_measurement(self):
-        self.turn_off_io()
+        logger.info("Stopping continuous measurement!")
         if self.continuous_measurement_task:
             self.continuous_measurement_task.cancel()
-
             self.settings_handler.read_settings()
-            self.TIM = self.settings_handler.settings["trigger_time_interval"]
-            self.COUN = self.settings_handler.settings["trigger_count"]
-            self.set_trigger()
+            
+        await self.turn_off_io()
 
     async def measure(self):
-        self.write_and_log("*CLS")
-        self.write_and_log("*RST")
-        self.write_and_log(":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;")
-        self.write_and_log(':SENS1:FUNC "CURR",;')
-        self.write_and_log(":OUTP1:LOW COMM;:OUTP1:OFF:MODE ZERO;")
-        self.write_and_log(":SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000")
-        self.write_and_log(":SENS1:CHAR:APER 0.2;APER:AUTO OFF;AUTO:MODE LONG;")
-        self.write_and_log(":SENS1:CURR:RANG 2.000000E-6;RANG:AUTO ON;AUTO:ULIM 100e-9;LLIM 1e-16")
-        self.write_and_log(":OUTP1 ON;")
-        self.write_and_log(":INP1 ON;")
         while True:
             self.my_instrument.write(":INIT:ACQ (@1);")
-            print("init aquire over")
 
-
-            device_ready = False
-            while not device_ready:
-                resp = self.my_instrument.query(":STAT:OPER:COND?")
-
-                print(f"waiting for device to be ready, current status: {resp}")
-
-                if resp == "1170":
-                    device_ready = True
-                
-                await asyncio.sleep(0.1)
+            await self.wait_for_device_ready()
 
             cur = self.my_instrument.query(":FETC:CURR? (@1);")
             print(f"current value: {cur}")
@@ -286,36 +251,34 @@ class KeysightEM(ControllerBase):
             print(f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time", end="\r")
         self.get_trigger_based_data(start)
 
-    def set_trigger(self):
-        self.write_and_log(
+    async def set_trigger(self):
+        await self.write_and_log(
             f":TRIG1:ALL:SOUR TIM;COUN {self.COUN};TIM {self.TIM};BYP {self.BYP};DEL {self.DEL}"
         )
 
-    def set_sensor(self):
+    async def set_sensor(self):
         #             ":SENS1:CURR:RANG 0.002000;RANG:AUTO OFF;AUTO:ULIM 0.020000;LLIM 0.0001"
 
-        self.write_and_log(
+        await self.write_and_log(
             f':SENS1:CHAR:APER {self.APER};APER:AUTO {self.APER_AUTO};AUTO:MODE LONG;'
         )
         if self.RANG_AUTO == "ON":
-            self.write_and_log(
+            await self.write_and_log(
                 f":SENS1:CURR:RANG:AUTO {self.RANG_AUTO};AUTO:ULIM {self.AUTO_ULIM};LLIM {self.AUTO_LLIM}"
             )
         else:
-            self.write_and_log(
+            await self.write_and_log(
                 f":SENS1:CURR:RANG {self.RANG};RANG:AUTO {self.RANG_AUTO}"
             )
 
-        # test
-        self.write_and_log(":SENS1:CURR:RANG 2.000000E-6;RANG:AUTO ON;AUTO:ULIM 100e-9;LLIM 1e-16")
 
-    def enable_io(self):
-        self.write_and_log(":OUTP1 ON;")
-        self.write_and_log(":INP1 ON;")
+    async def enable_io(self):
+        await self.write_and_log(":OUTP1 ON;")
+        await self.write_and_log(":INP1 ON;")
 
-    def turn_off_io(self):
-        self.write_and_log(":OUTP1 OFF;")
-        self.write_and_log(":INP1 OFF;")
+    async def turn_off_io(self):
+        await self.write_and_log(":OUTP1 OFF;")
+        await self.write_and_log(":INP1 OFF;")
 
     def connect_to_keysight_em(self, ip="192.168.113.72") -> TCPIPSocket:
         try:
@@ -367,33 +330,25 @@ class KeysightEM(ControllerBase):
         except Exception as e:
             logger.error("Error in converting data to float: %s", e)
 
-    def query_and_log(self, command: str):
-        try:
-            response = self.my_instrument.query(command)
-            if command.startswith(":STAT"):
-                logger.info(
-                    "Query to EM: %s -> Response: %s",
-                    command,
-                    f"0b{int(response):016b}",
-                )
+    async def wait_for_device_ready(self):
+        device_ready = False
+        while not device_ready:
+            resp = self.my_instrument.query(":STAT:OPER:COND?")
+            print(f"waiting for device to be ready, response: {resp}, time {time.time()}")
+            if resp == "1170":
+                device_ready = True
             else:
-                logger.info("Query to EM: %s -> Response: %s", command, response)
+                await asyncio.sleep(0.1)
 
-            error_request = self.my_instrument.query("SYST:ERR?")
-            if error_request != '+0,"No error"':
-                logger.error("Error: %s", error_request)
-            return response
-        except pyvisa.errors.VisaIOError as e:
-            logger.error("Query: %s -> Error: %s", command, e)
-            return str(e)
-
-    def write_and_log(self, command: str):
+    async def write_and_log(self, command: str):
         try:
+            await self.wait_for_device_ready()
+
             self.my_instrument.write(command)
             logger.info("Write to EM: %s", command)
             error_request = self.my_instrument.query("SYST:ERR?")
             if error_request != '+0,"No error"':
                 logger.error("Error: %s", error_request)
-                self.write_and_log("*CLS")
+                await self.write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)
