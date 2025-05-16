@@ -254,6 +254,7 @@ class KeysightEM(ControllerBase):
 
     async def init_trigger_based_measurement(self):
         logger.info("Initializing trigger based measurement")
+        await self.stop_continuous_measurement()
         await self.set_sensor()
         await self.set_trigger()
         await self.enable_io()
