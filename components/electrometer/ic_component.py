@@ -405,6 +405,11 @@ class ICComponent(ComponentBase):
                     ),
                 ).bind_visibility_from(app.storage.general, setting_continous_measurement, lambda x: not x)
 
+
+        current_range_auto = 0
+        auto_current_range = f"setting_contiauto_current_rangenuous_measurement_{self.name}"
+        app.storage.general.get(auto_current_range, True)
+
         with ui.card().classes("w-full mb-2"):
             ui.label("Range settings")
             ui.separator()
@@ -415,7 +420,14 @@ class ICComponent(ComponentBase):
                 current_range = ReactiveNumber(
                     float(self.settings_handler.settings["current_range"]) * 1e9
                 )
-                auto_current_range = ReactiveNumber(False)
+                
+                def get_auto_current_range_value():
+                    value = self.settings_handler.settings["current_range_auto"]
+                    if value in ["ON", True, 1, "True"]:
+                        return True
+                    return False
+                auto_current_range = ReactiveNumber(get_auto_current_range_value())
+
                 ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
                     current_range, "value"
                 ).bind_enabled_from(auto_current_range, "value", lambda x: not x).on(
@@ -427,6 +439,7 @@ class ICComponent(ComponentBase):
                 ).props(
                     props_input
                 )
+
 
                 def change_auto_current_range(value):
                     if value in ["ON", True, 1, "True"]:
