@@ -307,6 +307,9 @@ class ICComponent(ComponentBase):
         param_name = f"dose_conversion_param_{self.name}"
         self.dose_conversion_param = app.storage.general.get(param_name, 1)
 
+        auto_current_range = f"setting_contiauto_current_rangenuous_measurement_{self.name}"
+        app.storage.general.get(auto_current_range, True)
+
         with ui.card().classes("w-full mb-2"):
             with ui.row(wrap=False).classes("w-full items-center justify-between p-1"):
                 ui.label().bind_text_from(self, "integrated_charge", backward=lambda x: f"Integrated charge: {x:.5e} C")                
@@ -347,8 +350,6 @@ class ICComponent(ComponentBase):
                     with ui.grid(columns=2).classes(
                         "w-full gap-2 justify-items-left items-center"
                     ):
-
-                        ui.label("Continuous measurement: ")
 
                         ui.label("Trigger time interval: ")
                         ui.number(
@@ -393,12 +394,107 @@ class ICComponent(ComponentBase):
                                 self.settings_handler.settings["trigger_time_interval"]
                                 * self.settings_handler.settings["trigger_count"]
                             ),
-                        ).bind_visibility_from(app.storage.general, setting_continous_measurement, lambda x: not x)
+                        )
 
 
 
                 with ui.tab_panel(continuous_tab):
-                    ui.label('continuous_tab')
+                    ui.label("Range settings")
+                    ui.separator()
+                    with ui.grid(columns=2).classes(
+                        "w-full gap-2 justify-items-left items-center p-1"
+                    ):
+                        ui.label("Current range: ")
+                        current_range = ReactiveNumber(
+                            float(self.settings_handler.settings["current_range"]) * 1e9
+                        )
+
+                        def get_auto_current_range_value():
+                            value = self.settings_handler.settings["current_range_auto"]
+                            if value in ["ON", True, 1, "True"]:
+                                return True
+                            return False
+                        auto_current_range = ReactiveNumber(get_auto_current_range_value())
+
+                        ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
+                            current_range, "value"
+                        ).bind_enabled_from(auto_current_range, "value", lambda x: not x).on(
+                            "update:model-value",
+                            lambda: self.settings_handler.change_setting(
+                                "current_range", current_range.get_value_in_Amp()
+                            ),
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
+
+
+                        def change_auto_current_range(value):
+                            if value in ["ON", True, 1, "True"]:
+                                value = "ON"
+                            else:
+                                value = "OFF"
+                            self.settings_handler.change_setting("current_range_auto", value)
+
+                        ui.label("Auto current range: ")
+                        ui.switch(
+                            on_change=lambda x: change_auto_current_range(x.value)
+                        ).bind_value(auto_current_range, "value")
+
+                        ui.label("Auto current range upper limit: ")
+                        auto_upper_limit = ReactiveNumber(
+                            float(
+                                self.settings_handler.settings["current_range_auto_upper_limit"]
+                            )
+                            * 1e9
+                        )
+                        ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
+                            auto_upper_limit, "value"
+                        ).bind_enabled_from(auto_current_range, "value").on(
+                            "update:model-value",
+                            lambda: self.settings_handler.change_setting(
+                                "current_range_auto_upper_limit",
+                                auto_upper_limit.get_value_in_Amp(),
+                            ),
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
+
+                        ui.label("Auto current range lower limit: ")
+                        auto_lower_limit = ReactiveNumber(
+                            float(
+                                self.settings_handler.settings["current_range_auto_lower_limit"]
+                            )
+                            * 1e9
+                        )
+                        ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
+                            auto_lower_limit, "value"
+                        ).bind_enabled_from(auto_current_range, "value").on(
+                            "update:model-value",
+                            lambda: self.settings_handler.change_setting(
+                                "current_range_auto_lower_limit",
+                                auto_lower_limit.get_value_in_Amp(),
+                            ),
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
+                    ui.label("Integration settings")
+                    ui.separator()
+                    with ui.grid(columns=2).classes(
+                        "w-full gap-2 justify-items-left items-center p-1"
+                    ):
+                        ui.label("Aperture integration time: ")
+                        ui.number(min=0, step=0.0001, suffix="[s]").bind_value(
+                            self.settings_handler.settings, "aperture_integration_time"
+                        ).on(
+                            "update:model-value",
+                            self.settings_handler.settings_changed,
+                            throttle=1.0,
+                        ).props(
+                            props_input
+                        )
 
         with ui.card().classes("w-full mb-2"):
             with ui.grid(columns=3).classes("w-full justify-items-stretch p-4"):
@@ -406,129 +502,15 @@ class ICComponent(ComponentBase):
                 ui.button(
                     "Start continuous",
                     on_click=lambda: self.pipe.send("start_continuous_measurement"),
-                ).props(props_button).bind_enabled_from(
-                    app.storage.general, setting_continous_measurement
-                ).tooltip(
+                ).props(props_button).tooltip(
                     "Start continuous measurement"
                 )
                 ui.button(
                     "Stop continuous",
                     on_click=lambda: self.pipe.send("stop_continuous_measurement"),
                 ).props(props_button).tooltip("Stop continuous measurement")
+            
 
-        auto_current_range = f"setting_contiauto_current_rangenuous_measurement_{self.name}"
-        app.storage.general.get(auto_current_range, True)
-
-        with ui.card().classes("w-full mb-2"):
-            ui.label("Range settings")
-            ui.separator()
-            with ui.grid(columns=2).classes(
-                "w-full gap-2 justify-items-left items-center p-1"
-            ):
-                ui.label("Current range: ")
-                current_range = ReactiveNumber(
-                    float(self.settings_handler.settings["current_range"]) * 1e9
-                )
-
-                def get_auto_current_range_value():
-                    value = self.settings_handler.settings["current_range_auto"]
-                    if value in ["ON", True, 1, "True"]:
-                        return True
-                    return False
-                auto_current_range = ReactiveNumber(get_auto_current_range_value())
-
-                ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
-                    current_range, "value"
-                ).bind_enabled_from(auto_current_range, "value", lambda x: not x).on(
-                    "update:model-value",
-                    lambda: self.settings_handler.change_setting(
-                        "current_range", current_range.get_value_in_Amp()
-                    ),
-                    throttle=1.0,
-                ).props(
-                    props_input
-                )
-
-
-                def change_auto_current_range(value):
-                    if value in ["ON", True, 1, "True"]:
-                        value = "ON"
-                    else:
-                        value = "OFF"
-                    self.settings_handler.change_setting("current_range_auto", value)
-
-                ui.label("Auto current range: ")
-                ui.switch(
-                    on_change=lambda x: change_auto_current_range(x.value)
-                ).bind_value(auto_current_range, "value")
-
-                ui.label("Auto current range upper limit: ")
-                auto_upper_limit = ReactiveNumber(
-                    float(
-                        self.settings_handler.settings["current_range_auto_upper_limit"]
-                    )
-                    * 1e9
-                )
-                ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
-                    auto_upper_limit, "value"
-                ).bind_enabled_from(auto_current_range, "value").on(
-                    "update:model-value",
-                    lambda: self.settings_handler.change_setting(
-                        "current_range_auto_upper_limit",
-                        auto_upper_limit.get_value_in_Amp(),
-                    ),
-                    throttle=1.0,
-                ).props(
-                    props_input
-                )
-
-                ui.label("Auto current range lower limit: ")
-                auto_lower_limit = ReactiveNumber(
-                    float(
-                        self.settings_handler.settings["current_range_auto_lower_limit"]
-                    )
-                    * 1e9
-                )
-                ui.number(min=0, step=0.0001, suffix="[nA]").bind_value(
-                    auto_lower_limit, "value"
-                ).bind_enabled_from(auto_current_range, "value").on(
-                    "update:model-value",
-                    lambda: self.settings_handler.change_setting(
-                        "current_range_auto_lower_limit",
-                        auto_lower_limit.get_value_in_Amp(),
-                    ),
-                    throttle=1.0,
-                ).props(
-                    props_input
-                )
-
-        with ui.card().classes("w-full mb-2"):
-            ui.label("Integration settings")
-            ui.separator()
-            with ui.grid(columns=2).classes(
-                "w-full gap-2 justify-items-left items-center p-1"
-            ):
-                ui.label("Aperture integration time: ")
-                ui.number(min=0, step=0.0001, suffix="[s]").bind_value(
-                    self.settings_handler.settings, "aperture_integration_time"
-                ).on(
-                    "update:model-value",
-                    self.settings_handler.settings_changed,
-                    throttle=1.0,
-                ).props(
-                    props_input
-                )
-
-                ui.label("Continuous Measurement Interval: ")
-                ui.number(min=0.000001, step=10, suffix="[s]").bind_value(
-                    self.settings_handler.settings, "continuous_measurement_interval"
-                ).bind_enabled_from(app.storage.general, setting_continous_measurement).on(
-                    "update:model-value",
-                    self.settings_handler.settings_changed,
-                    throttle=1.0,
-                ).props(
-                    props_input
-                )
 
         with ui.card().classes("w-full my-2"):
             self.file_handler.alternative_filename_ui()
