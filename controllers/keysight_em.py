@@ -243,7 +243,6 @@ class KeysightEM(ControllerBase):
             await self.wait_for_device_ready()
 
             cur = self.my_instrument.query(":FETC:CURR? (@1);")
-            print(f"current value: {cur}")
 
             try:
                 self.time_list = [time.time()]
@@ -295,8 +294,8 @@ class KeysightEM(ControllerBase):
         await self.write_and_log(":OUTP1 ON;:INP1 ON;")
 
     async def turn_off_io(self):
-        # await self.write_and_log(":OUTP1 OFF;:INP1 OFF;")
-        logger.info("Turning off IO -> (disabled for now)")
+        await self.write_and_log(":OUTP1 OFF;:INP1 OFF;")
+        # logger.info("Turning off IO -> (disabled for now)")
 
     def connect_to_keysight_em(self, ip="192.168.113.72") -> TCPIPSocket:
         try:
@@ -352,7 +351,7 @@ class KeysightEM(ControllerBase):
         device_ready = False
         while not device_ready:
             resp = self.my_instrument.query(":STAT:OPER:COND?")
-            print(f"waiting for device to be ready, response: {resp}, bitwise 0b{int(resp):016b}, time {time.time()}")
+            # print(f"waiting for device to be ready, response: {resp}, bitwise 0b{int(resp):016b}, time {time.time()}")
 
             await asyncio.sleep(0.05) # wait a bit ...
 

@@ -228,27 +228,22 @@ class ICComponent(ComponentBase):
         logger.info(f"finished one flash please for {self.name}")
     
     async def wait_for_continuous_to_start(self):
-        n = ui.notification(timeout=None, message=f"Waiting for continuous measurement to start ...", close_button=True, position="top")
+        n = ui.notification(timeout=None, message="Waiting for continuous measurement to start ...", close_button=True, position="top", type='warning')
 
-        last_data_point = None
-        if len(self.time_list) > 0:
-            last_data_point = self.time_list[-1]
+        initial_last_point = self.time_list[-1] if len(self.time_list) > 0 else None
 
-        while last_data_point is None or last_data_point == self.time_list[-1]:
-            print(f"Waiting for continuous measurement to start, last data point: {last_data_point}")
+        while True:
             n.spinner = True
             await asyncio.sleep(0.3)
+            if len(self.time_list) > 0 and self.time_list[-1] != initial_last_point:
+                break
 
-            if len(self.time_list) > 0 and self.time_list[-1] != last_data_point:
-                print(f"New data point found: {self.time_list[-1]}")
-                last_data_point = self.time_list[-1]
         
-        n.message = "Connected!"
+        n.message = "Measurement started!"
         n.type = "positive"
         n.spinner = False
         await asyncio.sleep(1)
         n.dismiss()
-
 
     @ui.refreshable
     def plot(self):
@@ -422,18 +417,20 @@ class ICComponent(ComponentBase):
 
                 with ui.tab_panel(continuous_tab):
 
-                    with ui.grid(columns=3).classes("w-full justify-items-stretch p-4"):
+                    with ui.grid(columns=2).classes("w-full justify-items-stretch p-4"):
                         def start_continuous_measurement():
                             self.pipe.send("start_continuous_measurement")
                             ui.timer(0.1, self.wait_for_continuous_to_start, once=True)
                         ui.button(
                             "Start continuous",
                             on_click=start_continuous_measurement,
+                            color='primary'
                         ).props(props_button).tooltip(
                             "Start continuous measurement"
                         )
                         ui.button(
                             "Stop continuous",
+                            color="warning",
                             on_click=lambda: self.pipe.send("stop_continuous_measurement"),
                         ).props(props_button).tooltip("Stop continuous measurement")
 
