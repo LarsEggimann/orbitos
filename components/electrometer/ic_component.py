@@ -171,7 +171,7 @@ class ICComponent(ComponentBase):
     async def do_update_plot(self):
         self.plot_plotly.data = [self.plot_plotly.data[0]]
 
-        self.integrated_charge = np.trapz(self.current_list, list(map(map_to_timestamp, self.time_list)))
+        self.integrated_charge = np.trapezoid(self.current_list, list(map(map_to_timestamp, self.time_list)))
 
         self.plot_plotly.update_traces(
             x=self.time_list,
