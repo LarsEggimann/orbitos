@@ -256,10 +256,9 @@ class KeysightEM(ControllerBase):
         await self.stop_continuous_measurement()
         await self.set_sensor()
         await self.set_trigger()
-        await self.enable_io()
 
     async def do_trigger_based_measurement(self):
-        # await self.init_trigger_based_measurement()
+        await self.enable_io()
         await self.write_and_log(":INIT:ALL (@1);")
         wait_time = int(float(self.COUN) * float(self.TIM))
         logger.info("Waiting for %s seconds to retrieve data", wait_time)
