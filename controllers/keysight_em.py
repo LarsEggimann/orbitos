@@ -52,6 +52,15 @@ class KeysightEM(ControllerBase):
 
         self.listening_starter()
 
+        self.count = 0
+    
+
+    async def dummy_counter(self):
+        """A lightweight task that increments a counter as fast as possible."""
+        while True:
+            self.count += 1
+            await asyncio.sleep(0)  # Yield to the event loop
+
     def listening_starter(self):
         try:
             asyncio.run(self.start_listening())
@@ -199,14 +208,17 @@ class KeysightEM(ControllerBase):
                 }
             )
             await asyncio.sleep(self.send_status_data_timeout)
+    
+    async def _run_blocking(self, func, *args):
+        return await asyncio.to_thread(func, *args)
 
     async def health_check(self) -> bool:
         try:
-            error_request = self.my_instrument.query("SYST:ERR?", delay=0.1)
+            error_request = await self._run_blocking(self.my_instrument.query, "SYST:ERR?")
             if error_request != '+0,"No error"':
                 logger.error("Error: %s", error_request)
                 # clear error
-                self.my_instrument.write("*CLS")
+                await self._run_blocking(self.my_instrument.write, "*CLS")
             return True
         except Exception as e:
             logger.error("Error during health check: %s", e)
@@ -237,12 +249,15 @@ class KeysightEM(ControllerBase):
             await self.start_continuous_measurement()
 
     async def measure(self):
+        self.count = 0
+        counter_task = asyncio.create_task(self.dummy_counter())
+        start = time.time()
         while True:
-            self.my_instrument.write(":INIT:ACQ (@1);")
+            await self._run_blocking(self.my_instrument.write, ":INIT:ACQ (@1);")
 
             await self.wait_for_device_ready()
 
-            cur = self.my_instrument.query(":FETC:CURR? (@1);")
+            cur = await self._run_blocking(self.my_instrument.query, ":FETC:CURR? (@1);")
 
             try:
                 self.time_list = [time.time()]
@@ -250,6 +265,10 @@ class KeysightEM(ControllerBase):
                 self.save_data_to_file()
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)
+                
+            duration = time.time() - start
+            print(f"Counter executed {self.count} times in {duration} seconds")
+
 
     async def init_trigger_based_measurement(self):
         logger.info("Initializing trigger based measurement")
@@ -349,7 +368,7 @@ class KeysightEM(ControllerBase):
     async def wait_for_device_ready(self):
         device_ready = False
         while not device_ready:
-            resp = self.my_instrument.query(":STAT:OPER:COND?")
+            resp = await self._run_blocking(self.my_instrument.query, ":STAT:OPER:COND?")
             # print(f"waiting for device to be ready, response: {resp}, bitwise 0b{int(resp):016b}, time {time.time()}")
 
             await asyncio.sleep(0.05) # wait a bit ...
@@ -366,9 +385,9 @@ class KeysightEM(ControllerBase):
         try:
             await self.wait_for_device_ready()
 
-            self.my_instrument.write(command)
+            await self._run_blocking(self.my_instrument.write, command)
             logger.info("Write to EM: %s", command)
-            error_request = self.my_instrument.query("SYST:ERR?")
+            error_request = await self._run_blocking(self.my_instrument.query, "SYST:ERR?")
             if error_request != '+0,"No error"':
                 logger.error("Error: %s", error_request)
                 await self.write_and_log("*CLS")
