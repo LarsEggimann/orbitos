@@ -3,7 +3,7 @@ THe goal of V2 is to split the software properly into a backend and a frontend. 
 
 ## Current Ideas
 ### Backend
-- Use [FastAPI](https://fastapi.tiangolo.com/) for the backend. FastAPI is easy to use and and boasts high performance.
+- Use [FastAPI](https://fastapi.tiangolo.com/) for the backend . FastAPI is easy to use and and boasts high performance.
 - Use [SQLModel](https://sqlmodel.tiangolo.com/) for the database. SQLModel is a library for interacting with SQL databases using Python. It is built on top of SQLAlchemy and Pydantic, and provides a simple and intuitive API for working with databases.
 
 ### Frontend

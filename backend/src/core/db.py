@@ -1,10 +1,10 @@
 from sqlmodel import Session, SQLModel, create_engine
 
-from app.core.config import settings
+from src.core.config import config
 
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(settings.SQLITE_URL, connect_args=connect_args)
+engine = create_engine(config.SQLITE_URL, connect_args=connect_args)
 
 
 def get_session():
