@@ -50,17 +50,8 @@ class KeysightEM(ControllerBase):
 
         asyncio.run(self.init_settings())
 
-        self.listening_starter()
-
-        self.count = 0
-    
-
-    async def dummy_counter(self):
-        """A lightweight task that increments a counter as fast as possible."""
-        while True:
-            self.count += 1
-            await asyncio.sleep(0)  # Yield to the event loop
-
+        self.listening_starter()    
+        
     def listening_starter(self):
         try:
             asyncio.run(self.start_listening())
@@ -249,9 +240,6 @@ class KeysightEM(ControllerBase):
             await self.start_continuous_measurement()
 
     async def measure(self):
-        self.count = 0
-        counter_task = asyncio.create_task(self.dummy_counter())
-        start = time.time()
         while True:
             await self._run_blocking(self.my_instrument.write, ":INIT:ACQ (@1);")
 
@@ -265,10 +253,6 @@ class KeysightEM(ControllerBase):
                 self.save_data_to_file()
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)
-                
-            duration = time.time() - start
-            print(f"Counter executed {self.count} times in {duration} seconds")
-
 
     async def init_trigger_based_measurement(self):
         logger.info("Initializing trigger based measurement")
