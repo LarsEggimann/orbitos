@@ -6,9 +6,10 @@ from starlette.middleware.cors import CORSMiddleware
 from src.core.config import config
 from src.core.db import init_db
 from src.modules.electrometer import module as electrometer_module
+from src.modules.electrometer.router import router as electrometer_router
 
 api_router = APIRouter()
-api_router.include_router(electrometer_module.router)
+api_router.include_router(electrometer_router)
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

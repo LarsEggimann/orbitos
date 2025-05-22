@@ -1,19 +1,21 @@
 from typing import Annotated
 from fastapi import Depends
+from src.core.state_manager import DeviceStateManager
 from src.shared.persistent_session_manager import PersistentSessionManager
 from src.modules.electrometer.db import engine, init_db
-from src.modules.electrometer.router import router as electrometer_router
 from src.modules.electrometer.controller import KeysightEM
+from src.modules.electrometer.models import ElectrometerState
 
-router = electrometer_router
+
 session_manager = PersistentSessionManager(engine)
 
 class ModuleState:
-    controller: KeysightEM | None = None
+    device_controller: KeysightEM | None = None
+    device_state_manager: DeviceStateManager[ElectrometerState] | None = None
 
-state = ModuleState()
+module_state = ModuleState()
 
-ControllerDep = Annotated[KeysightEM, Depends(lambda: state.controller)]
+ControllerDep = Annotated[KeysightEM, Depends(lambda: module_state.device_controller)]
 
 
 def init_module() -> None:
@@ -23,7 +25,13 @@ def init_module() -> None:
     init_db()
     session_manager.init_session()
 
-    state.controller = KeysightEM(db_session=session_manager.get_session())
+    module_state.device_state_manager = DeviceStateManager(
+        model=ElectrometerState,
+        device_id="1",
+        session=session_manager.get_session(),
+    )
+
+    module_state.device_controller = KeysightEM(state_manager=module_state.device_state_manager, db_session=session_manager.get_session())
 
 def shutdown_module() -> None:
     """

@@ -24,9 +24,6 @@ class ElectrometerState(BaseState, table=True):
     current_range_auto_lower_limit: float = Field(default=1e-16)
 
 
-
-
-
 class CurrentData(SQLModel, table=True):
     __tablename__ = "em_current_data"
     time: float = Field(primary_key=True, index=True)
