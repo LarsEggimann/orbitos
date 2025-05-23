@@ -9,6 +9,7 @@ router = APIRouter(
     prefix="",
 )
 
+
 @router.post("/{device_id}/connect/{ip}", response_model=ElectrometerState)
 def connect_to_electrometer(ip: str, controller: ControllerDep):
     """

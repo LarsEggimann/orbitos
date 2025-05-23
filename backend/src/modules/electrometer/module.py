@@ -6,6 +6,7 @@ from src.modules.electrometer.db import engine, init_db
 from src.modules.electrometer.controller import KeysightEM
 from src.modules.electrometer.models import ElectrometerState, ElectrometerID
 
+
 class ModuleState:
     controllers: dict[ElectrometerID, KeysightEM] = {}
     state_managers: dict[ElectrometerID, DeviceStateManager[ElectrometerState]] = {}
@@ -13,6 +14,7 @@ class ModuleState:
 
 
 module_state = ModuleState()
+
 
 def get_controller(device_id: ElectrometerID) -> KeysightEM:
     """
@@ -22,7 +24,9 @@ def get_controller(device_id: ElectrometerID) -> KeysightEM:
         raise ValueError(f"Controller for device {device_id} not found")
     return module_state.controllers[device_id]
 
+
 ControllerDep = Annotated[KeysightEM, Depends(get_controller)]
+
 
 def init_module() -> None:
     """
@@ -45,10 +49,13 @@ def init_module() -> None:
             device_id=device_id,
             session=session,
         )
-        
-        controller = KeysightEM(device_id=device_id, state_manager=state_manager, db_session=session)
+
+        controller = KeysightEM(
+            device_id=device_id, state_manager=state_manager, db_session=session
+        )
         module_state.state_managers[device_id] = state_manager
         module_state.controllers[device_id] = controller
+
 
 def shutdown_module() -> None:
     """

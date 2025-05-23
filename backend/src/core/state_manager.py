@@ -4,6 +4,7 @@ from sqlmodel import SQLModel
 
 T = TypeVar("T", bound=SQLModel)
 
+
 class DeviceStateManager(Generic[T]):
     def __init__(self, model: Type[T], device_id: str, session: Session):
         self.model = model
@@ -14,7 +15,7 @@ class DeviceStateManager(Generic[T]):
     def load(self) -> T:
         # Lazy-load state from DB
         if self._state is None:
-            statement = select(self.model).where(self.model.device_id == self.device_id) # type: ignore
+            statement = select(self.model).where(self.model.device_id == self.device_id)  # type: ignore
             result = self.session.exec(statement).first()
             if result is None:
                 # create default state

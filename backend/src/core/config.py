@@ -1,6 +1,7 @@
 from typing import Literal
 
-class Config():
+
+class Config:
     """Settings for the application."""
 
     # Application settings
@@ -10,7 +11,6 @@ class Config():
     # Database settings
     SQLITE_FILENAME: str = "app.db"
     SQLITE_URL: str = f"sqlite:///{SQLITE_FILENAME}"
-
 
     # CORS settings
     CORS_ORIGINS: list[str] | str | None = None

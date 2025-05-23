@@ -15,9 +15,14 @@ from src.core.models import ConnectionStatus
 
 logger = logging.getLogger()
 
-class KeysightEM:
-    def __init__(self, device_id: ElectrometerID, state_manager: DeviceStateManager[ElectrometerState], db_session: Session):
 
+class KeysightEM:
+    def __init__(
+        self,
+        device_id: ElectrometerID,
+        state_manager: DeviceStateManager[ElectrometerState],
+        db_session: Session,
+    ):
         self.device_id = device_id
 
         logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
@@ -30,19 +35,16 @@ class KeysightEM:
 
         self.db_session = db_session
 
-
         self.time_list: list[str] = []
         self.current_list: list[str] = []
 
-
     async def init_settings(self):
-
         await self._write_and_log("*RST")
 
         await self._write_and_log(
             ":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
         )
-        await self._write_and_log(":SENS1:FUNC \"CURR\",;")
+        await self._write_and_log(':SENS1:FUNC "CURR",;')
 
         await self.set_trigger()
 
@@ -76,7 +78,7 @@ class KeysightEM:
         logger.info("Stopping continuous measurement!")
         if self.continuous_measurement_task:
             self.continuous_measurement_task.cancel()
-        
+
         self.continuous_measurement_task = None
         await self.turn_off_io()
 
@@ -109,12 +111,18 @@ class KeysightEM:
     async def do_trigger_based_measurement(self):
         await self.enable_io()
         await self._write_and_log(":INIT:ALL (@1);")
-        wait_time = int(float(self.state.get().trigger_count) * float(self.state.get().trigger_time_interval))
+        wait_time = int(
+            float(self.state.get().trigger_count)
+            * float(self.state.get().trigger_time_interval)
+        )
         logger.info("Waiting for %s seconds to retrieve data", wait_time)
         start = time.time()
         while time.time() - start < wait_time:
             await asyncio.sleep(0.2)
-            print(f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time", end="\r")
+            print(
+                f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time",
+                end="\r",
+            )
         await self._fetch_trigger_based_data(start)
 
     async def set_trigger(self):
@@ -126,7 +134,7 @@ class KeysightEM:
         #             ":SENS1:CURR:RANG 0.002000;RANG:AUTO OFF;AUTO:ULIM 0.020000;LLIM 0.0001"
 
         await self._write_and_log(
-            f':SENS1:CHAR:APER {self.state.get().aperture_integration_time};APER:AUTO {self.state.get().aperture_auto};AUTO:MODE LONG;'
+            f":SENS1:CHAR:APER {self.state.get().aperture_integration_time};APER:AUTO {self.state.get().aperture_auto};AUTO:MODE LONG;"
         )
         if self.state.get().current_range_auto == "ON":
             await self._write_and_log(
@@ -143,16 +151,15 @@ class KeysightEM:
     async def turn_off_io(self):
         await self._write_and_log(":OUTP1 OFF;:INP1 OFF;")
 
-
     def connect_to_keysight_em(self, ip="192.168.113.72") -> ElectrometerState:
         try:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
                 self.em = self.rm.open_resource(f"TCPIP::{ip}::5025::SOCKET")  # type: ignore
 
                 # For Serial and TCP/IP socket connections enable the read Termination Character, or read's will timeout
-                if self.em.resource_name.startswith("ASRL") or self.em.resource_name.endswith(
-                    "SOCKET"
-                ):
+                if self.em.resource_name.startswith(
+                    "ASRL"
+                ) or self.em.resource_name.endswith("SOCKET"):
                     self.em.read_termination = "\n"
 
                 logger.info("Connected to Keysight EM")
@@ -170,7 +177,7 @@ class KeysightEM:
         except pyvisa.errors.VisaIOError as e:
             logger.error("Could not connect to Keysight EM: %s", e)
             raise e
-        
+
     async def _save_data_to_file(self):
         def save():
             df = pd.DataFrame({"time": self.time_list, "current": self.current_list})
@@ -189,6 +196,7 @@ class KeysightEM:
 
             self.time_list.clear()
             self.current_list.clear()
+
         await run_blocking(save)
 
     async def _fetch_trigger_based_data(self, start_time: float = 0):
@@ -199,7 +207,7 @@ class KeysightEM:
         current_list = cur.split(",")
         try:
             time_arr = np.array(time_list, dtype=float) + start_time
-            self.time_list = time_arr.tolist() # type: ignore
+            self.time_list = time_arr.tolist()  # type: ignore
             self.current_list = current_list
             await self._save_data_to_file()
             await self.turn_off_io()
@@ -214,8 +222,8 @@ class KeysightEM:
 
             # 0b0000010010000010 means not ready -> 1154
             # 0b0000010010010010 means idle -> 1170
-    
-            if resp == "1170": # 1170 means the device is idle, no pending triggers
+
+            if resp == "1170":  # 1170 means the device is idle, no pending triggers
                 device_ready = True
             else:
                 await asyncio.sleep(0.1)
@@ -229,7 +237,11 @@ class KeysightEM:
 
             error_request = await self._em_query("SYST:ERR?")
             if error_request != '+0,"No error"':
-                logger.error("Error in _write_and_log: '%s', for query: '%s'", error_request, command)
+                logger.error(
+                    "Error in _write_and_log: '%s', for query: '%s'",
+                    error_request,
+                    command,
+                )
                 await self._write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)

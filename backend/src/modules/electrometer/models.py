@@ -5,9 +5,11 @@ from sqlmodel import Field, SQLModel, Index
 
 from src.core.models import BaseState
 
+
 class ElectrometerID(str, Enum):
     EM_1 = "electrometer_1"
     EM_2 = "electrometer_2"
+
 
 class ElectrometerState(BaseState, table=True):
     __tablename__ = "electrometer_state"
@@ -35,7 +37,6 @@ class CurrentData(SQLModel, table=True):
     current: float = Field(default=0.0, le=1e35)
 
     __table_args__ = (Index("idx_device_time", "device_id", "time"),)
-
 
 
 class CurrentDataResponse(BaseModel):

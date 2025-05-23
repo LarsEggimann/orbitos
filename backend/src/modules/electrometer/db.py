@@ -9,11 +9,14 @@ SQLITE_URL: str = f"sqlite:///{SQLITE_FILEPATH}"
 connect_args = {"check_same_thread": False}
 engine = create_engine(SQLITE_URL, connect_args=connect_args)
 
+
 def _get_session():
     with Session(engine) as session:
         yield session
 
+
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
+
 
 SessionDep = Annotated[Session, Depends(_get_session)]

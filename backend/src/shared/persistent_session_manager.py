@@ -1,6 +1,7 @@
 from sqlmodel import Session
 from sqlalchemy.engine import Engine
 
+
 class PersistentSessionManager:
     def __init__(self, engine: Engine):
         self.engine = engine

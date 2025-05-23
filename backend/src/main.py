@@ -16,9 +16,9 @@ api_router.include_router(electrometer_router)
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     # setup logging
     setup_logging()
 
@@ -27,7 +27,6 @@ async def lifespan(app: FastAPI):
 
     # setup modules
     electrometer_module.init_module()
-
 
     yield  # run the app
 
