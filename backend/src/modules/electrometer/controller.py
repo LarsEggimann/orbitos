@@ -10,15 +10,17 @@ from pyvisa.resources import TCPIPSocket
 
 from src.core.utils import run_blocking
 from src.core.state_manager import DeviceStateManager
-from src.modules.electrometer.models import ElectrometerState
+from src.modules.electrometer.models import ElectrometerState, ElectrometerID
 from src.core.models import ConnectionStatus
 
 logger = logging.getLogger()
 
 class KeysightEM:
-    def __init__(self, state_manager: DeviceStateManager[ElectrometerState], db_session: Session):
+    def __init__(self, device_id: ElectrometerID, state_manager: DeviceStateManager[ElectrometerState], db_session: Session):
 
-        logger.info("Initializing Keysight EM controller")
+        self.device_id = device_id
+
+        logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
 
@@ -158,7 +160,7 @@ class KeysightEM:
                 # testing
                 logger.info("Testing connection to EM")
                 idn = self.em.query("*IDN?")
-                logger.info(f"IDN: {idn}")
+                logger.info("IDN: %s", idn)
 
                 # update state to connected
                 self.state.update(connection_status=ConnectionStatus.CONNECTED)

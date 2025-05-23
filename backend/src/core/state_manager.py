@@ -14,11 +14,11 @@ class DeviceStateManager(Generic[T]):
     def load(self) -> T:
         # Lazy-load state from DB
         if self._state is None:
-            statement = select(self.model).where(self.model.id == self.device_id) # type: ignore
+            statement = select(self.model).where(self.model.device_id == self.device_id) # type: ignore
             result = self.session.exec(statement).first()
             if result is None:
                 # create default state
-                result = self.model(id=self.device_id)
+                result = self.model(device_id=self.device_id)
                 self.session.add(result)
                 self.session.commit()
                 self.session.refresh(result)

@@ -11,7 +11,9 @@ class BaseState(SQLModel):
     """
     Base class for all state models.
     """
+    device_id: str = Field(primary_key=True, index=True)
+
     status: Optional[str] = Field(default=None)
-    connection_status: Optional[ConnectionStatus] = Field(default=None)
+    connection_status: ConnectionStatus = Field(default=ConnectionStatus.DISCONNECTED)
     error: Optional[str] = Field(default=None)
 

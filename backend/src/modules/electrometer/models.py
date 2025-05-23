@@ -1,12 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
+from enum import Enum
+from sqlmodel import Field, SQLModel, Index
 
 from src.core.models import BaseState
 
+class ElectrometerID(str, Enum):
+    EM_1 = "electrometer_1"
+    EM_2 = "electrometer_2"
+
 class ElectrometerState(BaseState, table=True):
-    __tablename__ = "em_state"
-    id: str = Field(primary_key=True, index=True)
+    __tablename__ = "electrometer_state"
 
     trigger_count: int = Field(default=100)
     trigger_time_interval: float = Field(default=0.1)
@@ -25,9 +29,13 @@ class ElectrometerState(BaseState, table=True):
 
 
 class CurrentData(SQLModel, table=True):
-    __tablename__ = "em_current_data"
+    __tablename__ = "electrometer_data"
+    device_id: ElectrometerID = Field(primary_key=True, index=True)
     time: float = Field(primary_key=True, index=True)
     current: float = Field(default=0.0, le=1e35)
+
+    __table_args__ = (Index("idx_device_time", "device_id", "time"),)
+
 
 
 class CurrentDataResponse(BaseModel):
