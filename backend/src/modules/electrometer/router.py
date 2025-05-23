@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends
-import time
+from fastapi import APIRouter
 
 from src.modules.electrometer.models import ElectrometerState
 from src.modules.electrometer.module import ControllerDep

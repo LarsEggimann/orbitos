@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import Depends
-from src.core.state_manager import DeviceStateManager
+from src.shared.state_manager import DeviceStateManager
 from src.shared.persistent_session_manager import PersistentSessionManager
 from src.modules.electrometer.db import engine, init_db
 from src.modules.electrometer.controller import KeysightEM

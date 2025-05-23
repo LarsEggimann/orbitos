@@ -8,10 +8,10 @@ from sqlmodel import Session
 import pyvisa
 from pyvisa.resources import TCPIPSocket
 
-from src.core.utils import run_blocking
-from src.core.state_manager import DeviceStateManager
+from src.shared.utils import run_blocking
+from src.shared.state_manager import DeviceStateManager
 from src.modules.electrometer.models import ElectrometerState, ElectrometerID
-from src.core.models import ConnectionStatus
+from src.shared.models import ConnectionStatus
 
 logger = logging.getLogger()
 

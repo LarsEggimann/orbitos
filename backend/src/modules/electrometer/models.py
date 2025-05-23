@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from enum import Enum
 from sqlmodel import Field, SQLModel, Index
 
-from src.core.models import BaseState
+from src.shared.models import BaseState
 
 
 class ElectrometerID(str, Enum):
