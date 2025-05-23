@@ -4,9 +4,12 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from src.core.config import config
+from src.core.logging import setup_logging
 from src.core.db import init_db
 from src.modules.electrometer import module as electrometer_module
 from src.modules.electrometer.router import router as electrometer_router
+
+setup_logging()
 
 api_router = APIRouter()
 api_router.include_router(electrometer_router)

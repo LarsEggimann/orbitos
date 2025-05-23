@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-
 import asyncio
 import logging
 import numpy as np
 import pandas as pd
 import time
-from pathlib import Path
 from sqlmodel import Session
 
 import pyvisa
@@ -16,20 +13,12 @@ from src.core.state_manager import DeviceStateManager
 from src.modules.electrometer.models import ElectrometerState
 from src.core.models import ConnectionStatus
 
-class Logger:
-    def info(self, msg: str):
-        print(f"INFO: {msg}")
-    def error(self, msg: str):
-        print(f"ERROR: {msg}")
-
-logger = Logger()
-main_working_directory = Path(__file__).parent.parent
-
-OVERFLOW_UPPER_LIMIT = 1e+35
+logger = logging.getLogger()
 
 class KeysightEM:
     def __init__(self, state_manager: DeviceStateManager[ElectrometerState], db_session: Session):
 
+        logger.info("Initializing Keysight EM controller")
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
 
