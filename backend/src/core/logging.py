@@ -9,7 +9,7 @@ from rich.logging import RichHandler
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
-        format="%(message)-120s [%(processName)s:%(process)s %(threadName)s:%(thread)s]",
+        format="%(message)-80s [%(processName)s:%(process)s %(threadName)s:%(thread)s]",
         datefmt="[%X]",
         handlers=[
             RichHandler(
@@ -20,7 +20,7 @@ def setup_logging():
     )
 
     # ensure other loggers DO NOT propagate messages if handled by root
-    for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"):
+    for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "uvicorn.cli", "fastapi"):
         logger = logging.getLogger(logger_name)
         logger.handlers.clear()  # remove their handlers
         logger.propagate = True  # let root handle them
