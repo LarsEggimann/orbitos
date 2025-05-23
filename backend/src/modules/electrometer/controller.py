@@ -151,7 +151,7 @@ class KeysightEM:
     async def turn_off_io(self):
         await self._write_and_log(":OUTP1 OFF;:INP1 OFF;")
 
-    def connect_to_keysight_em(self, ip="192.168.113.72") -> ElectrometerState:
+    def connect_to_keysight_em(self, ip) -> ElectrometerState:
         try:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
                 self.em = self.rm.open_resource(f"TCPIP::{ip}::5025::SOCKET")  # type: ignore
