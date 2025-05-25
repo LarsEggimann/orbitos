@@ -23,7 +23,7 @@ def connect_to_electrometer(ip: str, controller: ControllerDep, background_tasks
     )
 
 @router.get("/{device_id}/state", response_model=ElectrometerState)
-def get_electrometer_state(controller: ControllerDep):
+async def get_electrometer_state(controller: ControllerDep):
     """
     Get the current state of the electrometer.
     """
