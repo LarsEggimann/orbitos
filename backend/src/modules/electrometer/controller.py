@@ -30,7 +30,6 @@ class KeysightEM:
         self.em: TCPIPSocket
 
         self.state = state_manager
-        self.state.get()
         self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
 
         self.db_session = db_session

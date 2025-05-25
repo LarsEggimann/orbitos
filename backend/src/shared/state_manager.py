@@ -13,7 +13,6 @@ class DeviceStateManager(Generic[T]):
         self._state: T | None = None
 
     def load(self) -> T:
-        print(f"Loading state for device {self.device_id} of type {self.model.__name__}")
         # Lazy-load state from DB
         if self._state is None:
             statement = select(self.model).where(self.model.device_id == self.device_id)  # type: ignore
@@ -25,6 +24,10 @@ class DeviceStateManager(Generic[T]):
                 self.session.commit()
                 self.session.refresh(result)
             self._state = result
+        else:
+            # this solves some wired issue where the state was not none but still not serialized properly
+            self.session.refresh(self._state) # ensure we have the latest state from the DB
+
         return self._state
 
     def save(self) -> None:
@@ -43,6 +46,6 @@ class DeviceStateManager(Generic[T]):
         return self.load()
 
     def reset(self) -> T:
-        self._state = self.model(id=self.device_id)
+        self._state = self.model(device_id=self.device_id) # type: ignore
         self.save()
         return self._state
