@@ -13,4 +13,4 @@ def get_session():
 
 
 def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
+    SQLModel.metadata.create_all(engine, tables=[])
