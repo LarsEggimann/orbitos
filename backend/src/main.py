@@ -63,11 +63,11 @@ async def global_exception_handler(request: Request, exc: Exception):
     Global exception handler that catches ALL unhandled exceptions
     """
     logger.error("Unhandled exception on %s %s: %s", request.method, request.url, exc)
-    
+
     # Map specific exception types to appropriate HTTP status codes
     status_code = 500
     error_type = type(exc).__name__
-    
+
     if isinstance(exc, ValueError):
         status_code = 400
     elif isinstance(exc, ConnectionError):
@@ -76,15 +76,15 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code = 404
     elif isinstance(exc, PermissionError):
         status_code = 403
-    elif hasattr(exc, 'status_code'):  # For custom exceptions
+    elif hasattr(exc, "status_code"):  # For custom exceptions
         status_code = exc.status_code
-    
+
     return JSONResponse(
         status_code=status_code,
         content={
             "message": str(exc),
             "error_type": error_type,
             "timestamp": datetime.now().isoformat(),
-            "path": str(request.url)
-        }
+            "path": str(request.url),
+        },
     )

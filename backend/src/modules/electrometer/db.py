@@ -16,8 +16,13 @@ def get_session():
     with Session(engine) as session:
         yield session
 
+
 def init_db() -> None:
-    tables = [SQLModel.metadata.tables[ElectrometerState.__tablename__], SQLModel.metadata.tables[CurrentData.__tablename__]]
+    tables = [
+        SQLModel.metadata.tables[ElectrometerState.__tablename__],
+        SQLModel.metadata.tables[CurrentData.__tablename__],
+    ]
     SQLModel.metadata.create_all(engine, tables=tables)
+
 
 SessionDep = Annotated[Session, Depends(get_session)]

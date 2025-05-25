@@ -26,7 +26,9 @@ class DeviceStateManager(Generic[T]):
             self._state = result
         else:
             # this solves some wired issue where the state was not none but still not serialized properly
-            self.session.refresh(self._state) # ensure we have the latest state from the DB
+            self.session.refresh(
+                self._state
+            )  # ensure we have the latest state from the DB
 
         return self._state
 
@@ -46,6 +48,6 @@ class DeviceStateManager(Generic[T]):
         return self.load()
 
     def reset(self) -> T:
-        self._state = self.model(device_id=self.device_id) # type: ignore
+        self._state = self.model(device_id=self.device_id)  # type: ignore
         self.save()
         return self._state

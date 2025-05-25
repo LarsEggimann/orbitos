@@ -10,7 +10,9 @@ class Config:
     API_V1_STR: str = "/orbitos-api/v1"
 
     # Database settings
-    SQLITE_FILEPATH: str = os.path.join(os.path.dirname(__file__), "orbitos-api-core.db")
+    SQLITE_FILEPATH: str = os.path.join(
+        os.path.dirname(__file__), "orbitos-api-core.db"
+    )
     SQLITE_URL: str = f"sqlite:///{SQLITE_FILEPATH}"
 
     # CORS settings

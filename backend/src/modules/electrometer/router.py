@@ -10,7 +10,9 @@ router = APIRouter(
 
 
 @router.post("/{device_id}/connect/{ip}", response_model=BaseResponse)
-def connect_to_electrometer(ip: str, controller: ControllerDep, background_tasks: BackgroundTasks):
+def connect_to_electrometer(
+    ip: str, controller: ControllerDep, background_tasks: BackgroundTasks
+):
     """
     Connect to the electrometer with the given device ID.
     """
@@ -21,6 +23,7 @@ def connect_to_electrometer(ip: str, controller: ControllerDep, background_tasks
     return BaseResponse(
         message=f"Connected to {controller.device_id.value} at {ip}, IDN: {resp}"
     )
+
 
 @router.get("/{device_id}/state", response_model=ElectrometerState)
 async def get_electrometer_state(controller: ControllerDep):

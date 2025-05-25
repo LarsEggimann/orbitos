@@ -6,6 +6,7 @@ from fastapi.routing import APIRoute
 
 from src.main import app
 
+
 class ClientHelper:
     def __init__(self, test_client: TestClient, routes: Dict[str, str]):
         self.client = test_client
@@ -18,7 +19,9 @@ class ClientHelper:
         try:
             return path_template.format(**kwargs)
         except KeyError as e:
-            raise ValueError(f"Missing path parameter '{e.args[0]}' for route: {path_template}") from e
+            raise ValueError(
+                f"Missing path parameter '{e.args[0]}' for route: {path_template}"
+            ) from e
 
     def request(
         self,
@@ -35,12 +38,9 @@ class ClientHelper:
         """
         path = self.format_route(route_name, **path_params)
         return self.client.request(
-            method=method,
-            url=path,
-            params=query_params,
-            json=json,
-            headers=headers
+            method=method, url=path, params=query_params, json=json, headers=headers
         )
+
 
 @pytest.fixture(scope="session")
 def client() -> Generator[TestClient, None, None]:
@@ -50,6 +50,7 @@ def client() -> Generator[TestClient, None, None]:
     """
     with TestClient(app) as test_client:
         yield test_client
+
 
 @pytest.fixture(scope="session")
 def route_map() -> Dict[str, str]:
@@ -65,6 +66,7 @@ def route_map() -> Dict[str, str]:
             routes[operation_id] = route.path
 
     return routes
+
 
 @pytest.fixture(scope="session")
 def client_helper(client: TestClient, route_map: Dict[str, str]) -> ClientHelper:

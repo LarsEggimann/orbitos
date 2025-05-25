@@ -163,10 +163,9 @@ class KeysightEM:
 
                 logger.info("Connected to Keysight EM")
 
-
                 # update state to connected
                 self.state.update(connection_status=ConnectionStatus.CONNECTED)
-            
+
             # testing connection
             logger.info("Testing connection to EM %s at %s", self.device_id, ip)
             idn = self.em.query("*IDN?")
