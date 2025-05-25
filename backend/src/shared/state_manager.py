@@ -13,6 +13,7 @@ class DeviceStateManager(Generic[T]):
         self._state: T | None = None
 
     def load(self) -> T:
+        print(f"Loading state for device {self.device_id} of type {self.model.__name__}")
         # Lazy-load state from DB
         if self._state is None:
             statement = select(self.model).where(self.model.device_id == self.device_id)  # type: ignore

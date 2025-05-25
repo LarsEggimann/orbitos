@@ -1,6 +1,6 @@
+from enum import Enum
 from datetime import datetime
 from pydantic import BaseModel
-from enum import Enum
 from sqlmodel import Field, SQLModel, Index
 
 from src.shared.models import BaseState

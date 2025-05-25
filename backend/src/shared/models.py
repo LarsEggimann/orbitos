@@ -1,6 +1,11 @@
 from typing import Optional
 from enum import Enum
 from sqlmodel import Field, SQLModel
+from pydantic import BaseModel
+
+class BaseResponse(BaseModel):
+    message: str
+    error: Optional[str] = None
 
 
 class ConnectionStatus(str, Enum):

@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 
@@ -9,8 +10,8 @@ class Config:
     API_V1_STR: str = "/orbitos-api/v1"
 
     # Database settings
-    SQLITE_FILENAME: str = "app.db"
-    SQLITE_URL: str = f"sqlite:///{SQLITE_FILENAME}"
+    SQLITE_FILEPATH: str = os.path.join(os.path.dirname(__file__), "orbitos-api-core.db")
+    SQLITE_URL: str = f"sqlite:///{SQLITE_FILEPATH}"
 
     # CORS settings
     CORS_ORIGINS: list[str] | str | None = None

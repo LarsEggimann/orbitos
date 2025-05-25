@@ -151,7 +151,7 @@ class KeysightEM:
     async def turn_off_io(self):
         await self._write_and_log(":OUTP1 OFF;:INP1 OFF;")
 
-    def connect_to_keysight_em(self, ip) -> ElectrometerState:
+    def connect_to_keysight_em(self, ip) -> str:
         try:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
                 self.em = self.rm.open_resource(f"TCPIP::{ip}::5025::SOCKET")  # type: ignore
@@ -167,12 +167,12 @@ class KeysightEM:
                 # testing
                 logger.info("Testing connection to EM")
                 idn = self.em.query("*IDN?")
-                logger.info("IDN: %s", idn)
+                logger.info("*IDN?: %s", idn)
 
                 # update state to connected
                 self.state.update(connection_status=ConnectionStatus.CONNECTED)
 
-            return self.state.get()
+            return idn
 
         except pyvisa.errors.VisaIOError as e:
             logger.error("Could not connect to Keysight EM: %s", e)
