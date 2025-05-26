@@ -35,9 +35,10 @@ class KeysightEM:
             device_id=self.device_id,
             session=self.db_session,
         )
-        
         self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
 
+
+        self.continuous_measurement_task: asyncio.Task | None = None
 
         self.time_list: list[str] = []
         self.current_list: list[str] = []
@@ -46,9 +47,8 @@ class KeysightEM:
         await self._write_and_log("*RST")
 
         await self._write_and_log(
-            ":FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
+            ":SENS1:FUNC \"CURR\",;:FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
         )
-        await self._write_and_log(':SENS1:FUNC "CURR",;')
 
         await self.set_trigger()
 
@@ -102,7 +102,8 @@ class KeysightEM:
             try:
                 self.time_list = [time.time()]
                 self.current_list = [cur]
-                await self._save_data_to_file()
+                logger.info(f"{self.device_id} - Fetched current: %s", cur)
+                await self._save_data()
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)
 
@@ -137,16 +138,15 @@ class KeysightEM:
     async def set_sensor(self):
         #             ":SENS1:CURR:RANG 0.002000;RANG:AUTO OFF;AUTO:ULIM 0.020000;LLIM 0.0001"
 
-        await self._write_and_log(
-            f":SENS1:CHAR:APER {self.state.get().aperture_integration_time};APER:AUTO {self.state.get().aperture_auto};AUTO:MODE LONG;"
-        )
+        aperture_command = f":SENS1:CHAR:APER {self.state.get().aperture_integration_time};APER:AUTO {self.state.get().aperture_auto};AUTO:MODE LONG;"
+
         if self.state.get().current_range_auto == "ON":
             await self._write_and_log(
-                f":SENS1:CURR:RANG:AUTO {self.state.get().current_range_auto};AUTO:ULIM {self.state.get().current_range_auto_upper_limit};LLIM {self.state.get().current_range_auto_lower_limit};"
+                f"{aperture_command}:SENS1:CURR:RANG:AUTO {self.state.get().current_range_auto};AUTO:ULIM {self.state.get().current_range_auto_upper_limit};LLIM {self.state.get().current_range_auto_lower_limit};"
             )
         else:
             await self._write_and_log(
-                f":SENS1:CURR:RANG {self.state.get().current_range};RANG:AUTO {self.state.get().current_range_auto}"
+                f"{aperture_command}:SENS1:CURR:RANG {self.state.get().current_range};RANG:AUTO {self.state.get().current_range_auto}"
             )
 
     async def enable_io(self):
@@ -182,9 +182,9 @@ class KeysightEM:
             logger.error("Could not connect to Keysight EM: %s", e)
             raise e
 
-    async def _save_data_to_file(self):
+    async def _save_data(self):
         def save():
-            df = pd.DataFrame({"time": self.time_list, "current": self.current_list})
+            df = pd.DataFrame({"device_id": self.device_id.value, "time": self.time_list, "current": self.current_list})
 
             if not df.empty:
                 # Get the SQLAlchemy engine from the session
@@ -192,7 +192,7 @@ class KeysightEM:
 
                 # Insert directly using pandas to_sql - vectorized operation
                 df.to_sql(
-                    name="em_current_data", con=engine, if_exists="append", index=False
+                    name="electrometer_data", con=engine, if_exists="append", index=False
                 )
 
                 # Commit the transaction
@@ -213,7 +213,7 @@ class KeysightEM:
             time_arr = np.array(time_list, dtype=float) + start_time
             self.time_list = time_arr.tolist()  # type: ignore
             self.current_list = current_list
-            await self._save_data_to_file()
+            await self._save_data()
             await self.turn_off_io()
         except Exception as e:
             logger.error("Error in converting data to float: %s", e)
