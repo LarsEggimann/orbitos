@@ -1,4 +1,5 @@
 import logging
+import json
 
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -24,7 +25,14 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(fastapi_app: FastAPI):
+
+    # save openapi spec to a file
+    if config.ENVIRONMENT == "development":
+        spec = fastapi_app.openapi()
+        with open("openapi.json", "w", encoding="utf-8") as f:
+            json.dump(spec, f, indent=2)
+
     # setup logging
     setup_logging()
 
