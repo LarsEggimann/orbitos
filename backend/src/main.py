@@ -26,7 +26,6 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-
     # save openapi spec to a file
     if config.ENVIRONMENT == "development":
         spec = fastapi_app.openapi()

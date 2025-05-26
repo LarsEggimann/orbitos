@@ -5,6 +5,7 @@ from datetime import datetime
 
 from src.shared.models import TimeFrameInput
 
+
 async def time_frame_input(
     start: Optional[datetime] = None, end: Optional[datetime] = None
 ) -> TimeFrameInput:

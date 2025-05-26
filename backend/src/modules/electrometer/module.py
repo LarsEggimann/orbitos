@@ -42,9 +42,7 @@ def init_module() -> None:
 
         session = session_manager.get_session()
 
-        controller = KeysightEM(
-            device_id=device_id, db_session=session
-        )
+        controller = KeysightEM(device_id=device_id, db_session=session)
         module_state.controllers[device_id] = controller
 
 

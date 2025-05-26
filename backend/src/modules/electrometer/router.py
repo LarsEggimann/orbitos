@@ -5,7 +5,12 @@ from datetime import timezone
 from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.electrometer import module as electrometer_module
-from src.modules.electrometer.models import ElectrometerState, CurrentDataResponse, CurrentData, ElectrometerID
+from src.modules.electrometer.models import (
+    ElectrometerState,
+    CurrentDataResponse,
+    CurrentData,
+    ElectrometerID,
+)
 from src.modules.electrometer.module import ControllerDep
 from src.modules.electrometer.db import SessionDep
 
@@ -16,6 +21,7 @@ router = APIRouter(
     prefix="",
 )
 
+
 def assert_connected(controller: ControllerDep):
     """
     Assert that the electrometer is connected.
@@ -23,7 +29,7 @@ def assert_connected(controller: ControllerDep):
     if controller.state.get().connection_status != ConnectionStatus.CONNECTED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_id} is not connected. Please connect first."
+            detail=f"{controller.device_id} is not connected. Please connect first.",
         )
 
 
@@ -58,17 +64,21 @@ async def get_electrometer_state(controller: ControllerDep):
     """
     return controller.state.get()
 
+
 @router.get("/{device_id}/data")
-async def get_current_data(device_id: ElectrometerID, session: SessionDep, time_frame: TimeFrameInputDep):
+async def get_current_data(
+    device_id: ElectrometerID, session: SessionDep, time_frame: TimeFrameInputDep
+):
     """
     Get the current data from the electrometer for a specified time frame.
     """
-    statement = select(CurrentData.time, CurrentData.current, CurrentData.device_id).where(CurrentData.device_id == device_id.value)
+    statement = select(
+        CurrentData.time, CurrentData.current, CurrentData.device_id
+    ).where(CurrentData.device_id == device_id.value)
 
     log_string = f"Fetching data from {device_id.value}"
 
     if time_frame.start:
-
         log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
 
         if time_frame.start.tzinfo is None:
@@ -76,7 +86,6 @@ async def get_current_data(device_id: ElectrometerID, session: SessionDep, time_
 
         statement = statement.where(CurrentData.time >= time_frame.start.timestamp())
     if time_frame.end:
-
         log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
 
         if time_frame.end.tzinfo is None:
@@ -96,7 +105,7 @@ async def get_current_data(device_id: ElectrometerID, session: SessionDep, time_
     return CurrentDataResponse(
         device_id=device_ids[0] if device_ids else device_id.value,
         current=list(current),
-        time=list(time)
+        time=list(time),
     )
 
 
@@ -107,7 +116,9 @@ def start_continuous_measurement(controller: ControllerDep):
     """
     assert_connected(controller)
     controller.start_continuous_measurement()
-    return BaseResponse(message=f"Continuous measurement started for {controller.device_id.value}")
+    return BaseResponse(
+        message=f"Continuous measurement started for {controller.device_id.value}"
+    )
 
 
 @router.post("/{device_id}/continuous-measurement/stop", response_model=BaseResponse)
@@ -116,24 +127,34 @@ def stop_continuous_measurement(controller: ControllerDep):
     Stop continuous measurement on the electrometer.
     """
     controller.stop_continuous_measurement()
-    return BaseResponse(message=f"Continuous measurement stopped for {controller.device_id.value}")
+    return BaseResponse(
+        message=f"Continuous measurement stopped for {controller.device_id.value}"
+    )
 
 
-@router.post("/{device_id}/trigger-based-measurement/initialize", response_model=BaseResponse)
+@router.post(
+    "/{device_id}/trigger-based-measurement/initialize", response_model=BaseResponse
+)
 def initialize_trigger_based_measurement(controller: ControllerDep):
     """
     Initialize trigger-based measurement on the electrometer.
     """
     assert_connected(controller)
     controller.init_trigger_based_measurement()
-    return BaseResponse(message=f"Trigger-based measurement initialized for {controller.device_id.value}")
+    return BaseResponse(
+        message=f"Trigger-based measurement initialized for {controller.device_id.value}"
+    )
 
 
-@router.post("/{device_id}/trigger-based-measurement/start", response_model=BaseResponse)
+@router.post(
+    "/{device_id}/trigger-based-measurement/start", response_model=BaseResponse
+)
 def start_trigger_based_measurement(controller: ControllerDep):
     """
     Start trigger-based measurement on the electrometer.
     """
     assert_connected(controller)
     controller.do_trigger_based_measurement()
-    return BaseResponse(message=f"Trigger-based measurement started for {controller.device_id.value}")
+    return BaseResponse(
+        message=f"Trigger-based measurement started for {controller.device_id.value}"
+    )

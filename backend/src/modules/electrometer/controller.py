@@ -45,7 +45,7 @@ class KeysightEM:
     def init_settings(self):
         self._write_and_log("*RST")
         self._write_and_log(
-            ":SENS1:FUNC \"CURR\",;:FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;"
+            ':SENS1:FUNC "CURR",;:FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;'
         )
         self.set_trigger()
         self.set_sensor()
@@ -74,14 +74,20 @@ class KeysightEM:
 
     def stop_continuous_measurement(self):
         logger.info("Stopping continuous measurement!")
-        if self.continuous_measurement_thread and self.continuous_measurement_thread.is_alive():
+        if (
+            self.continuous_measurement_thread
+            and self.continuous_measurement_thread.is_alive()
+        ):
             self._stop_continuous_measurement_event.set()
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
 
     def restart_continuous_measurement_if_running(self):
-        if self.continuous_measurement_thread and self.continuous_measurement_thread.is_alive():
+        if (
+            self.continuous_measurement_thread
+            and self.continuous_measurement_thread.is_alive()
+        ):
             logger.info("Restarting continuous measurement thread")
             self.start_continuous_measurement()
 
@@ -172,7 +178,13 @@ class KeysightEM:
             raise e
 
     def _save_data(self):
-        df = pd.DataFrame({"device_id": self.device_id.value, "time": self.time_list, "current": self.current_list})
+        df = pd.DataFrame(
+            {
+                "device_id": self.device_id.value,
+                "time": self.time_list,
+                "current": self.current_list,
+            }
+        )
         if not df.empty:
             engine = self.db_session.get_bind()
             df.to_sql(
