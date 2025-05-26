@@ -56,6 +56,48 @@
         }
       }
     },
+    "/orbitos-api/v1/{device_id}/disconnect": {
+      "post": {
+        "tags": [
+          "electrometer"
+        ],
+        "summary": "Disconnect Electrometer",
+        "description": "Disconnect the electrometer.",
+        "operationId": "electrometer-disconnect_electrometer",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ElectrometerID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/orbitos-api/v1/electrometers/reset": {
       "post": {
         "tags": [
@@ -104,6 +146,80 @@
                 "schema": {
                   "$ref": "#/components/schemas/ElectrometerState"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orbitos-api/v1/{device_id}/data": {
+      "get": {
+        "tags": [
+          "electrometer"
+        ],
+        "summary": "Get Current Data",
+        "description": "Get the current data from the electrometer for a specified time frame.",
+        "operationId": "electrometer-get_current_data",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ElectrometerID"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -328,15 +444,7 @@
         "type": "string",
         "enum": [
           "electrometer_1",
-          "electrometer_2",
-          "electrometer_3",
-          "electrometer_4",
-          "electrometer_5",
-          "electrometer_6",
-          "electrometer_7",
-          "electrometer_8",
-          "electrometer_9",
-          "electrometer_10"
+          "electrometer_2"
         ],
         "title": "ElectrometerID"
       },

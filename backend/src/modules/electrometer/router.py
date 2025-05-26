@@ -46,6 +46,17 @@ def connect_to_electrometer(
         message=f"Connected to {controller.device_id.value} at {ip}, IDN: {resp}"
     )
 
+@router.post("/{device_id}/disconnect", response_model=BaseResponse)
+def disconnect_electrometer(controller: ControllerDep):
+    """
+    Disconnect the electrometer.
+    """
+    assert_connected(controller)
+    controller.disconnect_from_keysight_em()
+    return BaseResponse(
+        message=f"Disconnected from {controller.device_id.value}."
+    )
+
 
 @router.post("/electrometers/reset", response_model=BaseResponse)
 def reset_electrometer():

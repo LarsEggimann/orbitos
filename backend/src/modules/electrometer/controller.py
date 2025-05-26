@@ -176,6 +176,18 @@ class KeysightEM:
         except pyvisa.errors.VisaIOError as e:
             logger.error("Could not connect to Keysight EM: %s", e)
             raise e
+    
+    def disconnect_from_keysight_em(self):
+        if self.state.get().connection_status == ConnectionStatus.CONNECTED:
+            try:
+                logger.info("Disconnecting from Keysight EM %s", self.device_id)
+                self.em.close()
+                self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
+                logger.info("Disconnected from Keysight EM %s", self.device_id)
+            except pyvisa.errors.VisaIOError as e:
+                logger.error("Error while disconnecting: %s", e)
+        else:
+            logger.warning("EM %s is not connected, cannot disconnect.", self.device_id)
 
     def _save_data(self):
         df = pd.DataFrame(
