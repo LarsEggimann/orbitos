@@ -1,8 +1,15 @@
+import logging
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from sqlmodel import select, asc
+from datetime import timezone
+from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.electrometer import module as electrometer_module
-from src.modules.electrometer.models import ElectrometerState
+from src.modules.electrometer.models import ElectrometerState, CurrentDataResponse, CurrentData, ElectrometerID
 from src.modules.electrometer.module import ControllerDep
+from src.modules.electrometer.db import SessionDep
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     tags=["electrometer"],
@@ -50,6 +57,47 @@ async def get_electrometer_state(controller: ControllerDep):
     Get the current state of the electrometer.
     """
     return controller.state.get()
+
+@router.get("/{device_id}/data")
+async def get_current_data(device_id: ElectrometerID, session: SessionDep, time_frame: TimeFrameInputDep):
+    """
+    Get the current data from the electrometer for a specified time frame.
+    """
+    statement = select(CurrentData.time, CurrentData.current, CurrentData.device_id).where(CurrentData.device_id == device_id.value)
+
+    log_string = f"Fetching data from {device_id.value}"
+
+    if time_frame.start:
+
+        log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
+
+        if time_frame.start.tzinfo is None:
+            time_frame.start = time_frame.start.replace(tzinfo=timezone.utc)
+
+        statement = statement.where(CurrentData.time >= time_frame.start.timestamp())
+    if time_frame.end:
+
+        log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
+
+        if time_frame.end.tzinfo is None:
+            time_frame.end = time_frame.end.replace(tzinfo=timezone.utc)
+
+        statement = statement.where(CurrentData.time <= time_frame.end.timestamp())
+
+    logger.info(log_string)
+
+    # sort by timestamp ascending
+    statement = statement.order_by(asc(CurrentData.time))
+
+    session_hr = session.exec(statement).all()
+
+    time, current, device_ids = zip(*session_hr) if session_hr else ([], [], [])
+
+    return CurrentDataResponse(
+        device_id=device_ids[0] if device_ids else device_id.value,
+        current=list(current),
+        time=list(time)
+    )
 
 
 @router.post("/{device_id}/continuous-measurement/start", response_model=BaseResponse)

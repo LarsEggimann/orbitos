@@ -7,8 +7,8 @@ from src.shared.models import BaseState
 
 
 class ElectrometerID(str, Enum):
-    EM_1 = "electrometer_1"
-    EM_2 = "electrometer_2"
+    electrometer_1 = "electrometer_1"
+    electrometer_2 = "electrometer_2"
 
 
 class ElectrometerState(BaseState, table=True):
@@ -40,5 +40,6 @@ class CurrentData(SQLModel, table=True):
 
 
 class CurrentDataResponse(BaseModel):
+    device_id: str
     current: list[float]
     time: list[datetime]

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from enum import Enum
 from sqlmodel import Field, SQLModel
@@ -25,3 +26,8 @@ class BaseState(SQLModel):
     status: Optional[str] = Field(default=None)
     connection_status: ConnectionStatus = Field(default=ConnectionStatus.DISCONNECTED)
     error: Optional[str] = Field(default=None)
+
+
+class TimeFrameInput(BaseModel):
+    start: Optional[datetime] = None
+    end: Optional[datetime] = None
