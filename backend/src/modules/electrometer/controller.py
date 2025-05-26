@@ -91,6 +91,8 @@ class KeysightEM:
             self._wait_for_device_ready()
             cur = self._em_query(":FETC:CURR? (@1);")
             try:
+                # make sure the cur is a float
+                cur = float(cur)
                 self.time_list = [time.time()]
                 self.current_list = [cur]
                 logger.info(f"{self.device_id} - Fetched current: %s", cur)
