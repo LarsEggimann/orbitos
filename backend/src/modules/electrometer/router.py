@@ -160,12 +160,18 @@ def initialize_trigger_based_measurement(controller: ControllerDep):
 @router.post(
     "/{device_id}/trigger-based-measurement/start", response_model=BaseResponse
 )
-def start_trigger_based_measurement(controller: ControllerDep):
+def start_trigger_based_measurement(controller: ControllerDep, background_tasks: BackgroundTasks):
     """
     Start trigger-based measurement on the electrometer.
     """
     assert_connected(controller)
-    controller.do_trigger_based_measurement()
+    if controller.trigger_based_measurement_running:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Trigger-based measurement is already running for {controller.device_id.value}.",
+        )
+    
+    background_tasks.add_task(controller.do_trigger_based_measurement)
     return BaseResponse(
         message=f"Trigger-based measurement started for {controller.device_id.value}"
     )

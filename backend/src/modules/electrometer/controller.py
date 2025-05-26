@@ -39,6 +39,8 @@ class KeysightEM:
         self.continuous_measurement_thread: threading.Thread | None = None
         self._stop_continuous_measurement_event = threading.Event()
 
+        self.trigger_based_measurement_running = False
+
         self.time_list: list[str] = []
         self.current_list: list[str] = []
 
@@ -114,21 +116,30 @@ class KeysightEM:
         self.set_trigger()
 
     def do_trigger_based_measurement(self):
-        self.enable_io()
-        self._write_and_log(":INIT:ALL (@1);")
-        wait_time = int(
-            float(self.state.get().trigger_count)
-            * float(self.state.get().trigger_time_interval)
-        )
-        logger.info("Waiting for %s seconds to retrieve data", wait_time)
-        start = time.time()
-        while time.time() - start < wait_time:
-            time.sleep(0.2)
-            print(
-                f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time",
-                end="\r",
+        if self.trigger_based_measurement_running:
+            logger.warning(
+                "Trigger based measurement is already running!"
             )
-        self._fetch_trigger_based_data(start)
+            
+        else:
+            self.trigger_based_measurement_running = True
+            logger.info("Starting trigger based measurement")
+            self.enable_io()
+            self._write_and_log(":INIT:ALL (@1);")
+            wait_time = int(
+                float(self.state.get().trigger_count)
+                * float(self.state.get().trigger_time_interval)
+            )
+            logger.info("Waiting for %s seconds to retrieve data", wait_time)
+            start = time.time()
+            while time.time() - start < wait_time:
+                time.sleep(0.2)
+                print(
+                    f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time",
+                    end="\r",
+                )
+            self._fetch_trigger_based_data(start)
+            self.trigger_based_measurement_running = False
 
     def set_trigger(self):
         self._write_and_log(
@@ -198,6 +209,11 @@ class KeysightEM:
             }
         )
         if not df.empty:
+            # make sure all columns are of the correct type
+            df["device_id"] = df["device_id"].astype(str)
+            df["time"] = df["time"].astype(float)
+            df["current"] = df["current"].astype(float)
+
             engine = self.db_session.get_bind()
             df.to_sql(
                 name="electrometer_data", con=engine, if_exists="append", index=False
