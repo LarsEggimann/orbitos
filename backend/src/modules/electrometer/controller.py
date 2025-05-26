@@ -20,19 +20,24 @@ class KeysightEM:
     def __init__(
         self,
         device_id: ElectrometerID,
-        state_manager: DeviceStateManager[ElectrometerState],
         db_session: Session,
     ):
-        self.device_id = device_id
-
         logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
+
+        self.device_id = device_id
+        self.db_session = db_session
+
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
 
-        self.state = state_manager
+        self.state: DeviceStateManager[ElectrometerState] = DeviceStateManager(
+            model=ElectrometerState,
+            device_id=self.device_id,
+            session=self.db_session,
+        )
+        
         self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
 
-        self.db_session = db_session
 
         self.time_list: list[str] = []
         self.current_list: list[str] = []

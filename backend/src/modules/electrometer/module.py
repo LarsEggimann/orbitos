@@ -1,15 +1,13 @@
 from typing import Annotated
 from fastapi import Depends
-from src.shared.state_manager import DeviceStateManager
 from src.shared.persistent_session_manager import PersistentSessionManager
 from src.modules.electrometer.db import engine, init_db
 from src.modules.electrometer.controller import KeysightEM
-from src.modules.electrometer.models import ElectrometerState, ElectrometerID
+from src.modules.electrometer.models import ElectrometerID
 
 
 class ModuleState:
     controllers: dict[ElectrometerID, KeysightEM] = {}
-    state_managers: dict[ElectrometerID, DeviceStateManager[ElectrometerState]] = {}
     session_managers: dict[ElectrometerID, PersistentSessionManager] = {}
 
 
@@ -34,7 +32,7 @@ def init_module() -> None:
     """
     init_db()
 
-    device_ids = [ElectrometerID.EM_1, ElectrometerID.EM_2]
+    device_ids = ElectrometerID.__members__.values()
 
     for device_id in device_ids:
         session_manager = PersistentSessionManager(engine)
@@ -44,16 +42,9 @@ def init_module() -> None:
 
         session = session_manager.get_session()
 
-        state_manager = DeviceStateManager(
-            model=ElectrometerState,
-            device_id=device_id,
-            session=session,
-        )
-
         controller = KeysightEM(
-            device_id=device_id, state_manager=state_manager, db_session=session
+            device_id=device_id, db_session=session
         )
-        module_state.state_managers[device_id] = state_manager
         module_state.controllers[device_id] = controller
 
 
