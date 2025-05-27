@@ -17,6 +17,7 @@ from src.modules.electrometer.models import (
     CurrentDataResponse,
     CurrentData,
     ElectrometerID,
+    ElectrometerStateSet,
 )
 from src.modules.electrometer.module import ControllerDep
 from src.modules.electrometer.db import SessionDep
@@ -80,6 +81,18 @@ async def get_electrometer_state(controller: ControllerDep):
     """
     Get the current state of the electrometer.
     """
+    return controller.state.get()
+
+
+@router.post("/{device_id}/state", response_model=ElectrometerState)
+async def set_electrometer_state(
+    controller: ControllerDep, state: ElectrometerStateSet
+):
+    """
+    Set the state of the electrometer.
+    """
+    assert_connected(controller)
+    controller.state.update(**state.model_dump(exclude_unset=True))
     return controller.state.get()
 
 

@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Index
@@ -51,3 +52,20 @@ class CurrentDataResponse(BaseModel):
     device_id: str
     current: list[float]
     time: list[datetime]
+
+
+class ElectrometerStateSet(SQLModel):
+    trigger_count: Optional[int] = None
+    trigger_time_interval: Optional[float] = None
+    trigger_bypass: Optional[str] = None
+    trigger_delay: Optional[float] = None
+
+    function: Optional[str] = None
+
+    aperture_integration_time: Optional[float] = None
+    aperture_auto: Optional[str] = None
+
+    current_range: Optional[float] = None
+    current_range_auto: Optional[str] = None
+    current_range_auto_upper_limit: Optional[float] = None
+    current_range_auto_lower_limit: Optional[float] = None
