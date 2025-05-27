@@ -29,6 +29,7 @@ ControllerDep = Annotated[KeysightEM, Depends(get_controller)]
 
 ws_manager = WebSocketManager[ElectrometerState, CurrentDataResponse]()
 
+
 def init_module() -> None:
     """
     Initialize the module.
@@ -45,7 +46,9 @@ def init_module() -> None:
 
         session = session_manager.get_session()
 
-        controller = KeysightEM(device_id=device_id, db_session=session, ws_manager=ws_manager)
+        controller = KeysightEM(
+            device_id=device_id, db_session=session, ws_manager=ws_manager
+        )
         module_state.controllers[device_id] = controller
 
 

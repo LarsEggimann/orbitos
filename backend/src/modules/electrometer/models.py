@@ -5,6 +5,7 @@ from sqlmodel import Field, SQLModel, Index
 
 from src.shared.models import BaseState
 
+
 class ElectrometerStatus(str, Enum):
     unknown = "unknown"
     idle = "idle"

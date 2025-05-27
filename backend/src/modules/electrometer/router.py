@@ -1,5 +1,12 @@
 import logging
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    HTTPException,
+    status,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from sqlmodel import select, asc
 from datetime import timezone
 from src.shared.deps import TimeFrameInputDep
@@ -47,6 +54,7 @@ def connect_to_electrometer(
         message=f"Connected to {controller.device_id.value} at {ip}, IDN: {resp}"
     )
 
+
 @router.post("/{device_id}/disconnect", response_model=BaseResponse)
 def disconnect_electrometer(controller: ControllerDep):
     """
@@ -54,9 +62,7 @@ def disconnect_electrometer(controller: ControllerDep):
     """
     assert_connected(controller)
     controller.disconnect_from_keysight_em()
-    return BaseResponse(
-        message=f"Disconnected from {controller.device_id.value}."
-    )
+    return BaseResponse(message=f"Disconnected from {controller.device_id.value}.")
 
 
 @router.post("/electrometers/reset", response_model=BaseResponse)
@@ -161,7 +167,9 @@ def initialize_trigger_based_measurement(controller: ControllerDep):
 @router.post(
     "/{device_id}/trigger-based-measurement/start", response_model=BaseResponse
 )
-def start_trigger_based_measurement(controller: ControllerDep, background_tasks: BackgroundTasks):
+def start_trigger_based_measurement(
+    controller: ControllerDep, background_tasks: BackgroundTasks
+):
     """
     Start trigger-based measurement on the electrometer.
     """
@@ -171,7 +179,7 @@ def start_trigger_based_measurement(controller: ControllerDep, background_tasks:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Trigger-based measurement is already running for {controller.device_id.value}.",
         )
-    
+
     background_tasks.add_task(controller.do_trigger_based_measurement)
     return BaseResponse(
         message=f"Trigger-based measurement started for {controller.device_id.value}"

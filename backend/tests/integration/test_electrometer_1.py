@@ -7,6 +7,7 @@ logger = logging.getLogger()
 test_device_id = "electrometer_1"
 test_electrometer_ip = "192.168.113.72"
 
+
 def test_connect_to_electrometer(client_helper: ClientHelper):
     # First disconnect to test fresh connection
     try:
@@ -15,15 +16,15 @@ def test_connect_to_electrometer(client_helper: ClientHelper):
             method="post",
             path_params={"device_id": test_device_id},
         )
-    except:
+    except Exception:
         pass  # Ignore if already disconnected
-    
+
     response = client_helper.request(
         route_name="connect_to_electrometer",
         method="post",
         path_params={"device_id": test_device_id, "ip": test_electrometer_ip},
     )
-    
+
     assert response.status_code == 200, f"Error: {response.text}"
     data = response.json()
     assert "Connected to" in data["message"]
@@ -63,13 +64,12 @@ def test_start_continuous_measurement(client_helper: ClientHelper):
     assert response.status_code == 200, f"Error: {response.text}"
     data = response.json()
     assert "message" in data
-    
+
     # Let it run briefly to collect some data
     time.sleep(5)
 
 
 def test_stop_continuous_measurement(client_helper: ClientHelper):
-    
     response = client_helper.request(
         route_name="stop_continuous_measurement",
         method="post",
@@ -101,7 +101,7 @@ def test_start_trigger_based_measurement(client_helper: ClientHelper):
         path_params={"device_id": test_device_id},
     )
     time.sleep(1)
-    
+
     response = client_helper.request(
         route_name="start_trigger_based_measurement",
         method="post",
@@ -111,7 +111,7 @@ def test_start_trigger_based_measurement(client_helper: ClientHelper):
     assert response.status_code == 200, f"Error: {response.text}"
     data = response.json()
     assert "message" in data
-    
+
     # Wait for measurement to complete
     time.sleep(3)
 
@@ -129,7 +129,7 @@ def test_get_current_data_no_params(client_helper: ClientHelper):
         method="post",
         path_params={"device_id": test_device_id},
     )
-    
+
     response = client_helper.request(
         route_name="get_current_data",
         method="get",
@@ -138,7 +138,7 @@ def test_get_current_data_no_params(client_helper: ClientHelper):
 
     assert response.status_code == 200, f"Error: {response.text}"
     data = response.json()
-    
+
     assert "device_id" in data
     assert data["device_id"] == test_device_id
     assert "current" in data
@@ -152,15 +152,12 @@ def test_get_current_data_with_time_frame(client_helper: ClientHelper):
         route_name="get_current_data",
         method="get",
         path_params={"device_id": test_device_id},
-        query_params={
-            "start": "2024-01-01T00:00:00Z",
-            "end": "2025-12-31T23:59:59Z"
-        }
+        query_params={"start": "2024-01-01T00:00:00Z", "end": "2025-12-31T23:59:59Z"},
     )
 
     assert response.status_code == 200, f"Error: {response.text}"
     data = response.json()
-    
+
     assert "device_id" in data
     assert data["device_id"] == test_device_id
     assert "current" in data
@@ -177,7 +174,7 @@ def test_disconnect_electrometer(client_helper: ClientHelper):
         path_params={"device_id": test_device_id, "ip": test_electrometer_ip},
     )
     time.sleep(1)
-    
+
     response = client_helper.request(
         route_name="disconnect_electrometer",
         method="post",
@@ -230,9 +227,9 @@ def test_disconnect_when_not_connected_should_fail(client_helper: ClientHelper):
             method="post",
             path_params={"device_id": test_device_id},
         )
-    except:
+    except Exception:
         pass
-    
+
     # Try to disconnect again - should fail
     response = client_helper.request(
         route_name="disconnect_electrometer",

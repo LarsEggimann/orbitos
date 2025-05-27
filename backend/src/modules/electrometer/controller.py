@@ -9,7 +9,13 @@ from pyvisa.resources import TCPIPSocket
 
 from src.shared.websocket_manager import WebSocketManager
 from src.shared.state_manager import DeviceStateManager
-from src.modules.electrometer.models import ElectrometerState, ElectrometerID, CurrentData, CurrentDataResponse, ElectrometerStatus
+from src.modules.electrometer.models import (
+    ElectrometerState,
+    ElectrometerID,
+    CurrentData,
+    CurrentDataResponse,
+    ElectrometerStatus,
+)
 from src.shared.models import ConnectionStatus
 
 logger = logging.getLogger()
@@ -35,9 +41,12 @@ class KeysightEM:
             model=ElectrometerState,
             device_id=self.device_id,
             session=self.db_session,
-            on_state_update=self.ws_manager.broadcast_state_sync
+            on_state_update=self.ws_manager.broadcast_state_sync,
         )
-        self.state.update(connection_status=ConnectionStatus.DISCONNECTED, status=ElectrometerStatus.unknown)
+        self.state.update(
+            connection_status=ConnectionStatus.DISCONNECTED,
+            status=ElectrometerStatus.unknown,
+        )
 
         self.continuous_measurement_thread: threading.Thread | None = None
         self._stop_continuous_measurement_event = threading.Event()
@@ -61,7 +70,10 @@ class KeysightEM:
             error_request = self._em_query("SYST:ERR?")
             if error_request != '+0,"No error"':
                 logger.error("Error during health check: %s", error_request)
-                self.state.update(connection_status=ConnectionStatus.HEALTH_CHECK_FAILED, status=ElectrometerStatus.unknown)
+                self.state.update(
+                    connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
+                    status=ElectrometerStatus.unknown,
+                )
                 self._em_write("*CLS")
             return True
         except Exception as e:
@@ -121,10 +133,8 @@ class KeysightEM:
 
     def do_trigger_based_measurement(self):
         if self.trigger_based_measurement_running:
-            logger.warning(
-                "Trigger based measurement is already running!"
-            )
-            
+            logger.warning("Trigger based measurement is already running!")
+
         else:
             self.trigger_based_measurement_running = True
             self.state.update(status=ElectrometerStatus.performing_measurement)
@@ -183,7 +193,10 @@ class KeysightEM:
                 logger.info("Connected to Keysight EM")
 
                 # update state to connected
-                self.state.update(connection_status=ConnectionStatus.CONNECTED, status=ElectrometerStatus.idle)
+                self.state.update(
+                    connection_status=ConnectionStatus.CONNECTED,
+                    status=ElectrometerStatus.idle,
+                )
 
             # testing connection
             logger.info("Testing connection to EM %s at %s", self.device_id, ip)
@@ -193,13 +206,16 @@ class KeysightEM:
         except pyvisa.errors.VisaIOError as e:
             logger.error("Could not connect to Keysight EM: %s", e)
             raise e
-    
+
     def disconnect_from_keysight_em(self):
         if self.state.get().connection_status == ConnectionStatus.CONNECTED:
             try:
                 logger.info("Disconnecting from Keysight EM %s", self.device_id)
                 self.em.close()
-                self.state.update(connection_status=ConnectionStatus.DISCONNECTED, status=ElectrometerStatus.unknown)
+                self.state.update(
+                    connection_status=ConnectionStatus.DISCONNECTED,
+                    status=ElectrometerStatus.unknown,
+                )
                 logger.info("Disconnected from Keysight EM %s", self.device_id)
             except pyvisa.errors.VisaIOError as e:
                 logger.error("Error while disconnecting: %s", e)
@@ -227,11 +243,12 @@ class KeysightEM:
                 current=self.current_list,
                 time=self.time_list,
             )
-            self.ws_manager.broadcast_data_sync(self.device_id.value, current_data_response)
+            self.ws_manager.broadcast_data_sync(
+                self.device_id.value, current_data_response
+            )
 
         self.time_list.clear()
         self.current_list.clear()
-
 
     def _fetch_trigger_based_data(self, start_time: float = 0):
         self._wait_for_device_ready()

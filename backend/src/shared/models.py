@@ -4,16 +4,19 @@ from enum import Enum
 from sqlmodel import Field, SQLModel
 from pydantic import BaseModel
 
+
 class WebSocketMessageType(str, Enum):
     STATE = "state"
     DATA = "data"
     ERROR = "error"
     INFO = "info"
 
+
 class BaseWebSocketMessage(BaseModel):
     type: WebSocketMessageType
     device_id: str
     content: Optional[Any] = None
+
 
 class BaseResponse(BaseModel):
     message: str

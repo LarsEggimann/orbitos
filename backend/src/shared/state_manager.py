@@ -6,12 +6,18 @@ T = TypeVar("T", bound=SQLModel)
 
 
 class DeviceStateManager(Generic[T]):
-    def __init__(self, model: Type[T], device_id: str, session: Session, on_state_update: Optional[Callable[[str, T], Any]] = None):
+    def __init__(
+        self,
+        model: Type[T],
+        device_id: str,
+        session: Session,
+        on_state_update: Optional[Callable[[str, T], Any]] = None,
+    ):
         self.model = model
         self.device_id = device_id
         self.session = session
         self._state: T | None = None
-        self.on_state_update_func = on_state_update 
+        self.on_state_update_func = on_state_update
 
     def load(self) -> T:
         # Lazy-load state from DB

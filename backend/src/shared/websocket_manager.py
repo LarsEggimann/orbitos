@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseState)
 G = TypeVar("G", bound=BaseModel)
 
+
 class WebSocketManager(Generic[T, G]):
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {}
@@ -36,27 +37,31 @@ class WebSocketManager(Generic[T, G]):
         message = BaseWebSocketMessage(
             type=WebSocketMessageType.STATE,
             device_id=device_id,
-            content=state.model_dump()
+            content=state.model_dump(),
         )
         async with self.lock:
             for ws in self.active_connections.get(device_id, []):
                 try:
                     await ws.send_json(jsonable_encoder(message))
                 except Exception as e:
-                    logger.exception("Failed to send state to %s websocket, error %s", device_id, e)
+                    logger.exception(
+                        "Failed to send state to %s websocket, error %s", device_id, e
+                    )
 
     async def broadcast_data(self, device_id: str, data: G):
         message = BaseWebSocketMessage(
             type=WebSocketMessageType.DATA,
             device_id=device_id,
-            content=data.model_dump()
+            content=data.model_dump(),
         )
         async with self.lock:
             for ws in self.active_connections.get(device_id, []):
                 try:
                     await ws.send_json(jsonable_encoder(message))
                 except Exception as e:
-                    logger.exception("Failed to send data to %s websocket, error %s", device_id, e)
+                    logger.exception(
+                        "Failed to send data to %s websocket, error %s", device_id, e
+                    )
 
     def broadcast_state_sync(self, device_id: str, state: T):
         run_async_in_background(self.broadcast_state(device_id, state))
