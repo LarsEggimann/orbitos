@@ -435,6 +435,7 @@
         "type": "string",
         "enum": [
           "connected",
+          "connecting",
           "disconnected",
           "health check failed"
         ],
@@ -455,15 +456,8 @@
             "title": "Device Id"
           },
           "status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status"
+            "$ref": "#/components/schemas/ElectrometerStatus",
+            "default": "unknown"
           },
           "connection_status": {
             "$ref": "#/components/schemas/ConnectionStatus",
@@ -541,6 +535,15 @@
           "device_id"
         ],
         "title": "ElectrometerState"
+      },
+      "ElectrometerStatus": {
+        "type": "string",
+        "enum": [
+          "unknown",
+          "idle",
+          "performing_measurement"
+        ],
+        "title": "ElectrometerStatus"
       },
       "HTTPValidationError": {
         "properties": {

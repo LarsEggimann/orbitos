@@ -5,6 +5,11 @@ from sqlmodel import Field, SQLModel, Index
 
 from src.shared.models import BaseState
 
+class ElectrometerStatus(str, Enum):
+    unknown = "unknown"
+    idle = "idle"
+    performing_measurement = "performing_measurement"
+
 
 class ElectrometerID(str, Enum):
     electrometer_1 = "electrometer_1"
@@ -13,6 +18,8 @@ class ElectrometerID(str, Enum):
 
 class ElectrometerState(BaseState, table=True):
     __tablename__ = "electrometer_state"
+
+    status: ElectrometerStatus = Field(default=ElectrometerStatus.unknown)
 
     trigger_count: int = Field(default=100)
     trigger_time_interval: float = Field(default=0.1)

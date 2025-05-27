@@ -1,15 +1,15 @@
 import logging
-import numpy as np
-import pandas as pd
 import time
-from sqlmodel import Session
 import threading
 
 import pyvisa
+import numpy as np
+from sqlmodel import Session
 from pyvisa.resources import TCPIPSocket
 
+from src.shared.websocket_manager import WebSocketManager
 from src.shared.state_manager import DeviceStateManager
-from src.modules.electrometer.models import ElectrometerState, ElectrometerID
+from src.modules.electrometer.models import ElectrometerState, ElectrometerID, CurrentData, CurrentDataResponse, ElectrometerStatus
 from src.shared.models import ConnectionStatus
 
 logger = logging.getLogger()
@@ -20,11 +20,13 @@ class KeysightEM:
         self,
         device_id: ElectrometerID,
         db_session: Session,
+        ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse],
     ):
         logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
 
         self.device_id = device_id
         self.db_session = db_session
+        self.ws_manager = ws_manager
 
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
@@ -33,8 +35,9 @@ class KeysightEM:
             model=ElectrometerState,
             device_id=self.device_id,
             session=self.db_session,
+            on_state_update=self.ws_manager.broadcast_state_sync
         )
-        self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
+        self.state.update(connection_status=ConnectionStatus.DISCONNECTED, status=ElectrometerStatus.unknown)
 
         self.continuous_measurement_thread: threading.Thread | None = None
         self._stop_continuous_measurement_event = threading.Event()
@@ -53,11 +56,12 @@ class KeysightEM:
         self.set_sensor()
         self.enable_io()
 
-    def _health_check(self) -> bool:
+    def health_check(self) -> bool:
         try:
             error_request = self._em_query("SYST:ERR?")
             if error_request != '+0,"No error"':
                 logger.error("Error during health check: %s", error_request)
+                self.state.update(connection_status=ConnectionStatus.HEALTH_CHECK_FAILED, status=ElectrometerStatus.unknown)
                 self._em_write("*CLS")
             return True
         except Exception as e:
@@ -123,6 +127,7 @@ class KeysightEM:
             
         else:
             self.trigger_based_measurement_running = True
+            self.state.update(status=ElectrometerStatus.performing_measurement)
             logger.info("Starting trigger based measurement")
             self.enable_io()
             self._write_and_log(":INIT:ALL (@1);")
@@ -140,6 +145,7 @@ class KeysightEM:
                 )
             self._fetch_trigger_based_data(start)
             self.trigger_based_measurement_running = False
+            self.state.update(status=ElectrometerStatus.idle)
 
     def set_trigger(self):
         self._write_and_log(
@@ -177,7 +183,7 @@ class KeysightEM:
                 logger.info("Connected to Keysight EM")
 
                 # update state to connected
-                self.state.update(connection_status=ConnectionStatus.CONNECTED)
+                self.state.update(connection_status=ConnectionStatus.CONNECTED, status=ElectrometerStatus.idle)
 
             # testing connection
             logger.info("Testing connection to EM %s at %s", self.device_id, ip)
@@ -193,7 +199,7 @@ class KeysightEM:
             try:
                 logger.info("Disconnecting from Keysight EM %s", self.device_id)
                 self.em.close()
-                self.state.update(connection_status=ConnectionStatus.DISCONNECTED)
+                self.state.update(connection_status=ConnectionStatus.DISCONNECTED, status=ElectrometerStatus.unknown)
                 logger.info("Disconnected from Keysight EM %s", self.device_id)
             except pyvisa.errors.VisaIOError as e:
                 logger.error("Error while disconnecting: %s", e)
@@ -201,26 +207,31 @@ class KeysightEM:
             logger.warning("EM %s is not connected, cannot disconnect.", self.device_id)
 
     def _save_data(self):
-        df = pd.DataFrame(
-            {
-                "device_id": self.device_id.value,
-                "time": self.time_list,
-                "current": self.current_list,
-            }
-        )
-        if not df.empty:
-            # make sure all columns are of the correct type
-            df["device_id"] = df["device_id"].astype(str)
-            df["time"] = df["time"].astype(float)
-            df["current"] = df["current"].astype(float)
+        data: list[CurrentData] = []
 
-            engine = self.db_session.get_bind()
-            df.to_sql(
-                name="electrometer_data", con=engine, if_exists="append", index=False
+        for timestamp, current in zip(self.time_list, self.current_list):
+            data.append(
+                CurrentData(
+                    device_id=self.device_id,
+                    time=float(timestamp),
+                    current=float(current),
+                )
             )
+
+        # save to db
+        if len(data) > 0:
+            self.db_session.add_all(data)
             self.db_session.commit()
+            current_data_response = CurrentDataResponse(
+                device_id=self.device_id,
+                current=self.current_list,
+                time=self.time_list,
+            )
+            self.ws_manager.broadcast_data_sync(self.device_id.value, current_data_response)
+
         self.time_list.clear()
         self.current_list.clear()
+
 
     def _fetch_trigger_based_data(self, start_time: float = 0):
         self._wait_for_device_ready()

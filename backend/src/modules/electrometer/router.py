@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, WebSocket, WebSocketDisconnect
 from sqlmodel import select, asc
 from datetime import timezone
 from src.shared.deps import TimeFrameInputDep
@@ -13,6 +13,7 @@ from src.modules.electrometer.models import (
 )
 from src.modules.electrometer.module import ControllerDep
 from src.modules.electrometer.db import SessionDep
+from src.modules.electrometer.module import ws_manager
 
 logger = logging.getLogger(__name__)
 
@@ -175,3 +176,14 @@ def start_trigger_based_measurement(controller: ControllerDep, background_tasks:
     return BaseResponse(
         message=f"Trigger-based measurement started for {controller.device_id.value}"
     )
+
+
+@router.websocket("/ws/electrometer/{device_id}")
+async def electrometer_ws(websocket: WebSocket, device_id: str):
+    await ws_manager.connect(device_id, websocket)
+    try:
+        while True:
+            test = await websocket.receive_text()
+            logger.info(f"Received message from {device_id}: {test}")
+    except WebSocketDisconnect:
+        await ws_manager.disconnect(device_id, websocket)

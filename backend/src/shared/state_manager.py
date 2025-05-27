@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type
+from typing import TypeVar, Generic, Type, Callable, Optional, Any
 from sqlmodel import Session, select
 from sqlmodel import SQLModel
 
@@ -6,11 +6,12 @@ T = TypeVar("T", bound=SQLModel)
 
 
 class DeviceStateManager(Generic[T]):
-    def __init__(self, model: Type[T], device_id: str, session: Session):
+    def __init__(self, model: Type[T], device_id: str, session: Session, on_state_update: Optional[Callable[[str, T], Any]] = None):
         self.model = model
         self.device_id = device_id
         self.session = session
         self._state: T | None = None
+        self.on_state_update_func = on_state_update 
 
     def load(self) -> T:
         # Lazy-load state from DB
@@ -36,12 +37,14 @@ class DeviceStateManager(Generic[T]):
         if self._state:
             self.session.add(self._state)
             self.session.commit()
+            self.session.refresh(self._state)
 
     def update(self, **kwargs) -> T:
         state = self.load()
         for key, value in kwargs.items():
             setattr(state, key, value)
         self.save()
+        self._on_state_update(state)
         return state
 
     def get(self) -> T:
@@ -50,4 +53,9 @@ class DeviceStateManager(Generic[T]):
     def reset(self) -> T:
         self._state = self.model(device_id=self.device_id)  # type: ignore
         self.save()
+        self._on_state_update(self._state)
         return self._state
+
+    def _on_state_update(self, state: T) -> None:
+        if self.on_state_update_func:
+            self.on_state_update_func(self.device_id, state)

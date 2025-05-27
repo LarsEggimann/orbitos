@@ -1,9 +1,19 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 from enum import Enum
 from sqlmodel import Field, SQLModel
 from pydantic import BaseModel
 
+class WebSocketMessageType(str, Enum):
+    STATE = "state"
+    DATA = "data"
+    ERROR = "error"
+    INFO = "info"
+
+class BaseWebSocketMessage(BaseModel):
+    type: WebSocketMessageType
+    device_id: str
+    content: Optional[Any] = None
 
 class BaseResponse(BaseModel):
     message: str
@@ -12,6 +22,7 @@ class BaseResponse(BaseModel):
 
 class ConnectionStatus(str, Enum):
     CONNECTED = "connected"
+    CONNECTING = "connecting"
     DISCONNECTED = "disconnected"
     HEALTH_CHECK_FAILED = "health check failed"
 

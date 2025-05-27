@@ -4,6 +4,8 @@ from src.shared.persistent_session_manager import PersistentSessionManager
 from src.modules.electrometer.db import engine, init_db
 from src.modules.electrometer.controller import KeysightEM
 from src.modules.electrometer.models import ElectrometerID
+from src.shared.websocket_manager import WebSocketManager
+from src.modules.electrometer.models import ElectrometerState, CurrentDataResponse
 
 
 class ModuleState:
@@ -25,6 +27,7 @@ def get_controller(device_id: ElectrometerID) -> KeysightEM:
 
 ControllerDep = Annotated[KeysightEM, Depends(get_controller)]
 
+ws_manager = WebSocketManager[ElectrometerState, CurrentDataResponse]()
 
 def init_module() -> None:
     """
@@ -42,7 +45,7 @@ def init_module() -> None:
 
         session = session_manager.get_session()
 
-        controller = KeysightEM(device_id=device_id, db_session=session)
+        controller = KeysightEM(device_id=device_id, db_session=session, ws_manager=ws_manager)
         module_state.controllers[device_id] = controller
 
 
