@@ -8,13 +8,16 @@ from sqlmodel import Session
 from pyvisa.resources import TCPIPSocket
 
 from src.shared.websocket_manager import WebSocketManager
-from src.shared.state_manager import DeviceStateManager
+from src.shared.settings_manager import SettingsManager
+from src.shared.state_manager import StateManager
 from src.modules.electrometer.models import (
+    ElectrometerSettings,
     ElectrometerState,
     ElectrometerID,
     CurrentData,
     CurrentDataResponse,
     ElectrometerStatus,
+    ElectrometerSettingsSet
 )
 from src.shared.models import ConnectionStatus
 
@@ -26,7 +29,7 @@ class KeysightEM:
         self,
         device_id: ElectrometerID,
         db_session: Session,
-        ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse],
+        ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings],
     ):
         logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
 
@@ -37,15 +40,17 @@ class KeysightEM:
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
 
-        self.state: DeviceStateManager[ElectrometerState] = DeviceStateManager(
-            model=ElectrometerState,
+        self.settings: SettingsManager[ElectrometerSettings] = SettingsManager(
+            model=ElectrometerSettings,
             device_id=self.device_id,
             session=self.db_session,
-            on_state_update=self.ws_manager.broadcast_state_sync,
+            on_settings_update=self.ws_manager.broadcast_setting_sync,
         )
-        self.state.update(
-            connection_status=ConnectionStatus.DISCONNECTED,
-            status=ElectrometerStatus.unknown,
+
+        self.state: StateManager[ElectrometerState] = StateManager(
+            model=ElectrometerState,
+            device_id=self.device_id,
+            on_state_update=self.ws_manager.broadcast_state_sync,
         )
 
         self.continuous_measurement_thread: threading.Thread | None = None
@@ -72,7 +77,7 @@ class KeysightEM:
                 logger.error("Error during health check: %s", error_request)
                 self.state.update(
                     connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
-                    status=ElectrometerStatus.unknown,
+                    status=ElectrometerStatus.UNKNOWN,
                 )
                 self._em_write("*CLS")
             return True
@@ -110,6 +115,7 @@ class KeysightEM:
             self.start_continuous_measurement()
 
     def measure(self):
+        self.state.update(status=ElectrometerStatus.STARTING_CONTINUOUS_MEASUREMENT)
         while not self._stop_continuous_measurement_event.is_set():
             self._em_write(":INIT:ACQ (@1);")
             self._wait_for_device_ready()
@@ -119,11 +125,13 @@ class KeysightEM:
                 cur = float(cur)
                 self.time_list = [time.time()]
                 self.current_list = [cur]
+                self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING)
                 logger.info(f"{self.device_id} - Fetched current: %s", cur)
                 self._save_data()
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)
             time.sleep(0.01)  # Add a sleep to avoid tight loop
+        self.state.update(status=ElectrometerStatus.IDLE)
 
     def init_trigger_based_measurement(self):
         logger.info("Initializing trigger based measurement")
@@ -137,13 +145,13 @@ class KeysightEM:
 
         else:
             self.trigger_based_measurement_running = True
-            self.state.update(status=ElectrometerStatus.performing_measurement)
+            self.state.update(status=ElectrometerStatus.PERFORMING_TRIGGER_BASED_MEASUREMENT)
             logger.info("Starting trigger based measurement")
             self.enable_io()
             self._write_and_log(":INIT:ALL (@1);")
             wait_time = int(
-                float(self.state.get().trigger_count)
-                * float(self.state.get().trigger_time_interval)
+                float(self.settings.get().trigger_count)
+                * float(self.settings.get().trigger_time_interval)
             )
             logger.info("Waiting for %s seconds to retrieve data", wait_time)
             start = time.time()
@@ -155,22 +163,41 @@ class KeysightEM:
                 )
             self._fetch_trigger_based_data(start)
             self.trigger_based_measurement_running = False
-            self.state.update(status=ElectrometerStatus.idle)
+            self.state.update(status=ElectrometerStatus.IDLE)
+
+    def update_settings(self, set_settings: ElectrometerSettingsSet):
+        current_settings = self.settings.get()
+
+        logger.info("Updating settings for Keysight EM %s", self.device_id)
+
+        self.settings.update(**set_settings.model_dump(exclude_unset=True))
+
+        self.set_sensor()
+        self.set_trigger()
+
+        if self.state.get().error is not None:
+            self.settings.set_settings(current_settings)
+    
+    def reset_error(self):
+        logger.info("Resetting error state for Keysight EM %s", self.device_id)
+        self.state.update(error=None)
+        self._write_and_log("*CLS")
+        self.init_settings()
 
     def set_trigger(self):
         self._write_and_log(
-            f":TRIG1:ALL:SOUR TIM;COUN {self.state.get().trigger_count};TIM {self.state.get().trigger_time_interval};BYP {self.state.get().trigger_bypass};DEL {self.state.get().trigger_delay}"
+            f":TRIG1:ALL:SOUR TIM;COUN {self.settings.get().trigger_count};TIM {self.settings.get().trigger_time_interval};BYP {self.settings.get().trigger_bypass};DEL {self.settings.get().trigger_delay}"
         )
 
     def set_sensor(self):
-        aperture_command = f":SENS1:CHAR:APER {self.state.get().aperture_integration_time};APER:AUTO {self.state.get().aperture_auto};AUTO:MODE LONG;"
-        if self.state.get().current_range_auto == "ON":
+        aperture_command = f":SENS1:CHAR:APER {self.settings.get().aperture_integration_time};APER:AUTO {self.settings.get().aperture_auto};AUTO:MODE LONG;"
+        if self.settings.get().current_range_auto == "ON":
             self._write_and_log(
-                f"{aperture_command}:SENS1:CURR:RANG:AUTO {self.state.get().current_range_auto};AUTO:ULIM {self.state.get().current_range_auto_upper_limit};LLIM {self.state.get().current_range_auto_lower_limit};"
+                f"{aperture_command}:SENS1:CURR:RANG:AUTO {self.settings.get().current_range_auto};AUTO:ULIM {self.settings.get().current_range_auto_upper_limit};LLIM {self.settings.get().current_range_auto_lower_limit};"
             )
         else:
             self._write_and_log(
-                f"{aperture_command}:SENS1:CURR:RANG {self.state.get().current_range};RANG:AUTO {self.state.get().current_range_auto}"
+                f"{aperture_command}:SENS1:CURR:RANG {self.settings.get().current_range};RANG:AUTO {self.settings.get().current_range_auto}"
             )
 
     def enable_io(self):
@@ -195,7 +222,7 @@ class KeysightEM:
                 # update state to connected
                 self.state.update(
                     connection_status=ConnectionStatus.CONNECTED,
-                    status=ElectrometerStatus.idle,
+                    status=ElectrometerStatus.IDLE,
                 )
 
             # testing connection
@@ -212,9 +239,9 @@ class KeysightEM:
             try:
                 logger.info("Disconnecting from Keysight EM %s", self.device_id)
                 self.em.close()
-                self.state.update(
+                self.settings.update(
                     connection_status=ConnectionStatus.DISCONNECTED,
-                    status=ElectrometerStatus.unknown,
+                    status=ElectrometerStatus.UNKNOWN,
                 )
                 logger.info("Disconnected from Keysight EM %s", self.device_id)
             except pyvisa.errors.VisaIOError as e:
@@ -286,11 +313,9 @@ class KeysightEM:
             self._em_write(command)
             error_request = self._em_query("SYST:ERR?")
             if error_request != '+0,"No error"':
-                logger.error(
-                    "Error in _write_and_log: '%s', for query: '%s'",
-                    error_request,
-                    command,
-                )
+                error_string = f"Error in _wirte_and_log: {error_request}, command: {command}"
+                logger.error(error_string)
+                self.state.update(error=error_string)
                 self._write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)

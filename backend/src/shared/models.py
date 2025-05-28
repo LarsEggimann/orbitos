@@ -29,17 +29,20 @@ class ConnectionStatus(str, Enum):
     DISCONNECTED = "disconnected"
     HEALTH_CHECK_FAILED = "health check failed"
 
-
-class BaseState(SQLModel):
+class BaseState(BaseModel):
     """
     Base class for all state models.
     """
+    device_id: str
+    status: str = "unknown"
+    connection_status: ConnectionStatus = ConnectionStatus.DISCONNECTED
+    error: Optional[str] = None
 
+class BaseSetting(SQLModel):
+    """
+    Base class for all setting models.
+    """
     device_id: str = Field(primary_key=True, index=True)
-
-    status: Optional[str] = Field(default=None)
-    connection_status: ConnectionStatus = Field(default=ConnectionStatus.DISCONNECTED)
-    error: Optional[str] = Field(default=None)
 
 
 class TimeFrameInput(BaseModel):

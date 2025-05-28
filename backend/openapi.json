@@ -160,13 +160,55 @@
             }
           }
         }
+      }
+    },
+    "/orbitos-api/v1/{device_id}/settings": {
+      "get": {
+        "tags": [
+          "electrometer"
+        ],
+        "summary": "Get Electrometer Settings",
+        "description": "Get the current settings of the electrometer.",
+        "operationId": "electrometer-get_electrometer_settings",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ElectrometerID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectrometerSettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       },
       "post": {
         "tags": [
           "electrometer"
         ],
         "summary": "Set Electrometer State",
-        "description": "Set the state of the electrometer.",
+        "description": "Set the one or more setting of the electrometer.",
         "operationId": "electrometer-set_electrometer_state",
         "parameters": [
           {
@@ -183,7 +225,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ElectrometerStateSet"
+                "$ref": "#/components/schemas/ElectrometerSettingsSet"
               }
             }
           }
@@ -194,7 +236,49 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ElectrometerState"
+                  "$ref": "#/components/schemas/ElectrometerSettingsSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orbitos-api/v1/{device_id}/state/reset-error": {
+      "post": {
+        "tags": [
+          "electrometer"
+        ],
+        "summary": "Reset Electrometer Error",
+        "description": "Reset the error state of the electrometer.",
+        "operationId": "electrometer-reset_electrometer_error",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ElectrometerID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
                 }
               }
             }
@@ -499,30 +583,11 @@
         ],
         "title": "ElectrometerID"
       },
-      "ElectrometerState": {
+      "ElectrometerSettings": {
         "properties": {
           "device_id": {
             "type": "string",
             "title": "Device Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ElectrometerStatus",
-            "default": "unknown"
-          },
-          "connection_status": {
-            "$ref": "#/components/schemas/ConnectionStatus",
-            "default": "disconnected"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
           },
           "trigger_count": {
             "type": "integer",
@@ -584,9 +649,9 @@
         "required": [
           "device_id"
         ],
-        "title": "ElectrometerState"
+        "title": "ElectrometerSettings"
       },
-      "ElectrometerStateSet": {
+      "ElectrometerSettingsSet": {
         "properties": {
           "trigger_count": {
             "anyOf": [
@@ -711,14 +776,48 @@
           }
         },
         "type": "object",
-        "title": "ElectrometerStateSet"
+        "title": "ElectrometerSettingsSet"
+      },
+      "ElectrometerState": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ElectrometerStatus",
+            "default": "unknown"
+          },
+          "connection_status": {
+            "$ref": "#/components/schemas/ConnectionStatus",
+            "default": "disconnected"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id"
+        ],
+        "title": "ElectrometerState"
       },
       "ElectrometerStatus": {
         "type": "string",
         "enum": [
           "unknown",
           "idle",
-          "performing_measurement"
+          "performing_trigger_based_measurement",
+          "starting_continuous_measurement",
+          "continuous_measurement_running"
         ],
         "title": "ElectrometerStatus"
       },

@@ -13,11 +13,13 @@ from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.electrometer import module as electrometer_module
 from src.modules.electrometer.models import (
-    ElectrometerState,
+    ElectrometerSettings,
     CurrentDataResponse,
     CurrentData,
     ElectrometerID,
-    ElectrometerStateSet,
+    ElectrometerSettingsSet,
+    ElectrometerStatus,
+    ElectrometerState
 )
 from src.modules.electrometer.module import ControllerDep
 from src.modules.electrometer.db import SessionDep
@@ -39,6 +41,26 @@ def assert_connected(controller: ControllerDep):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_id} is not connected. Please connect first.",
+        )
+    
+def assert_idle(controller: ControllerDep):
+    """
+    Assert that the electrometer is idle.
+    """
+    if controller.state.get().status != ElectrometerStatus.IDLE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{controller.device_id} is not idle. Please stop any ongoing measurements first.",
+        )
+    
+def assert_no_errors(controller: ControllerDep):
+    """
+    Assert that the electrometer has no errors.
+    """
+    if controller.state.get().error is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{controller.device_id} has pending error, reset the error.",
         )
 
 
@@ -83,17 +105,34 @@ async def get_electrometer_state(controller: ControllerDep):
     """
     return controller.state.get()
 
+@router.get("/{device_id}/settings", response_model=ElectrometerSettings)
+async def get_electrometer_settings(controller: ControllerDep):
+    """
+    Get the current settings of the electrometer.
+    """
+    return controller.settings.get()
 
-@router.post("/{device_id}/state", response_model=ElectrometerState)
-async def set_electrometer_state(
-    controller: ControllerDep, state: ElectrometerStateSet
+
+@router.post("/{device_id}/settings", response_model=ElectrometerSettingsSet)
+def set_electrometer_state(
+    controller: ControllerDep, settings: ElectrometerSettingsSet
 ):
     """
-    Set the state of the electrometer.
+    Set the one or more setting of the electrometer.
     """
     assert_connected(controller)
-    controller.state.update(**state.model_dump(exclude_unset=True))
-    return controller.state.get()
+    assert_idle(controller)
+    assert_no_errors(controller)
+    controller.update_settings(settings)
+    return controller.settings.get()
+
+@router.post("/{device_id}/state/reset-error", response_model=BaseResponse)
+def reset_electrometer_error(controller: ControllerDep):
+    """
+    Reset the error state of the electrometer.
+    """
+    controller.settings.update(error=None)
+    return BaseResponse(message=f"Error state reset for {controller.device_id.value}.")
 
 
 @router.get("/{device_id}/data")

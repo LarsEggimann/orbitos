@@ -4,24 +4,25 @@ from datetime import datetime
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Index
 
-from src.shared.models import BaseState
+from src.shared.models import BaseState, BaseSetting
 
 
 class ElectrometerStatus(str, Enum):
-    unknown = "unknown"
-    idle = "idle"
-    performing_measurement = "performing_measurement"
-
+    UNKNOWN = "unknown"
+    IDLE = "idle"
+    PERFORMING_TRIGGER_BASED_MEASUREMENT = "performing_trigger_based_measurement"
+    STARTING_CONTINUOUS_MEASUREMENT = "starting_continuous_measurement"
+    CONTINUOUS_MEASUREMENT_RUNNING = "continuous_measurement_running"
 
 class ElectrometerID(str, Enum):
     electrometer_1 = "electrometer_1"
     electrometer_2 = "electrometer_2"
 
+class ElectrometerState(BaseState):
+    status: ElectrometerStatus = ElectrometerStatus.UNKNOWN
 
-class ElectrometerState(BaseState, table=True):
-    __tablename__ = "electrometer_state"
-
-    status: ElectrometerStatus = Field(default=ElectrometerStatus.unknown)
+class ElectrometerSettings(BaseSetting, table=True):
+    __tablename__ = "electrometer_settings"
 
     trigger_count: int = Field(default=100)
     trigger_time_interval: float = Field(default=0.1)
@@ -54,7 +55,7 @@ class CurrentDataResponse(BaseModel):
     time: list[datetime]
 
 
-class ElectrometerStateSet(SQLModel):
+class ElectrometerSettingsSet(SQLModel):
     trigger_count: Optional[int] = None
     trigger_time_interval: Optional[float] = None
     trigger_bypass: Optional[str] = None

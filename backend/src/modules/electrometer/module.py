@@ -5,7 +5,7 @@ from src.modules.electrometer.db import engine, init_db
 from src.modules.electrometer.controller import KeysightEM
 from src.modules.electrometer.models import ElectrometerID
 from src.shared.websocket_manager import WebSocketManager
-from src.modules.electrometer.models import ElectrometerState, CurrentDataResponse
+from src.modules.electrometer.models import ElectrometerSettings, CurrentDataResponse, ElectrometerState
 
 
 class ModuleState:
@@ -27,7 +27,7 @@ def get_controller(device_id: ElectrometerID) -> KeysightEM:
 
 ControllerDep = Annotated[KeysightEM, Depends(get_controller)]
 
-ws_manager = WebSocketManager[ElectrometerState, CurrentDataResponse]()
+ws_manager = WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings]()
 
 
 def init_module() -> None:
