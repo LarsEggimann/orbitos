@@ -7,6 +7,7 @@ import numpy as np
 from sqlmodel import Session
 from pyvisa.resources import TCPIPSocket
 
+from src.core.config import config
 from src.shared.websocket_manager import WebSocketManager
 from src.shared.settings_manager import SettingsManager
 from src.shared.state_manager import StateManager
@@ -60,6 +61,11 @@ class KeysightEM:
         self.time_list: list[str] = []
         self.current_list: list[str] = []
 
+        # start health check thread
+        self.health_check_thread = threading.Thread(target=self._health_check)
+        self.health_check_thread.daemon = True
+        self.health_check_thread.start()
+
     def init_settings(self):
         self._write_and_log("*RST")
         self._write_and_log(
@@ -69,20 +75,25 @@ class KeysightEM:
         self.set_sensor()
         self.enable_io()
 
-    def health_check(self) -> bool:
-        try:
-            error_request = self._em_query("SYST:ERR?")
-            if error_request != '+0,"No error"':
-                logger.error("Error during health check: %s", error_request)
-                self.state.update(
-                    connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
-                    status=ElectrometerStatus.UNKNOWN,
-                )
-                self._em_write("*CLS")
-            return True
-        except Exception as e:
-            logger.error("Error during health check: %s", e)
-            return False
+    def _health_check(self):
+        logger.info("Starting health check for Keysight EM %s", self.device_id)
+        while True:
+            if self.state.get().connection_status != ConnectionStatus.DISCONNECTED:
+                try:
+                    error_request = self._em_query("SYST:ERR?")
+                    logger.debug("Health check response: %s of device %s", error_request, self.device_id)
+                    if error_request != '+0,"No error"':
+                        logger.error("Error during health check: %s", error_request)
+                        self.state.update(status=error_request)
+                        self._em_write("*CLS")
+                except Exception as e:
+                    self.state.update(
+                            connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
+                            status=ElectrometerStatus.UNKNOWN,
+                        )
+                    logger.error("Error during health check: %s", e)
+            
+            time.sleep(config.HEALTH_CHECK_INTERVAL)
 
     def start_continuous_measurement(self):
         self.stop_continuous_measurement()
@@ -130,7 +141,7 @@ class KeysightEM:
                     first_datapoint_received = True
                     self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING)
                     
-                logger.info(f"{self.device_id} - Fetched current: %s", cur)
+                logger.debug(f"{self.device_id} - Fetched current: %s", cur)
                 self._save_data()
             except Exception as e:
                 logger.error("Error in converting data to float: %s", e)

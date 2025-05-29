@@ -22,4 +22,7 @@ class Config:
     ENVIRONMENT: Literal["local", "development", "production"] = "development"
 
 
+    HEALTH_CHECK_INTERVAL: int = 10  # seconds
+
+
 config: Config = Config()  # type: ignore
