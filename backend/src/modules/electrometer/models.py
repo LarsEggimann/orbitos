@@ -10,8 +10,8 @@ from src.shared.models import BaseState, BaseSetting
 class ElectrometerStatus(str, Enum):
     UNKNOWN = "unknown"
     IDLE = "idle"
-    PERFORMING_TRIGGER_BASED_MEASUREMENT = "performing_trigger_based_measurement"
-    STARTING_CONTINUOUS_MEASUREMENT = "starting_continuous_measurement"
+    TRIGGER_BASED_MEASUREMENT_RUNNING = "trigger_based_measurement_running"
+    CONTINUOUS_MEASUREMENT_WAITING_TO_START = "continuous_measurement_waiting_to_start"
     CONTINUOUS_MEASUREMENT_RUNNING = "continuous_measurement_running"
 
 class ElectrometerID(str, Enum):

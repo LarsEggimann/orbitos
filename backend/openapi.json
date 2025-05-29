@@ -815,8 +815,8 @@
         "enum": [
           "unknown",
           "idle",
-          "performing_trigger_based_measurement",
-          "starting_continuous_measurement",
+          "trigger_based_measurement_running",
+          "continuous_measurement_waiting_to_start",
           "continuous_measurement_running"
         ],
         "title": "ElectrometerStatus"

@@ -104,6 +104,7 @@ class KeysightEM:
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
+        self.state.update(status=ElectrometerStatus.IDLE)
 
     def restart_continuous_measurement_if_running(self):
         if (
@@ -114,7 +115,8 @@ class KeysightEM:
             self.start_continuous_measurement()
 
     def measure(self):
-        self.state.update(status=ElectrometerStatus.STARTING_CONTINUOUS_MEASUREMENT)
+        self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_WAITING_TO_START)
+        first_datapoint_received = False
         while not self._stop_continuous_measurement_event.is_set():
             self._em_write(":INIT:ACQ (@1);")
             self._wait_for_device_ready()
@@ -124,7 +126,10 @@ class KeysightEM:
                 cur = float(cur)
                 self.time_list = [time.time()]
                 self.current_list = [cur]
-                self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING)
+                if not first_datapoint_received and cur:
+                    first_datapoint_received = True
+                    self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING)
+                    
                 logger.info(f"{self.device_id} - Fetched current: %s", cur)
                 self._save_data()
             except Exception as e:
@@ -143,7 +148,7 @@ class KeysightEM:
             logger.warning("Trigger based measurement is already running!")
         else:
             self.trigger_based_measurement_running = True
-            self.state.update(status=ElectrometerStatus.PERFORMING_TRIGGER_BASED_MEASUREMENT)
+            self.state.update(status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING)
             logger.info("Starting trigger based measurement")
             self.enable_io()
             self._write_and_log(":INIT:ALL (@1);")
