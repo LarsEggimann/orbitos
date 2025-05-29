@@ -20,6 +20,7 @@ from src.modules.electrometer.models import (
     ElectrometerSettingsSet
 )
 from src.shared.models import ConnectionStatus
+from src.modules.electrometer.db import engine
 
 logger = logging.getLogger()
 
@@ -28,13 +29,11 @@ class KeysightEM:
     def __init__(
         self,
         device_id: ElectrometerID,
-        db_session: Session,
         ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings],
     ):
         logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
 
         self.device_id = device_id
-        self.db_session = db_session
         self.ws_manager = ws_manager
 
         self.rm = pyvisa.ResourceManager("@py")
@@ -43,7 +42,7 @@ class KeysightEM:
         self.settings: SettingsManager[ElectrometerSettings] = SettingsManager(
             model=ElectrometerSettings,
             device_id=self.device_id,
-            session=self.db_session,
+            engine=engine,
             on_settings_update=self.ws_manager.broadcast_setting_sync,
         )
 
@@ -142,7 +141,6 @@ class KeysightEM:
     def do_trigger_based_measurement(self):
         if self.trigger_based_measurement_running:
             logger.warning("Trigger based measurement is already running!")
-
         else:
             self.trigger_based_measurement_running = True
             self.state.update(status=ElectrometerStatus.PERFORMING_TRIGGER_BASED_MEASUREMENT)
@@ -166,17 +164,27 @@ class KeysightEM:
             self.state.update(status=ElectrometerStatus.IDLE)
 
     def update_settings(self, set_settings: ElectrometerSettingsSet):
-        current_settings = self.settings.get()
-
         logger.info("Updating settings for Keysight EM %s", self.device_id)
 
+        settings_before_update = self.settings.get()
+        print(f"settings before update: {settings_before_update}")
+
         self.settings.update(**set_settings.model_dump(exclude_unset=True))
+        current_settings = self.settings.get()
+        print(f"settings after update: {current_settings}")
 
         self.set_sensor()
         self.set_trigger()
 
+        print(f"settings updated ? -> error state {self.state.get().error}")
         if self.state.get().error is not None:
-            self.settings.set_settings(current_settings)
+            print(
+                f"Error state is not None, resetting error state for Keysight EM {self.device_id}")
+            self.settings.undo_last_update()
+            print(f"settings after undo: {self.settings.get()}")
+            raise ValueError(
+                f"Error while updating settings for Keysight EM {self.device_id}: {self.state.get().error}"
+            )
     
     def reset_error(self):
         logger.info("Resetting error state for Keysight EM %s", self.device_id)
@@ -263,8 +271,10 @@ class KeysightEM:
 
         # save to db
         if len(data) > 0:
-            self.db_session.add_all(data)
-            self.db_session.commit()
+            with Session(engine) as session:
+                session.add_all(data)
+                session.commit()
+
             current_data_response = CurrentDataResponse(
                 device_id=self.device_id,
                 current=self.current_list,

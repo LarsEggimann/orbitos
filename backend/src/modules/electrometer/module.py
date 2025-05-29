@@ -1,16 +1,16 @@
+import logging
 from typing import Annotated
 from fastapi import Depends
-from src.shared.persistent_session_manager import PersistentSessionManager
-from src.modules.electrometer.db import engine, init_db
+from src.modules.electrometer.db import init_db
 from src.modules.electrometer.controller import KeysightEM
 from src.modules.electrometer.models import ElectrometerID
 from src.shared.websocket_manager import WebSocketManager
 from src.modules.electrometer.models import ElectrometerSettings, CurrentDataResponse, ElectrometerState
 
+logger = logging.getLogger(__name__)
 
 class ModuleState:
     controllers: dict[ElectrometerID, KeysightEM] = {}
-    session_managers: dict[ElectrometerID, PersistentSessionManager] = {}
 
 
 module_state = ModuleState()
@@ -34,20 +34,15 @@ def init_module() -> None:
     """
     Initialize the module.
     """
+    logger.info("Initializing electrometer module ...")
+
     init_db()
 
     device_ids = ElectrometerID.__members__.values()
 
     for device_id in device_ids:
-        session_manager = PersistentSessionManager(engine)
-        session_manager.init_session()
-
-        module_state.session_managers[device_id] = session_manager
-
-        session = session_manager.get_session()
-
         controller = KeysightEM(
-            device_id=device_id, db_session=session, ws_manager=ws_manager
+            device_id=device_id, ws_manager=ws_manager
         )
         module_state.controllers[device_id] = controller
 
@@ -56,5 +51,4 @@ def shutdown_module() -> None:
     """
     Shutdown the module.
     """
-    for _, session_manager in module_state.session_managers.items():
-        session_manager.close_session()
+    logger.info("Shutting down electrometer module ...")

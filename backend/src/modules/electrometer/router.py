@@ -113,7 +113,7 @@ async def get_electrometer_settings(controller: ControllerDep):
     return controller.settings.get()
 
 
-@router.post("/{device_id}/settings", response_model=ElectrometerSettingsSet)
+@router.post("/{device_id}/settings", response_model=ElectrometerSettings)
 def set_electrometer_state(
     controller: ControllerDep, settings: ElectrometerSettingsSet
 ):
@@ -131,7 +131,7 @@ def reset_electrometer_error(controller: ControllerDep):
     """
     Reset the error state of the electrometer.
     """
-    controller.settings.update(error=None)
+    controller.state.update(error=None)
     return BaseResponse(message=f"Error state reset for {controller.device_id.value}.")
 
 
@@ -185,6 +185,8 @@ def start_continuous_measurement(controller: ControllerDep):
     Start continuous measurement on the electrometer.
     """
     assert_connected(controller)
+    assert_idle(controller)
+    assert_no_errors(controller)
     controller.start_continuous_measurement()
     return BaseResponse(
         message=f"Continuous measurement started for {controller.device_id.value}"
@@ -226,6 +228,7 @@ def start_trigger_based_measurement(
     Start trigger-based measurement on the electrometer.
     """
     assert_connected(controller)
+    assert_no_errors(controller)
     if controller.trigger_based_measurement_running:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

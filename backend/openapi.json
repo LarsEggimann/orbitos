@@ -236,7 +236,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ElectrometerSettingsSet"
+                  "$ref": "#/components/schemas/ElectrometerSettings"
                 }
               }
             }

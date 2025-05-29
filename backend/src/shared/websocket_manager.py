@@ -63,7 +63,7 @@ class WebSocketManager(Generic[T, G, H]):
 
     async def broadcast_setting(self, device_id: str, setting: H):
         message = BaseWebSocketMessage(
-            type=WebSocketMessageType.DATA,
+            type=WebSocketMessageType.SETTINGS,
             device_id=device_id,
             content=setting.model_dump(),
         )
