@@ -1,6 +1,5 @@
-import copy
 from typing import TypeVar, Generic, Type, Callable, Optional, Any
-from sqlmodel import select, Session
+from sqlmodel import Session
 from sqlalchemy.engine import Engine
 
 from src.shared.models import BaseSetting
@@ -25,8 +24,7 @@ class SettingsManager(Generic[T]):
     def load(self) -> T:
         # Always load from DB and update _settings
         with Session(self.engine) as session:
-            statement = select(self.model).where(self.model.device_id == self.device_id)  # type: ignore
-            result = session.exec(statement).first()
+            result = session.get(self.model, self.device_id)
             if result is None:
                 result = self.model(device_id=self.device_id)
                 session.add(result)
@@ -40,25 +38,10 @@ class SettingsManager(Generic[T]):
     def save(self) -> None:
         if self._settings:
             with Session(self.engine) as session:
-                db_obj = session.get(self.model, self.device_id)
-
-                if db_obj:
-
-                    update_data = self._settings.model_dump(exclude_unset=False) # Get all fields
-
-                    for key, value in update_data.items():
-                        if hasattr(db_obj, key): # ensure attribute exists on the model
-                            setattr(db_obj, key, value)
-
-                    session.add(db_obj)
-                else:
-                    new_obj_data = self._settings.model_dump()
-                    db_obj = self.model.model_validate(new_obj_data)
-                    session.add(db_obj)
-                
+                merged_obj = session.merge(self._settings)
                 session.commit()
-                session.refresh(db_obj) # refresh to get any DB-side changes
-                self._settings = db_obj.model_copy(deep=True) # store a detached copy
+                session.refresh(merged_obj)
+                self._settings = merged_obj.model_copy(deep=True)
 
     def update(self, **kwargs) -> T:
         current_settings_state = self.get()
