@@ -82,7 +82,8 @@ class KeysightEM:
     def _health_check(self):
         logger.info("Starting health check for Keysight EM %s", self.device_id)
         while True:
-            if self.state.get().connection_status != ConnectionStatus.DISCONNECTED:
+            # only perform health check if the device is connected and idle
+            if self.state.get().connection_status != ConnectionStatus.DISCONNECTED and self.state.get().status == ElectrometerStatus.IDLE:
                 try:
                     self._wait_for_device_ready()
                     error_request = self._em_query("SYST:ERR?")
@@ -93,7 +94,7 @@ class KeysightEM:
                     )
                     if error_request != '+0,"No error"':
                         logger.error("Error during health check: %s", error_request)
-                        self.state.update(error=error_request)
+                        self.state.update(error="Error in health check: " + error_request)
                         self._em_write("*CLS")
                 except Exception as e:
                     self.state.update(
@@ -120,11 +121,11 @@ class KeysightEM:
             self.continuous_measurement_thread
             and self.continuous_measurement_thread.is_alive()
         ):
-            self._stop_continuous_measurement_event.set()
+            self._stop_continuous_measurement_event.set() # signal the thread to stop
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
-        self.state.update(status=ElectrometerStatus.IDLE)
+        # state is set in measurement thread when it stops
 
     def restart_continuous_measurement_if_running(self):
         if (
@@ -279,7 +280,7 @@ class KeysightEM:
             try:
                 logger.info("Disconnecting from Keysight EM %s", self.device_id)
                 self.em.close()
-                self.settings.update(
+                self.state.update(
                     connection_status=ConnectionStatus.DISCONNECTED,
                     status=ElectrometerStatus.UNKNOWN,
                 )
@@ -359,7 +360,7 @@ class KeysightEM:
                     f"Error in _wirte_and_log: {error_request}, command: {command}"
                 )
                 logger.error(error_string)
-                self.state.update(error=error_string)
+                self.state.update(error="Error in _write_and_log with command: "+ command + " error string: " + error_string)
                 self._write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)

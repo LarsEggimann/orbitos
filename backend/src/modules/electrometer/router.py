@@ -1,4 +1,5 @@
 import logging
+from datetime import timezone
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -8,7 +9,6 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from sqlmodel import select, asc
-from datetime import timezone
 from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.electrometer import module as electrometer_module
@@ -93,7 +93,7 @@ def disconnect_electrometer(controller: ControllerDep):
 @router.post("/electrometers/reset", response_model=BaseResponse)
 def reset_electrometer():
     """
-    Reset the electrometer.
+    Reset all electrometers.
     """
     electrometer_module.shutdown_module()
     electrometer_module.init_module()
@@ -233,6 +233,7 @@ def start_trigger_based_measurement(
     Start trigger-based measurement on the electrometer.
     """
     assert_connected(controller)
+    assert_idle(controller)
     assert_no_errors(controller)
     if controller.trigger_based_measurement_running:
         raise HTTPException(
@@ -246,12 +247,12 @@ def start_trigger_based_measurement(
     )
 
 
-@router.websocket("/ws/electrometer/{device_id}")
+@router.websocket("/ws/{device_id}")
 async def electrometer_ws(websocket: WebSocket, device_id: str):
     await ws_manager.connect(device_id, websocket)
     try:
         while True:
             test = await websocket.receive_text()
-            logger.info(f"Received message from {device_id}: {test}")
+            logger.info("Received message from %s: %s", device_id, test)
     except WebSocketDisconnect:
         await ws_manager.disconnect(device_id, websocket)

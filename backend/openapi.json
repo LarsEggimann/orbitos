@@ -104,7 +104,7 @@
           "electrometer"
         ],
         "summary": "Reset Electrometer",
-        "description": "Reset the electrometer.",
+        "description": "Reset all electrometers.",
         "operationId": "electrometer-reset_electrometer",
         "responses": {
           "200": {
