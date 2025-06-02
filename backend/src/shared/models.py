@@ -9,8 +9,6 @@ class WebSocketMessageType(str, Enum):
     STATE = "state"
     DATA = "data"
     SETTINGS = "settings"
-    ERROR = "error"
-    INFO = "info"
 
 
 class BaseWebSocketMessage(BaseModel):

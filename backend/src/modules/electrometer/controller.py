@@ -32,7 +32,7 @@ class KeysightEM:
         device_id: ElectrometerID,
         ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings],
     ):
-        logger.info("Initializing Keysight EM controller for device ID: %s", device_id)
+        logger.info("Initializing Keysight EM controller for device ID: %s", device_id.value)
 
         self.device_id = device_id
         self.ws_manager = ws_manager
@@ -80,11 +80,12 @@ class KeysightEM:
         while True:
             if self.state.get().connection_status != ConnectionStatus.DISCONNECTED:
                 try:
+                    self._wait_for_device_ready()
                     error_request = self._em_query("SYST:ERR?")
                     logger.debug("Health check response: %s of device %s", error_request, self.device_id)
                     if error_request != '+0,"No error"':
                         logger.error("Error during health check: %s", error_request)
-                        self.state.update(status=error_request)
+                        self.state.update(error=error_request)
                         self._em_write("*CLS")
                 except Exception as e:
                     self.state.update(
