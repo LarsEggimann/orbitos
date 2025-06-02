@@ -6,6 +6,7 @@ from src.shared.models import BaseSetting
 
 T = TypeVar("T", bound=BaseSetting)
 
+
 class SettingsManager(Generic[T]):
     def __init__(
         self,
@@ -31,7 +32,7 @@ class SettingsManager(Generic[T]):
                 session.commit()
                 session.refresh(result)
 
-            self._settings = result.model_copy(deep=True) # Detach from session
+            self._settings = result.model_copy(deep=True)  # Detach from session
 
         return self._settings
 
@@ -45,7 +46,7 @@ class SettingsManager(Generic[T]):
 
     def update(self, **kwargs) -> T:
         current_settings_state = self.get()
-        
+
         self._settings_before_change = current_settings_state.model_copy(deep=True)
 
         updated_data = current_settings_state.model_dump()
@@ -56,17 +57,19 @@ class SettingsManager(Generic[T]):
 
         self._settings = self.model.model_validate(updated_data)
 
-        self.save() # persist the new state of self._settings
-        
+        self.save()  # persist the new state of self._settings
+
         self._on_settings_update(self._settings)
-        
+
         return self._settings
 
     def undo_last_update(self) -> T:
         if not self._settings_before_change:
             raise ValueError("No previous settings to revert to.")
-        
-        self._settings = self._settings_before_change.model_copy(deep=True) # use a fresh copy
+
+        self._settings = self._settings_before_change.model_copy(
+            deep=True
+        )  # use a fresh copy
         self.save()
         self._on_settings_update(self._settings)
         return self._settings

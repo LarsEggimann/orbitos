@@ -14,12 +14,15 @@ class ElectrometerStatus(str, Enum):
     CONTINUOUS_MEASUREMENT_WAITING_TO_START = "continuous_measurement_waiting_to_start"
     CONTINUOUS_MEASUREMENT_RUNNING = "continuous_measurement_running"
 
+
 class ElectrometerID(str, Enum):
     electrometer_1 = "electrometer_1"
     electrometer_2 = "electrometer_2"
 
+
 class ElectrometerState(BaseState):
     status: ElectrometerStatus = ElectrometerStatus.UNKNOWN
+
 
 class ElectrometerSettings(BaseSetting, table=True):
     __tablename__ = "electrometer_settings"

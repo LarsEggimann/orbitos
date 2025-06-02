@@ -19,7 +19,7 @@ from src.modules.electrometer.models import (
     ElectrometerID,
     ElectrometerSettingsSet,
     ElectrometerStatus,
-    ElectrometerState
+    ElectrometerState,
 )
 from src.modules.electrometer.module import ControllerDep
 from src.modules.electrometer.db import SessionDep
@@ -42,7 +42,8 @@ def assert_connected(controller: ControllerDep):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_id.value} is not connected. Please connect first.",
         )
-    
+
+
 def assert_idle(controller: ControllerDep):
     """
     Assert that the electrometer is idle.
@@ -52,7 +53,8 @@ def assert_idle(controller: ControllerDep):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_id.value} is not idle. Please stop any ongoing measurements first.",
         )
-    
+
+
 def assert_no_errors(controller: ControllerDep):
     """
     Assert that the electrometer has no errors.
@@ -105,6 +107,7 @@ async def get_electrometer_state(controller: ControllerDep):
     """
     return controller.state.get()
 
+
 @router.get("/{device_id}/settings", response_model=ElectrometerSettings)
 async def get_electrometer_settings(controller: ControllerDep):
     """
@@ -125,6 +128,7 @@ def set_electrometer_state(
     assert_no_errors(controller)
     controller.update_settings(settings)
     return controller.settings.get()
+
 
 @router.post("/{device_id}/state/reset-error", response_model=BaseResponse)
 def reset_electrometer_error(controller: ControllerDep):

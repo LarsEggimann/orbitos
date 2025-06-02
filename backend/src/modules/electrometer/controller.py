@@ -18,7 +18,7 @@ from src.modules.electrometer.models import (
     CurrentData,
     CurrentDataResponse,
     ElectrometerStatus,
-    ElectrometerSettingsSet
+    ElectrometerSettingsSet,
 )
 from src.shared.models import ConnectionStatus
 from src.modules.electrometer.db import engine
@@ -30,9 +30,13 @@ class KeysightEM:
     def __init__(
         self,
         device_id: ElectrometerID,
-        ws_manager: WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings],
+        ws_manager: WebSocketManager[
+            ElectrometerState, CurrentDataResponse, ElectrometerSettings
+        ],
     ):
-        logger.info("Initializing Keysight EM controller for device ID: %s", device_id.value)
+        logger.info(
+            "Initializing Keysight EM controller for device ID: %s", device_id.value
+        )
 
         self.device_id = device_id
         self.ws_manager = ws_manager
@@ -82,18 +86,22 @@ class KeysightEM:
                 try:
                     self._wait_for_device_ready()
                     error_request = self._em_query("SYST:ERR?")
-                    logger.debug("Health check response: %s of device %s", error_request, self.device_id)
+                    logger.debug(
+                        "Health check response: %s of device %s",
+                        error_request,
+                        self.device_id,
+                    )
                     if error_request != '+0,"No error"':
                         logger.error("Error during health check: %s", error_request)
                         self.state.update(error=error_request)
                         self._em_write("*CLS")
                 except Exception as e:
                     self.state.update(
-                            connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
-                            status=ElectrometerStatus.UNKNOWN,
-                        )
+                        connection_status=ConnectionStatus.HEALTH_CHECK_FAILED,
+                        status=ElectrometerStatus.UNKNOWN,
+                    )
                     logger.error("Error during health check: %s", e)
-            
+
             time.sleep(config.HEALTH_CHECK_INTERVAL)
 
     def start_continuous_measurement(self):
@@ -127,7 +135,9 @@ class KeysightEM:
             self.start_continuous_measurement()
 
     def measure(self):
-        self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_WAITING_TO_START)
+        self.state.update(
+            status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_WAITING_TO_START
+        )
         first_datapoint_received = False
         while not self._stop_continuous_measurement_event.is_set():
             self._em_write(":INIT:ACQ (@1);")
@@ -140,8 +150,10 @@ class KeysightEM:
                 self.current_list = [cur]
                 if not first_datapoint_received and cur:
                     first_datapoint_received = True
-                    self.state.update(status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING)
-                    
+                    self.state.update(
+                        status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_RUNNING
+                    )
+
                 logger.debug(f"{self.device_id} - Fetched current: %s", cur)
                 self._save_data()
             except Exception as e:
@@ -160,7 +172,9 @@ class KeysightEM:
             logger.warning("Trigger based measurement is already running!")
         else:
             self.trigger_based_measurement_running = True
-            self.state.update(status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING)
+            self.state.update(
+                status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
+            )
             logger.info("Starting trigger based measurement")
             self.enable_io()
             self._write_and_log(":INIT:ALL (@1);")
@@ -196,13 +210,14 @@ class KeysightEM:
         print(f"settings updated ? -> error state {self.state.get().error}")
         if self.state.get().error is not None:
             print(
-                f"Error state is not None, resetting error state for Keysight EM {self.device_id}")
+                f"Error state is not None, resetting error state for Keysight EM {self.device_id}"
+            )
             self.settings.undo_last_update()
             print(f"settings after undo: {self.settings.get()}")
             raise ValueError(
                 f"Error while updating settings for Keysight EM {self.device_id}: {self.state.get().error}"
             )
-    
+
     def reset_error(self):
         logger.info("Resetting error state for Keysight EM %s", self.device_id)
         self.state.update(error=None)
@@ -340,7 +355,9 @@ class KeysightEM:
             self._em_write(command)
             error_request = self._em_query("SYST:ERR?")
             if error_request != '+0,"No error"':
-                error_string = f"Error in _wirte_and_log: {error_request}, command: {command}"
+                error_string = (
+                    f"Error in _wirte_and_log: {error_request}, command: {command}"
+                )
                 logger.error(error_string)
                 self.state.update(error=error_string)
                 self._write_and_log("*CLS")

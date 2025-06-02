@@ -21,7 +21,6 @@ class Config:
     # Sensitive settings
     ENVIRONMENT: Literal["local", "development", "production"] = "development"
 
-
     HEALTH_CHECK_INTERVAL: int = 30  # seconds
 
 

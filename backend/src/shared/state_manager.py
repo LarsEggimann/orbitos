@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class StateManager(Generic[T]):
     def __init__(
         self,
@@ -16,7 +17,7 @@ class StateManager(Generic[T]):
         self.on_state_update_func = on_state_update
 
     def load(self) -> T:
-        if self._state is None:         
+        if self._state is None:
             self._state = self.model(device_id=self.device_id)  # type: ignore
         return self._state
 

@@ -5,14 +5,19 @@ from fastapi import WebSocket
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from src.shared.models import BaseState, BaseWebSocketMessage, WebSocketMessageType, BaseSetting
+from src.shared.models import (
+    BaseState,
+    BaseWebSocketMessage,
+    WebSocketMessageType,
+    BaseSetting,
+)
 from src.shared.utils import run_async_in_background
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=BaseState) # state model type
-G = TypeVar("G", bound=BaseModel) # data model type
-H = TypeVar("H", bound=BaseSetting) # setting model type
+T = TypeVar("T", bound=BaseState)  # state model type
+G = TypeVar("G", bound=BaseModel)  # data model type
+H = TypeVar("H", bound=BaseSetting)  # setting model type
 
 
 class WebSocketManager(Generic[T, G, H]):
@@ -33,7 +38,7 @@ class WebSocketManager(Generic[T, G, H]):
                 self.active_connections[device_id].remove(websocket)
                 if not self.active_connections[device_id]:
                     del self.active_connections[device_id]
-    
+
     async def _broadcast_message(self, device_id: str, message: BaseWebSocketMessage):
         async with self.lock:
             if device_id in self.active_connections:
@@ -42,7 +47,9 @@ class WebSocketManager(Generic[T, G, H]):
                         await ws.send_json(jsonable_encoder(message))
                     except Exception as e:
                         logger.exception(
-                            "Failed to send message to %s websocket, error %s", device_id, e
+                            "Failed to send message to %s websocket, error %s",
+                            device_id,
+                            e,
                         )
 
     async def broadcast_state(self, device_id: str, state: T):

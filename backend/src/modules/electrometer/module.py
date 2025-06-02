@@ -5,9 +5,14 @@ from src.modules.electrometer.db import init_db
 from src.modules.electrometer.controller import KeysightEM
 from src.modules.electrometer.models import ElectrometerID
 from src.shared.websocket_manager import WebSocketManager
-from src.modules.electrometer.models import ElectrometerSettings, CurrentDataResponse, ElectrometerState
+from src.modules.electrometer.models import (
+    ElectrometerSettings,
+    CurrentDataResponse,
+    ElectrometerState,
+)
 
 logger = logging.getLogger(__name__)
+
 
 class ModuleState:
     controllers: dict[ElectrometerID, KeysightEM] = {}
@@ -27,7 +32,9 @@ def get_controller(device_id: ElectrometerID) -> KeysightEM:
 
 ControllerDep = Annotated[KeysightEM, Depends(get_controller)]
 
-ws_manager = WebSocketManager[ElectrometerState, CurrentDataResponse, ElectrometerSettings]()
+ws_manager = WebSocketManager[
+    ElectrometerState, CurrentDataResponse, ElectrometerSettings
+]()
 
 
 def init_module() -> None:
@@ -41,9 +48,7 @@ def init_module() -> None:
     device_ids = ElectrometerID.__members__.values()
 
     for device_id in device_ids:
-        controller = KeysightEM(
-            device_id=device_id, ws_manager=ws_manager
-        )
+        controller = KeysightEM(device_id=device_id, ws_manager=ws_manager)
         module_state.controllers[device_id] = controller
 
 
