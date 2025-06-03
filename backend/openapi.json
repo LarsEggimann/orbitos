@@ -353,7 +353,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentDataResponse"
+                }
               }
             }
           },
@@ -537,6 +539,27 @@
           }
         }
       }
+    },
+    "/orbitos-api/v1/websocket/type": {
+      "get": {
+        "tags": [
+          "websocket"
+        ],
+        "summary": "Get Websocket Type",
+        "operationId": "websocket-get_websocket_type",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseWebSocketMessage"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -565,6 +588,32 @@
         ],
         "title": "BaseResponse"
       },
+      "BaseWebSocketMessage": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/WebSocketMessageType"
+          },
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "content": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "device_id"
+        ],
+        "title": "BaseWebSocketMessage"
+      },
       "ConnectionStatus": {
         "type": "string",
         "enum": [
@@ -574,6 +623,36 @@
           "health check failed"
         ],
         "title": "ConnectionStatus"
+      },
+      "CurrentDataResponse": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "current": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Current"
+          },
+          "time": {
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": "array",
+            "title": "Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id",
+          "current",
+          "time"
+        ],
+        "title": "CurrentDataResponse"
       },
       "ElectrometerID": {
         "type": "string",
@@ -866,6 +945,15 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WebSocketMessageType": {
+        "type": "string",
+        "enum": [
+          "state",
+          "data",
+          "settings"
+        ],
+        "title": "WebSocketMessageType"
       }
     }
   }

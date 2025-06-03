@@ -12,11 +12,10 @@ import type { QueryClient } from '@tanstack/react-query'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
-import { seo } from '~/utils/seo'
 import { client } from '~/generated/client.gen'
 
 client.setConfig({
-  baseURL: import.meta.env.VITE_ORBITOS_API_URL
+  baseURL: import.meta.env.VITE_ORBITOS_API_BASE_URL
 })
 
 
@@ -32,11 +31,6 @@ export const Route = createRootRouteWithContext<{
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
-      ...seo({
-        title:
-          'TanStack Start | Type-Safe, Client-First, Full-Stack React Framework',
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
-      }),
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -98,46 +92,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             Home
           </Link>{' '}
           <Link
-            to='/posts'
+            to='/electrometer/$deviceId'
+            params={{ deviceId: '1' }}
             activeProps={{
               className: 'font-bold',
             }}
           >
-            Posts
+            Electrometer 1
           </Link>{' '}
-          <Link
-            to='/users'
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Users
-          </Link>{' '}
-          <Link
-            to='/route-a'
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Pathless Layout
-          </Link>{' '}
-          <Link
-            to='/deferred'
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Deferred
-          </Link>{' '}
-          <Link
-            // @ts-expect-error
-            to='/this-route-does-not-exist'
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            This Route Does Not Exist
-          </Link>
+
         </div>
         <hr />
         {children}

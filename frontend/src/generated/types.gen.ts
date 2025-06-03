@@ -15,9 +15,42 @@ export type BaseResponse = {
 };
 
 /**
+ * BaseWebSocketMessage
+ */
+export type BaseWebSocketMessage = {
+    type: WebSocketMessageType;
+    /**
+     * Device Id
+     */
+    device_id: string;
+    /**
+     * Content
+     */
+    content?: unknown | null;
+};
+
+/**
  * ConnectionStatus
  */
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'health check failed';
+
+/**
+ * CurrentDataResponse
+ */
+export type CurrentDataResponse = {
+    /**
+     * Device Id
+     */
+    device_id: string;
+    /**
+     * Current
+     */
+    current: Array<number>;
+    /**
+     * Time
+     */
+    time: Array<string>;
+};
 
 /**
  * ElectrometerID
@@ -176,6 +209,11 @@ export type ValidationError = {
      */
     type: string;
 };
+
+/**
+ * WebSocketMessageType
+ */
+export type WebSocketMessageType = 'state' | 'data' | 'settings';
 
 export type ElectrometerConnectToElectrometerData = {
     body?: never;
@@ -390,8 +428,10 @@ export type ElectrometerGetCurrentDataResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    200: CurrentDataResponse;
 };
+
+export type ElectrometerGetCurrentDataResponse = ElectrometerGetCurrentDataResponses[keyof ElectrometerGetCurrentDataResponses];
 
 export type ElectrometerStartContinuousMeasurementData = {
     body?: never;
@@ -500,6 +540,22 @@ export type ElectrometerStartTriggerBasedMeasurementResponses = {
 };
 
 export type ElectrometerStartTriggerBasedMeasurementResponse = ElectrometerStartTriggerBasedMeasurementResponses[keyof ElectrometerStartTriggerBasedMeasurementResponses];
+
+export type WebsocketGetWebsocketTypeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/websocket/type';
+};
+
+export type WebsocketGetWebsocketTypeResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseWebSocketMessage;
+};
+
+export type WebsocketGetWebsocketTypeResponse = WebsocketGetWebsocketTypeResponses[keyof WebsocketGetWebsocketTypeResponses];
 
 export type ClientOptions = {
     baseURL: `${string}://${string}` | (string & {});

@@ -139,7 +139,7 @@ def reset_electrometer_error(controller: ControllerDep):
     return BaseResponse(message=f"Error state reset for {controller.device_id.value}.")
 
 
-@router.get("/{device_id}/data")
+@router.get("/{device_id}/data", response_model=CurrentDataResponse)
 async def get_current_data(
     device_id: ElectrometerID, session: SessionDep, time_frame: TimeFrameInputDep
 ):
