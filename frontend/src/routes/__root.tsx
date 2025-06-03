@@ -13,6 +13,12 @@ import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
 import { seo } from '~/utils/seo'
+import { client } from '~/generated/client.gen'
+
+client.setConfig({
+  baseURL: import.meta.env.VITE_ORBITOS_API_URL
+})
+
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
