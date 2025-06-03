@@ -25,9 +25,9 @@ function UserComponent() {
   const user = userQuery.data
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-xl font-bold underline">{user.name}</h4>
-      <div className="text-sm">{user.email}</div>
+    <div className='space-y-2'>
+      <h4 className='text-xl font-bold underline'>{user.name}</h4>
+      <div className='text-sm'>{user.email}</div>
     </div>
   )
 }

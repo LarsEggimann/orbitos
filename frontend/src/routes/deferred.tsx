@@ -27,8 +27,8 @@ function Deferred() {
   const [count, setCount] = useState(0)
 
   return (
-    <div className="p-2">
-      <Suspense fallback="Loading Middleman...">
+    <div className='p-2'>
+      <Suspense fallback='Loading Middleman...'>
         <DeferredQuery />
       </Suspense>
       <div>Count: {count}</div>

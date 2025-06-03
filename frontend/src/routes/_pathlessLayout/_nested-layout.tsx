@@ -8,9 +8,9 @@ function PathlessLayoutComponent() {
   return (
     <div>
       <div>I'm a nested pathless layout</div>
-      <div className="flex gap-2">
+      <div className='flex gap-2'>
         <Link
-          to="/route-a"
+          to='/route-a'
           activeProps={{
             className: 'font-bold',
           }}
@@ -18,7 +18,7 @@ function PathlessLayoutComponent() {
           Go to route A
         </Link>
         <Link
-          to="/route-b"
+          to='/route-b'
           activeProps={{
             className: 'font-bold',
           }}

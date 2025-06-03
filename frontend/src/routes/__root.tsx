@@ -81,9 +81,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div className="p-2 flex gap-2 text-lg">
+        <div className='p-2 flex gap-2 text-lg'>
           <Link
-            to="/"
+            to='/'
             activeProps={{
               className: 'font-bold',
             }}
@@ -92,7 +92,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             Home
           </Link>{' '}
           <Link
-            to="/posts"
+            to='/posts'
             activeProps={{
               className: 'font-bold',
             }}
@@ -100,7 +100,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             Posts
           </Link>{' '}
           <Link
-            to="/users"
+            to='/users'
             activeProps={{
               className: 'font-bold',
             }}
@@ -108,7 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             Users
           </Link>{' '}
           <Link
-            to="/route-a"
+            to='/route-a'
             activeProps={{
               className: 'font-bold',
             }}
@@ -116,7 +116,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             Pathless Layout
           </Link>{' '}
           <Link
-            to="/deferred"
+            to='/deferred'
             activeProps={{
               className: 'font-bold',
             }}
@@ -125,7 +125,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           </Link>{' '}
           <Link
             // @ts-expect-error
-            to="/this-route-does-not-exist"
+            to='/this-route-does-not-exist'
             activeProps={{
               className: 'font-bold',
             }}
@@ -135,8 +135,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </div>
         <hr />
         {children}
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <TanStackRouterDevtools position='bottom-right' />
+        <ReactQueryDevtools buttonPosition='bottom-left' />
         <Scripts />
       </body>
     </html>
