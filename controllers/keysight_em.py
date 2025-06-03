@@ -32,6 +32,8 @@ class KeysightEM(ControllerBase):
         self.continuous_measurement_task = None
         self.continuous_measurement_interval = 0.1
 
+        self.trigger_based_running = False
+
         s = self.settings_handler.read_settings()
         self.COUN = s["trigger_count"]
         self.TIM = s["trigger_time_interval"]
@@ -205,12 +207,15 @@ class KeysightEM(ControllerBase):
 
     async def health_check(self) -> bool:
         try:
-            error_request = await self._run_blocking(self.my_instrument.query, "SYST:ERR?")
-            if error_request != '+0,"No error"':
-                logger.error("Error: %s", error_request)
-                # clear error
-                await self._run_blocking(self.my_instrument.write, "*CLS")
-            return True
+            if self.continuous_measurement_task or self.trigger_based_running:
+                return True  # if the continuous measurement task is running, we assume the device is healthy
+            else:
+                error_request = await self._run_blocking(self.my_instrument.query, "SYST:ERR?")
+                if error_request != '+0,"No error"':
+                    logger.error("Error during health check: %s", error_request)
+                    # clear error
+                    await self._run_blocking(self.my_instrument.write, "*CLS")
+                return True
         except Exception as e:
             logger.error("Error during health check: %s", e)
             return False
@@ -261,6 +266,7 @@ class KeysightEM(ControllerBase):
         await self.set_trigger()
 
     async def do_trigger_based_measurement(self):
+        self.trigger_based_running = True
         await self.enable_io()
         await self.write_and_log(":INIT:ALL (@1);")
         wait_time = int(float(self.COUN) * float(self.TIM))
@@ -270,6 +276,7 @@ class KeysightEM(ControllerBase):
             await asyncio.sleep(0.2)
             print(f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time", end="\r")
         await self.get_trigger_based_data(start)
+        self.trigger_based_running = False
 
     async def set_trigger(self):
         await self.write_and_log(
@@ -373,7 +380,7 @@ class KeysightEM(ControllerBase):
             logger.info("Write to EM: %s", command)
             error_request = await self._run_blocking(self.my_instrument.query, "SYST:ERR?")
             if error_request != '+0,"No error"':
-                logger.error("Error: %s", error_request)
+                logger.error("Error in write and log: %s", error_request)
                 await self.write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)
