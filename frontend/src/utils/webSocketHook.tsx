@@ -1,21 +1,32 @@
 import { useEffect, useRef, useState } from 'react'
-import { BaseWebSocketMessage, ElectrometerState, CurrentDataResponse, ElectrometerSettings } from '~/generated'
+import { BaseWebSocketMessage } from '~/generated'
 
-interface UseWebSocketOptions {
+interface UseDeviceWebSocketOptions<TState, TData, TSettings> {
   url: string
+  fetchInitialState: () => Promise<TState>
+  fetchInitialData: () => Promise<TData>
+  fetchInitialSettings: () => Promise<TSettings>
 }
 
-export function useWebSocket({ url }: UseWebSocketOptions) {
+export function useDeviceWebSocket<TState, TData, TSettings>({
+  url,
+  fetchInitialState,
+  fetchInitialData,
+  fetchInitialSettings,
+}: UseDeviceWebSocketOptions<TState, TData, TSettings>) {
   const wsRef = useRef<WebSocket | null>(null)
-  const [state, setState] = useState<ElectrometerState | null>(null)
-  const [data, setData] = useState<CurrentDataResponse | null>(null)
-  const [settings, setSettings] = useState<ElectrometerSettings | null>(null)
+  const [state, setState] = useState<TState | null>(null)
+  const [data, setData] = useState<TData | null>(null)
+  const [settings, setSettings] = useState<TSettings | null>(null)
   const [connected, setConnected] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
 
   useEffect(() => {
     let reconnectTimeout: NodeJS.Timeout
 
-    const connect = () => {
+    const connectWebSocket = () => {
       const ws = new WebSocket(url)
       wsRef.current = ws
 
@@ -27,7 +38,7 @@ export function useWebSocket({ url }: UseWebSocketOptions) {
       ws.onclose = () => {
         console.warn('WebSocket closed. Reconnecting...')
         setConnected(false)
-        reconnectTimeout = setTimeout(connect, 2000)
+        reconnectTimeout = setTimeout(connectWebSocket, 2000)
       }
 
       ws.onerror = (err) => {
@@ -41,13 +52,13 @@ export function useWebSocket({ url }: UseWebSocketOptions) {
 
           switch (message.type) {
             case 'state':
-              setState(message.content as ElectrometerState)
+              setState(message.content as TState)
               break
             case 'data':
-              setData(message.content as CurrentDataResponse)
+              setData(message.content as TData)
               break
             case 'settings':
-              setSettings(message.content as ElectrometerSettings)
+              setSettings(message.content as TSettings)
               break
             default:
               console.warn('Unknown message type:', message.type)
@@ -58,7 +69,7 @@ export function useWebSocket({ url }: UseWebSocketOptions) {
       }
     }
 
-    connect()
+    connectWebSocket()
 
     return () => {
       clearTimeout(reconnectTimeout)
@@ -66,5 +77,38 @@ export function useWebSocket({ url }: UseWebSocketOptions) {
     }
   }, [url])
 
-  return { state, data, settings, connected }
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadInitial = async () => {
+      try {
+        setLoading(true)
+        const [s, d, set] = await Promise.all([
+          fetchInitialState(),
+          fetchInitialData(),
+          fetchInitialSettings(),
+        ])
+        if (!cancelled) {
+          setState(s)
+          setData(d)
+          setSettings(set)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err as Error)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    loadInitial()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return { state, data, settings, connected, loading, error }
 }
