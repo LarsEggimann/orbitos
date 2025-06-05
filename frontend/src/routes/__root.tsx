@@ -64,31 +64,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div className='p-2 flex gap-2 text-lg'>
-          <Link
-            to='/'
-            activeProps={{
-              className: 'font-bold',
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Home
-          </Link>{' '}
-          <Link
-            to='/electrometer/$deviceId'
-            params={{ deviceId: '1' }}
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Electrometer 1
-          </Link>{' '}
-
-        </div>
-        <hr />
         {children}
-        <TanStackRouterDevtools position='bottom-right' />
-        <ReactQueryDevtools buttonPosition='bottom-left' />
+        {/* <TanStackRouterDevtools position='bottom-right' />
+        <ReactQueryDevtools buttonPosition='bottom-left' /> */}
         <Scripts />
       </body>
     </html>

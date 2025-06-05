@@ -12,7 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as PathlessLayoutImport } from './routes/_pathlessLayout'
-import { Route as IndexImport } from './routes/index'
+import { Route as PathlessLayoutIndexImport } from './routes/_pathlessLayout/index'
 import { Route as PathlessLayoutElectrometerDeviceIdImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 
 // Create/Update Routes
@@ -22,10 +22,10 @@ const PathlessLayoutRoute = PathlessLayoutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const IndexRoute = IndexImport.update({
+const PathlessLayoutIndexRoute = PathlessLayoutIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => PathlessLayoutRoute,
 } as any)
 
 const PathlessLayoutElectrometerDeviceIdRoute =
@@ -39,19 +39,19 @@ const PathlessLayoutElectrometerDeviceIdRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
     '/_pathlessLayout': {
       id: '/_pathlessLayout'
       path: ''
       fullPath: ''
       preLoaderRoute: typeof PathlessLayoutImport
       parentRoute: typeof rootRoute
+    }
+    '/_pathlessLayout/': {
+      id: '/_pathlessLayout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PathlessLayoutIndexImport
+      parentRoute: typeof PathlessLayoutImport
     }
     '/_pathlessLayout/electrometer/$deviceId': {
       id: '/_pathlessLayout/electrometer/$deviceId'
@@ -66,10 +66,12 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface PathlessLayoutRouteChildren {
+  PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
 }
 
 const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
+  PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,
 }
@@ -79,44 +81,41 @@ const PathlessLayoutRouteWithChildren = PathlessLayoutRoute._addFileChildren(
 )
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '': typeof PathlessLayoutRouteWithChildren
+  '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof PathlessLayoutRouteWithChildren
+  '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
+  '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/electrometer/$deviceId'
+  fullPaths: '' | '/' | '/electrometer/$deviceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/electrometer/$deviceId'
+  to: '/' | '/electrometer/$deviceId'
   id:
     | '__root__'
-    | '/'
     | '/_pathlessLayout'
+    | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   PathlessLayoutRoute: typeof PathlessLayoutRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   PathlessLayoutRoute: PathlessLayoutRouteWithChildren,
 }
 
@@ -130,18 +129,19 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
         "/_pathlessLayout"
       ]
-    },
-    "/": {
-      "filePath": "index.tsx"
     },
     "/_pathlessLayout": {
       "filePath": "_pathlessLayout.tsx",
       "children": [
+        "/_pathlessLayout/",
         "/_pathlessLayout/electrometer/$deviceId"
       ]
+    },
+    "/_pathlessLayout/": {
+      "filePath": "_pathlessLayout/index.tsx",
+      "parent": "/_pathlessLayout"
     },
     "/_pathlessLayout/electrometer/$deviceId": {
       "filePath": "_pathlessLayout/electrometer.$deviceId.tsx",

@@ -1,6 +1,6 @@
 import logoImage from '~/assets/orbitos-v2-logo.png'
 
-function Logo() {
+export default function Logo() {
   return (
     <img
       src={logoImage}
@@ -10,5 +10,3 @@ function Logo() {
     />
   );
 }
-
-export { Logo };
