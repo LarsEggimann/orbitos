@@ -9,7 +9,7 @@ import { useRouter } from '@tanstack/react-router';
 
 const NAVIGATION: Navigation = [
   {
-    segment: 'test',
+    segment: '/',
     title: 'Home',
     icon: <FaHome />,
   },
