@@ -5,7 +5,6 @@ import { FaHome } from "react-icons/fa";
 
 import Logo from '~/components/ui/Logo';
 import { Box } from '@mui/material';
-import { useRouter } from '@tanstack/react-router';
 
 const NAVIGATION: Navigation = [
   {

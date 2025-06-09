@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
+import Button from '~/components/ui/Button'
 import { ElectrometerService, ElectrometerId } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 
@@ -27,14 +28,25 @@ function RouteComponent() {
     }
   })
 
+
   return (
     <div>
+      <Button
+        onClick={async () => {
+          return await ElectrometerService.electrometerConnectToElectrometer({
+            path: {
+              device_id: deviceIdFull,
+              ip: '192.168.113.72'
+            }
+          })
+        }}
+      >
+        Connect to Electrometer {deviceId}
+      </Button>
       <h2>Live State via WebSocket {connected ? '🟢' : '🔴'}</h2>
       <pre>{JSON.stringify(state, null, 2)}</pre>
-
       <h3>Settings</h3>
       <pre>{JSON.stringify(settings, null, 2)}</pre>
-
       <TimeSeriesChart
         xData={data?.time ?? []}
         yData={data?.current ?? []}
@@ -44,7 +56,6 @@ function RouteComponent() {
         yAxisLabel='Current [A]'
         hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
       />
-
     </div>
   )
 }
