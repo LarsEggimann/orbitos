@@ -223,6 +223,13 @@ class KeysightEM:
             raise ValueError(
                 f"Error while updating settings for Keysight EM {self.device_id}: {self.state.get().error}"
             )
+        # return the changed settings
+        logger.info(
+            "Settings updated for Keysight EM %s: %s",
+            self.device_id,
+            current_settings.model_dump(exclude_unset=True),
+        )
+        return self.settings
 
     def reset_error(self):
         logger.info("Resetting error state for Keysight EM %s", self.device_id)

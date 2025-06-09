@@ -7,6 +7,12 @@ import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/Devic
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
+import { DeviceSettingsForm } from '~/components/ui/DeviceSettingsForm'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import debounce from 'lodash.debounce'
+import type { AxiosResponse, AxiosError } from 'axios';
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -32,6 +38,50 @@ function RouteComponent() {
     }
   })
 
+  const [tab, setTab] = useState(0)
+  const [localSettings, setLocalSettings] = useState(settings)
+
+  // Sync localSettings with websocket settings
+  useEffect(() => {
+    setLocalSettings(settings)
+  }, [settings])
+
+  // Debounced update for settings (waits 1.5s after last change before sending)
+  const debouncedUpdate = useRef(
+    debounce(
+      (
+        key: string,
+        value: any,
+        resolve: (value: AxiosResponse<any> | AxiosError<any> | void) => void,
+        reject: (reason?: any) => void
+      ) => {
+        ElectrometerService.electrometerSetElectrometerSettings({
+          path: { device_id: deviceIdFull },
+          body: { [key]: value }
+        })
+          .then(resolve)
+          .catch(reject);
+      },
+      200 // 200ms debounce time
+    )
+  ).current;
+
+  const handleSettingChange = useCallback(
+    (key: string, value: any): Promise<AxiosResponse<any> | AxiosError<any> | void> => {
+      setLocalSettings(prev => {
+        if (!prev) return { device_id: deviceIdFull, [key]: value };
+        return { ...prev, [key]: value };
+      });
+      return new Promise((resolve, reject) => {
+        debouncedUpdate(key, value, resolve, reject);
+      });
+    },
+    [debouncedUpdate, deviceIdFull]
+  )
+
+  // Settings keys for tabs
+  const triggerKeys = ['trigger_count', 'trigger_time_interval', 'trigger_delay']
+  const continuousKeys = ['aperture_integration_time', 'aperture_auto', 'current_range', 'current_range_auto', 'current_range_auto_upper_limit', 'current_range_auto_lower_limit']
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
@@ -77,87 +127,68 @@ function RouteComponent() {
           Reset Error
         </Button>
       </Box>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerStartContinuousMeasurement({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Start Continuous
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerStopContinuousMeasurement({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Stop Continuous
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Init Trigger
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerStartTriggerBasedMeasurement({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Start Trigger
-        </Button>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerGetElectrometerState({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Get State
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerGetElectrometerSettings({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Get Settings
-        </Button>
-        <Button
-          onClick={async () => {
-            // Set a valid setting: e.g., set current_range_auto to 'ON' (as a demo)
-            return await ElectrometerService.electrometerSetElectrometerState({
-              path: { device_id: deviceIdFull },
-              body: { current_range_auto: 'ON' }
-            })
-          }}
-        >
-          Set Auto Range ON
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerGetCurrentData({
-              path: { device_id: deviceIdFull }
-            })
-          }}
-        >
-          Get Data
-        </Button>
-      </Box>
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tab label="Continuous Measurement" />
+        <Tab label="Trigger Measurement" />
+      </Tabs>
+      {tab === 0 && (
+        <Box>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+            <Button
+              onClick={async () => {
+                return await ElectrometerService.electrometerStartContinuousMeasurement({
+                  path: { device_id: deviceIdFull }
+                })
+              }}
+            >
+              Start Continuous
+            </Button>
+            <Button
+              onClick={async () => {
+                return await ElectrometerService.electrometerStopContinuousMeasurement({
+                  path: { device_id: deviceIdFull }
+                })
+              }}
+            >
+              Stop Continuous
+            </Button>
+          </Box>
+          <DeviceSettingsForm
+            settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
+            onChange={handleSettingChange}
+          />
+        </Box>
+      )}
+      {tab === 1 && (
+        <Box>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+            <Button
+              onClick={async () => {
+                return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement({
+                  path: { device_id: deviceIdFull }
+                })
+              }}
+            >
+              Init Trigger
+            </Button>
+            <Button
+              onClick={async () => {
+                return await ElectrometerService.electrometerStartTriggerBasedMeasurement({
+                  path: { device_id: deviceIdFull }
+                })
+              }}
+            >
+              Start Trigger
+            </Button>
+          </Box>
+          <DeviceSettingsForm
+            settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => triggerKeys.includes(k)))}
+            onChange={handleSettingChange}
+          />
+        </Box>
+      )}
       <Divider sx={{ my: 2 }} />
       <DeviceStateDisplay state={state} />
-      <DeviceSettingsDisplay settings={settings} />
       <TimeSeriesChart
         xData={data?.time ?? []}
         yData={data?.current ?? []}

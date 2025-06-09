@@ -207,9 +207,9 @@
         "tags": [
           "electrometer"
         ],
-        "summary": "Set Electrometer State",
+        "summary": "Set Electrometer Settings",
         "description": "Set the one or more setting of the electrometer.",
-        "operationId": "electrometer-set_electrometer_state",
+        "operationId": "electrometer-set_electrometer_settings",
         "parameters": [
           {
             "name": "device_id",
@@ -236,7 +236,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ElectrometerSettings"
+                  "$ref": "#/components/schemas/BaseResponse"
                 }
               }
             }

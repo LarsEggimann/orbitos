@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.69.2",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^22.5.4",
     "@types/plotly.js-dist-min": "^2.3.4",
     "@types/react": "^19.0.8",

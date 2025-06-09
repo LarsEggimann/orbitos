@@ -75,6 +75,8 @@ def connect_to_electrometer(
     """
     resp = controller.connect_to_keysight_em(ip)
     background_tasks.add_task(controller.init_settings)
+    import time
+    time.sleep(1)  # Allow some time for the connection to stabilize
     return BaseResponse(
         message=f"Connected to {controller.device_id.value} at {ip}, IDN: {resp}"
     )
@@ -116,8 +118,8 @@ async def get_electrometer_settings(controller: ControllerDep):
     return controller.settings.get()
 
 
-@router.post("/{device_id}/settings", response_model=ElectrometerSettings)
-def set_electrometer_state(
+@router.post("/{device_id}/settings", response_model=BaseResponse)
+def set_electrometer_settings(
     controller: ControllerDep, settings: ElectrometerSettingsSet
 ):
     """
@@ -127,7 +129,10 @@ def set_electrometer_state(
     assert_idle(controller)
     assert_no_errors(controller)
     controller.update_settings(settings)
-    return controller.settings.get()
+    canged_fields = controller.settings.get_changed_fields_compared_to_settings_before_change()
+    return BaseResponse(
+        message=f"Settings updated for {controller.device_id.value}. Changed fields: {canged_fields}"
+    )
 
 
 @router.post("/{device_id}/state/reset-error", response_model=BaseResponse)

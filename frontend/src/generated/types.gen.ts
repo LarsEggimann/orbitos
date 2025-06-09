@@ -343,7 +343,7 @@ export type ElectrometerGetElectrometerSettingsResponses = {
 
 export type ElectrometerGetElectrometerSettingsResponse = ElectrometerGetElectrometerSettingsResponses[keyof ElectrometerGetElectrometerSettingsResponses];
 
-export type ElectrometerSetElectrometerStateData = {
+export type ElectrometerSetElectrometerSettingsData = {
     body: ElectrometerSettingsSet;
     path: {
         device_id: ElectrometerId;
@@ -352,23 +352,23 @@ export type ElectrometerSetElectrometerStateData = {
     url: '/orbitos-api/v1/{device_id}/settings';
 };
 
-export type ElectrometerSetElectrometerStateErrors = {
+export type ElectrometerSetElectrometerSettingsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ElectrometerSetElectrometerStateError = ElectrometerSetElectrometerStateErrors[keyof ElectrometerSetElectrometerStateErrors];
+export type ElectrometerSetElectrometerSettingsError = ElectrometerSetElectrometerSettingsErrors[keyof ElectrometerSetElectrometerSettingsErrors];
 
-export type ElectrometerSetElectrometerStateResponses = {
+export type ElectrometerSetElectrometerSettingsResponses = {
     /**
      * Successful Response
      */
-    200: ElectrometerSettings;
+    200: BaseResponse;
 };
 
-export type ElectrometerSetElectrometerStateResponse = ElectrometerSetElectrometerStateResponses[keyof ElectrometerSetElectrometerStateResponses];
+export type ElectrometerSetElectrometerSettingsResponse = ElectrometerSetElectrometerSettingsResponses[keyof ElectrometerSetElectrometerSettingsResponses];
 
 export type ElectrometerResetElectrometerErrorData = {
     body?: never;
