@@ -13,6 +13,7 @@ import Tab from '@mui/material/Tab'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import type { AxiosResponse, AxiosError } from 'axios';
+import IpAutocomplete from '~/components/ui/IpAutocomplete';
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -62,7 +63,7 @@ function RouteComponent() {
           .then(resolve)
           .catch(reject);
       },
-      200 // 200ms debounce time
+      200 // debounce time
     )
   ).current;
 
@@ -83,18 +84,34 @@ function RouteComponent() {
   const triggerKeys = ['trigger_count', 'trigger_time_interval', 'trigger_delay']
   const continuousKeys = ['aperture_integration_time', 'aperture_auto', 'current_range', 'current_range_auto', 'current_range_auto_upper_limit', 'current_range_auto_lower_limit']
 
+  // IP Dropdown State
+  const ipOptions = [
+    { label: '192.168.113.72' },
+    { label: '192.168.113.73' }
+  ];
+  // Default IP logic: 72 for electrometer 1, 73 for electrometer 2
+  const defaultIp = deviceId === '1' ? '192.168.113.72' : deviceId === '2' ? '192.168.113.73' : ipOptions[0].label;
+  const [ip, setIp] = useState(defaultIp);
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
       <Typography variant="h4" gutterBottom>Electrometer {deviceId}</Typography>
       <Typography variant="subtitle1" gutterBottom>Live State via WebSocket {connected ? '🟢' : '🔴'}</Typography>
       <Divider sx={{ my: 2 }} />
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+        <IpAutocomplete
+          value={ip}
+          onChange={setIp}
+          options={ipOptions}
+          label="Electrometer IP"
+          sx={{ minWidth: 220 }}
+        />
         <Button
           onClick={async () => {
             return await ElectrometerService.electrometerConnectToElectrometer({
               path: {
                 device_id: deviceIdFull,
-                ip: '192.168.113.72'
+                ip: ip
               }
             })
           }}

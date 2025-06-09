@@ -75,8 +75,6 @@ def connect_to_electrometer(
     """
     resp = controller.connect_to_keysight_em(ip)
     background_tasks.add_task(controller.init_settings)
-    import time
-    time.sleep(1)  # Allow some time for the connection to stabilize
     return BaseResponse(
         message=f"Connected to {controller.device_id.value} at {ip}, IDN: {resp}"
     )

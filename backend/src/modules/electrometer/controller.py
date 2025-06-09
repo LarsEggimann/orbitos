@@ -372,7 +372,7 @@ class KeysightEM:
                     f"Error in _wirte_and_log: {error_request}, command: {command}"
                 )
                 logger.error(error_string)
-                self.state.update(error="Error in _write_and_log with command: "+ command + " error string: " + error_string)
+                self.state.update(error=error_string)
                 self._write_and_log("*CLS")
         except pyvisa.errors.VisaIOError as e:
             logger.error("Write: %s -> Error: %s", command, e)
