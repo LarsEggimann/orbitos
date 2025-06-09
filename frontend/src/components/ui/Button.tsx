@@ -34,7 +34,8 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
             if (isAxiosError(result)) {
                 // Error response from axios
                 const msg = result.response?.data?.message || result.message || 'An error occurred';
-                setToastMsg(msg);
+                const additionalInfo = result.response?.data?.detail || '';
+                setToastMsg(msg + (additionalInfo ? `: ${additionalInfo}` : ''));
                 setToastSeverity('error');
                 setOpen(true);
             } else if (result && typeof result === 'object' && 'data' in result && result.data && typeof result.data === 'object' && 'message' in result.data) {

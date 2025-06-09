@@ -147,6 +147,11 @@ class KeysightEM:
             try:
                 # make sure the cur is a float
                 cur = float(cur)
+                if cur > 1e30: # if the current is too high, skip this measurement
+                    logger.warning(
+                        "Current value %s is too high, skipping this measurement", cur
+                    )
+                    continue
                 self.time_list = [time.time()]
                 self.current_list = [cur]
                 if not first_datapoint_received and cur:
