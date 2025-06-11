@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Button, { ButtonProps } from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import type { AxiosResponse, AxiosError } from 'axios';
+import Snackbar from './Snackbar';
+import { isAxiosError } from '~/utils/helpers';
 
 export type ReusableButtonProps = {
     onClick?: () => Promise<AxiosResponse<any> | AxiosError<any> | void>;
@@ -17,18 +17,15 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
     ...rest
 }) => {
     const [loading, setLoading] = React.useState(false);
-    const [toastMsg, setToastMsg] = React.useState<string | null>(null);
+    const [toastMsg, setToastMsg] = React.useState<string | undefined>(undefined);
     const [toastSeverity, setToastSeverity] = React.useState<'success' | 'error'>('success');
     const [open, setOpen] = React.useState(false);
 
-    function isAxiosError(obj: any): obj is AxiosError<any> {
-        return obj && obj.isAxiosError;
-    }
 
     const handleClick = async () => {
         if (!onClick) return;
         setLoading(true);
-        setToastMsg(null);
+        setToastMsg(undefined);
         try {
             const result = await onClick();
             if (isAxiosError(result)) {
@@ -77,11 +74,14 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
             >
                 {children}
             </Button>
-            <Snackbar open={open} autoHideDuration={4000} onClose={() => setOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                <Alert onClose={() => setOpen(false)} severity={toastSeverity} sx={{ width: '100%' }}>
-                    {toastMsg}
-                </Alert>
-            </Snackbar>
+
+            <Snackbar
+                openState={[open, setOpen]}
+                alertProps={{
+                    message: toastMsg,
+                    severity: toastSeverity,
+                }}
+            />
         </>
     );
 };

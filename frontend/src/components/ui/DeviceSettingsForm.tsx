@@ -3,9 +3,9 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import type { AxiosError, AxiosResponse } from 'axios';
+import Snackbar from './Snackbar';
+import { isAxiosError } from '~/utils/helpers';
 
 // Exclude these keys from settings
 const EXCLUDED_KEYS = ['function', 'trigger_bypass'];
@@ -30,17 +30,26 @@ export function DeviceSettingsForm({ settings, onChange, disabled }: {
     if (typeof settings[key] === 'number' && value !== '') {
       val = Number(value);
     }
+
     try {
       const result = await onChange(key, val);
-      // Success: check for BaseResponse.message
-      if (result && typeof result === 'object' && 'data' in result && result.data && typeof result.data === 'object' && 'message' in result.data) {
-        setSnackbar({ open: true, msg: result.data.message, severity: 'success' });
-      }
-    } catch (err: any) {
-      // Axios error
-      const msg = err?.response?.data?.message || err?.message || 'An error occurred';
-      setSnackbar({ open: true, msg, severity: 'error' });
-    }
+            if (isAxiosError(result)) {
+                // Error response from axios
+                const msg = result.response?.data?.message || result.message || 'An error occurred';
+                const additionalInfo = result.response?.data?.detail || '';
+                setSnackbar({ open: true, msg: msg + (additionalInfo ? `: ${additionalInfo}` : ''), severity: 'error' });
+            } else if (result && typeof result === 'object' && 'data' in result && result.data && typeof result.data === 'object' && 'message' in result.data) {
+                // Success response
+                const msg = (result.data as any).message;
+                if (typeof msg === 'string') {
+                    setSnackbar({ open: true, msg, severity: 'success' });
+                }
+            }
+        } catch (err: any) {
+            // Network or unexpected error
+            const msg = err?.response?.data?.message || err?.message || 'An error occurred';
+            setSnackbar({ open: true, msg, severity: 'error' });
+        }
   }, [onChange, settings]);
 
   return (
@@ -74,11 +83,14 @@ export function DeviceSettingsForm({ settings, onChange, disabled }: {
           />
         );
       })}
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(s => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert onClose={() => setSnackbar(s => ({ ...s, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.msg}
-        </Alert>
-      </Snackbar>
+      <Snackbar
+        openState={[snackbar.open, (open) => setSnackbar(prev => ({ ...prev, open: open as boolean }))]}
+        alertProps={{
+          message: snackbar.msg,
+          severity: snackbar.severity
+        }}
+
+      />
     </Box>
   );
 }

@@ -13,7 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as PathlessLayoutImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexImport } from './routes/_pathlessLayout/index'
-import { Route as PathlessLayoutElectrometerDeviceIdImport } from './routes/_pathlessLayout/electrometer/$deviceId'
+import { Route as PathlessLayoutElectrometerDeviceIdImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 
 // Create/Update Routes
 
@@ -144,7 +144,7 @@ export const routeTree = rootRoute
       "parent": "/_pathlessLayout"
     },
     "/_pathlessLayout/electrometer/$deviceId": {
-      "filePath": "_pathlessLayout/electrometer/$deviceId.tsx",
+      "filePath": "_pathlessLayout/electrometer.$deviceId.tsx",
       "parent": "/_pathlessLayout"
     }
   }
