@@ -65,6 +65,8 @@ class KeysightEM:
         self.time_list: list[str] = []
         self.current_list: list[str] = []
 
+        self._em_lock = threading.Lock()  # thread lock for device access
+
         # start health check thread
         self.health_check_thread = threading.Thread(target=self._health_check)
         self.health_check_thread.daemon = True
@@ -280,7 +282,7 @@ class KeysightEM:
 
             # testing connection
             logger.info("Testing connection to EM %s at %s", self.device_id, ip)
-            idn = self.em.query("*IDN?")
+            idn = self._em_query("*IDN?")
             logger.info("*IDN?: %s", idn)
             return idn
         except pyvisa.errors.VisaIOError as e:
@@ -378,7 +380,9 @@ class KeysightEM:
             logger.error("Write: %s -> Error: %s", command, e)
 
     def _em_query(self, command: str) -> str:
-        return self.em.query(command)
+        with self._em_lock:
+            return self.em.query(command)
 
     def _em_write(self, command: str) -> int:
-        return self.em.write(command)
+        with self._em_lock:
+            return self.em.write(command)
