@@ -540,13 +540,13 @@
         }
       }
     },
-    "/orbitos-api/v1/websocket/type": {
+    "/orbitos-api/v1/types/websocket": {
       "get": {
         "tags": [
-          "websocket"
+          "types"
         ],
         "summary": "Get Websocket Type",
-        "operationId": "websocket-get_websocket_type",
+        "operationId": "types-get_websocket_type",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -554,6 +554,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BaseWebSocketMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orbitos-api/v1/types/base-state": {
+      "get": {
+        "tags": [
+          "types"
+        ],
+        "summary": "Get Base State Type",
+        "operationId": "types-get_base_state_type",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseState"
                 }
               }
             }
@@ -587,6 +608,40 @@
           "message"
         ],
         "title": "BaseResponse"
+      },
+      "BaseState": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "unknown"
+          },
+          "connection_status": {
+            "$ref": "#/components/schemas/ConnectionStatus",
+            "default": "disconnected"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id"
+        ],
+        "title": "BaseState",
+        "description": "Base class for all state models."
       },
       "BaseWebSocketMessage": {
         "properties": {

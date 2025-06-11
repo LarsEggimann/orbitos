@@ -8,7 +8,7 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from src.shared.models import WebSocketMessageType, BaseWebSocketMessage
+from src.shared.models import WebSocketMessageType, BaseWebSocketMessage, BaseState, ConnectionStatus
 from src.core.config import config
 from src.core.logging import setup_logging
 from src.core.db import init_db
@@ -19,9 +19,9 @@ logger = logging.getLogger()
 
 api_router = APIRouter()
 
-websocket_router = APIRouter(tags=["websocket"], prefix="/websocket")
+common_types_router = APIRouter(tags=["types"], prefix="/types")
 
-@websocket_router.get("/type", response_model=BaseWebSocketMessage)
+@common_types_router.get("/websocket", response_model=BaseWebSocketMessage)
 async def get_websocket_type():
     return BaseWebSocketMessage(
         type=WebSocketMessageType.STATE,
@@ -29,8 +29,17 @@ async def get_websocket_type():
         content={}
     )
 
+@common_types_router.get("/base-state", response_model=BaseState)
+async def get_base_state_type():
+    return BaseState(
+        device_id="",
+        status="unknown",
+        connection_status=ConnectionStatus.DISCONNECTED,
+        error=None
+    )
+
 api_router.include_router(electrometer_router)
-api_router.include_router(websocket_router)
+api_router.include_router(common_types_router)
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

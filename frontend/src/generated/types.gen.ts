@@ -15,6 +15,26 @@ export type BaseResponse = {
 };
 
 /**
+ * BaseState
+ * Base class for all state models.
+ */
+export type BaseState = {
+    /**
+     * Device Id
+     */
+    device_id: string;
+    /**
+     * Status
+     */
+    status?: string;
+    connection_status?: ConnectionStatus;
+    /**
+     * Error
+     */
+    error?: string | null;
+};
+
+/**
  * BaseWebSocketMessage
  */
 export type BaseWebSocketMessage = {
@@ -541,21 +561,37 @@ export type ElectrometerStartTriggerBasedMeasurementResponses = {
 
 export type ElectrometerStartTriggerBasedMeasurementResponse = ElectrometerStartTriggerBasedMeasurementResponses[keyof ElectrometerStartTriggerBasedMeasurementResponses];
 
-export type WebsocketGetWebsocketTypeData = {
+export type TypesGetWebsocketTypeData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/orbitos-api/v1/websocket/type';
+    url: '/orbitos-api/v1/types/websocket';
 };
 
-export type WebsocketGetWebsocketTypeResponses = {
+export type TypesGetWebsocketTypeResponses = {
     /**
      * Successful Response
      */
     200: BaseWebSocketMessage;
 };
 
-export type WebsocketGetWebsocketTypeResponse = WebsocketGetWebsocketTypeResponses[keyof WebsocketGetWebsocketTypeResponses];
+export type TypesGetWebsocketTypeResponse = TypesGetWebsocketTypeResponses[keyof TypesGetWebsocketTypeResponses];
+
+export type TypesGetBaseStateTypeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/types/base-state';
+};
+
+export type TypesGetBaseStateTypeResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseState;
+};
+
+export type TypesGetBaseStateTypeResponse = TypesGetBaseStateTypeResponses[keyof TypesGetBaseStateTypeResponses];
 
 export type ClientOptions = {
     baseURL: `${string}://${string}` | (string & {});
