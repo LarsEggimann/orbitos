@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import Button from '~/components/ui/Button'
-import { ElectrometerService, ElectrometerId } from '~/generated'
+import { ElectrometerService, ElectrometerId, BaseState } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
-import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceDisplays'
+import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceStateDisplay'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
@@ -153,7 +153,7 @@ function RouteComponent() {
         hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
       />
 
-      <DeviceStateDisplay state={state} />
+      <DeviceStateDisplay state={state as BaseState} />
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Continuous Measurement" />
