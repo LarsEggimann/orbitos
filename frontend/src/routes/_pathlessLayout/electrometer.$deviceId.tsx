@@ -14,6 +14,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import type { AxiosResponse, AxiosError } from 'axios';
 import IpAutocomplete from '~/components/ui/IpAutocomplete';
+import Stack from '@mui/material/Stack'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -27,7 +28,7 @@ function RouteComponent() {
   var { state, data, settings, connected } = useDeviceWebSocket({
     url: `${import.meta.env.VITE_ORBITOS_API_WEBSOCKET_BASE_URL}/${deviceIdFull}`,
     fetchInitialState: async () => (await ElectrometerService.electrometerGetElectrometerState(deviceIdPathArg)).data!,
-    fetchInitialData: async () =>  (await ElectrometerService.electrometerGetCurrentData(deviceIdPathArg)).data!,
+    fetchInitialData: async () => (await ElectrometerService.electrometerGetCurrentData(deviceIdPathArg)).data!,
     fetchInitialSettings: async () => (await ElectrometerService.electrometerGetElectrometerSettings(deviceIdPathArg)).data!,
     dataAppendFunction: (prevData, newData) => {
       if (!prevData) return newData
@@ -94,11 +95,19 @@ function RouteComponent() {
   const [ip, setIp] = useState(defaultIp);
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
-      <Typography variant="h4" gutterBottom>Electrometer {deviceId}</Typography>
-      <Typography variant="subtitle1" gutterBottom>Live State via WebSocket {connected ? '🟢' : '🔴'}</Typography>
-      <Divider sx={{ my: 2 }} />
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+    <Box sx={{ p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}>
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <Typography variant="h4">Electrometer {deviceId}</Typography>
+        <Typography variant="subtitle1">Live State via WebSocket {connected ? '🟢' : '🔴'}</Typography>
+      </Stack>
+      <Divider sx={{ my: 2, mt: 0 }} />
+
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', gap: 2, my: 2 }}>
         <IpAutocomplete
           value={ip}
           onChange={setIp}
@@ -109,10 +118,7 @@ function RouteComponent() {
         <Button
           onClick={async () => {
             return await ElectrometerService.electrometerConnectToElectrometer({
-              path: {
-                device_id: deviceIdFull,
-                ip: ip
-              }
+              path: { device_id: deviceIdFull, ip: ip }
             })
           }}
         >
@@ -120,30 +126,35 @@ function RouteComponent() {
         </Button>
         <Button
           onClick={async () => {
-            return await ElectrometerService.electrometerDisconnectElectrometer({
-              path: { device_id: deviceIdFull }
-            })
+            return await ElectrometerService.electrometerDisconnectElectrometer(deviceIdPathArg)
           }}
+          color='warning'
         >
           Disconnect
         </Button>
+        <Box flexGrow={1}></Box>
         <Button
           onClick={async () => {
-            return await ElectrometerService.electrometerResetElectrometer()
+            return await ElectrometerService.electrometerResetElectrometerError(deviceIdPathArg)
           }}
-        >
-          Reset All
-        </Button>
-        <Button
-          onClick={async () => {
-            return await ElectrometerService.electrometerResetElectrometerError({
-              path: { device_id: deviceIdFull }
-            })
-          }}
+          
         >
           Reset Error
         </Button>
-      </Box>
+      </Stack>
+
+      <TimeSeriesChart
+        xData={data?.time ?? []}
+        yData={data?.current ?? []}
+        height={400}
+        title={`Electrometer ${deviceId}`}
+        xAxisLabel='Time'
+        yAxisLabel='Current [A]'
+        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
+      />
+
+      <DeviceStateDisplay state={state} />
+
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Continuous Measurement" />
         <Tab label="Trigger Measurement" />
@@ -153,18 +164,14 @@ function RouteComponent() {
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             <Button
               onClick={async () => {
-                return await ElectrometerService.electrometerStartContinuousMeasurement({
-                  path: { device_id: deviceIdFull }
-                })
+                return await ElectrometerService.electrometerStartContinuousMeasurement(deviceIdPathArg)
               }}
             >
               Start Continuous
             </Button>
             <Button
               onClick={async () => {
-                return await ElectrometerService.electrometerStopContinuousMeasurement({
-                  path: { device_id: deviceIdFull }
-                })
+                return await ElectrometerService.electrometerStopContinuousMeasurement(deviceIdPathArg)
               }}
             >
               Stop Continuous
@@ -181,18 +188,14 @@ function RouteComponent() {
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             <Button
               onClick={async () => {
-                return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement({
-                  path: { device_id: deviceIdFull }
-                })
+                return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement(deviceIdPathArg)
               }}
             >
               Init Trigger
             </Button>
             <Button
               onClick={async () => {
-                return await ElectrometerService.electrometerStartTriggerBasedMeasurement({
-                  path: { device_id: deviceIdFull }
-                })
+                return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
               }}
             >
               Start Trigger
@@ -205,16 +208,7 @@ function RouteComponent() {
         </Box>
       )}
       <Divider sx={{ my: 2 }} />
-      <DeviceStateDisplay state={state} />
-      <TimeSeriesChart
-        xData={data?.time ?? []}
-        yData={data?.current ?? []}
-        height={400}
-        title={`Electrometer ${deviceId}`}
-        xAxisLabel='Time'
-        yAxisLabel='Current [A]'
-        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
-      />
+      
     </Box>
   )
 }

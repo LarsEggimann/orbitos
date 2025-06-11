@@ -26,22 +26,24 @@ type LayoutProps = {
 
 function Layout({ children }: LayoutProps) {
   return (
-    <AppProvider
-      navigation={NAVIGATION}
+    // <AppProvider
+    //   navigation={NAVIGATION}
       
-    >
-      <DashboardLayout
-        branding={{
-          title: "ORBITOS v2",
-          homeUrl: "/",
-          logo: <Logo />,
-        }}
+    // >
+    //   <DashboardLayout
+    //     branding={{
+    //       title: "ORBITOS v2",
+    //       homeUrl: "/",
+    //       logo: <Logo />,
+    //     }}
         
-      >
+    //   >
+    //     </DashboardLayout>
+    //   </AppProvider>
 
         <Box
           sx={{
-            p: 4,
+            p: 2,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'left',
@@ -50,8 +52,6 @@ function Layout({ children }: LayoutProps) {
         >
           {children}
         </Box>
-      </DashboardLayout>
-    </AppProvider>
   );
 }
 

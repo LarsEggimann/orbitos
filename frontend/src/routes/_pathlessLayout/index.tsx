@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_pathlessLayout/')({
   component: Home,
@@ -7,7 +7,14 @@ export const Route = createFileRoute('/_pathlessLayout/')({
 function Home() {
   return (
     <div className='p-2'>
-      <h3>Welcome Home!!!</h3>
+      <h3>This is ORBITOS v2!!!</h3>
+      <Link to='/electrometer/$deviceId' params={{ deviceId: '1' }}>
+        Go to Electrometer 1
+      </Link>
+      <br />
+      <Link to='/electrometer/$deviceId' params={{ deviceId: '2' }}>
+        Go to Electrometer 2
+      </Link>
     </div>
   )
 }

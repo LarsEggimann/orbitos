@@ -10,7 +10,7 @@ export type ReusableButtonProps = {
 
 const ReusableButton: React.FC<ReusableButtonProps> = ({
     onClick,
-    variant = 'text',
+    variant = 'outlined',
     color = 'primary',
     sx,
     children,
@@ -70,6 +70,7 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
                     textTransform: 'none',
                     display: 'flex',
                     alignItems: 'center',
+                    textAlign: 'center',
                     ...sx,
                 }}
                 {...rest}
