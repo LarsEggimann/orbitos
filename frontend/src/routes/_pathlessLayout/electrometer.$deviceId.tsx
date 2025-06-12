@@ -28,13 +28,34 @@ function RouteComponent() {
   const deviceIdFull = `electrometer_${deviceId}` as ElectrometerId
   const deviceIdPathArg = { path: { device_id: deviceIdFull } }
 
-  const [startDate, setStartDate] = React.useState(new Date(new Date().setHours(0, 0, 0, 0)) as Date | null)
+  const [startDate, setStartDate] = React.useState(null as Date | null)
   const [endDate, setEndDate] = React.useState(null as Date | null)
+  const [datesLoaded, setDatesLoaded] = useState(false);
+
+  // persist date range in localStorage using deviceIdFull as key
+  useEffect(() => {
+    const savedStart = localStorage.getItem(`${deviceIdFull}_startDate`);
+    const savedEnd = localStorage.getItem(`${deviceIdFull}_endDate`);
+    if (savedStart) {
+      setStartDate(new Date(savedStart));
+    } else {
+      // Default to 24 hours ago if no start date is saved
+      setStartDate(new Date(Date.now() - 24 * 60 * 60 * 1000)); // 24 hours ago
+    }
+    if (savedEnd) setEndDate(new Date(savedEnd));
+    setDatesLoaded(true);
+  }, [deviceIdFull]);
+
+  useEffect(() => {
+    if (startDate) localStorage.setItem(`${deviceIdFull}_startDate`, startDate.toISOString());
+    if (endDate) localStorage.setItem(`${deviceIdFull}_endDate`, endDate.toISOString());
+  }, [startDate, endDate, deviceIdFull]);
+
 
   const [data, setData] = useState<CurrentDataResponse | undefined>(undefined)
 
   useQuery({
-    queryKey: ['electrometerData', deviceIdFull, startDate, endDate],
+    queryKey: [deviceIdFull, startDate, endDate],
     queryFn: async () => {
       const response = await ElectrometerService.electrometerGetCurrentData({
         ...deviceIdPathArg,
@@ -43,9 +64,13 @@ function RouteComponent() {
           end: endDate?.toISOString(),
         }
       })
+      console.log('startDate:', startDate, 'endDate:', endDate)
       setData(response.data)
+      console.log(response)
+      return response.data
     },
     refetchOnWindowFocus: false,
+    enabled: datesLoaded,
   })
 
 
