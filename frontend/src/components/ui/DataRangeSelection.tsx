@@ -3,6 +3,7 @@ import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTim
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import Stack from '@mui/material/Stack';
 import PrestyledButton from './PrestyledButton';
 
@@ -21,9 +22,13 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
     const [startDate, setStartDate] = startState;
     const [endDate, setEndDate] = endState;
 
+    React.useEffect(() => {
+        dayjs.locale('de');
+    }, []);
+
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
 
             <Stack
                 direction="row"
