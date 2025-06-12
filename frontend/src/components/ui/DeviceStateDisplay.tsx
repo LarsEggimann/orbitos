@@ -24,8 +24,8 @@ export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseSt
   const errorText = error;
 
   // Status color and spinner
-  const isIdle = statusText.toLowerCase() === 'idle';
-  const statusColor = isIdle ? 'default' : 'primary';
+  const isIdleOrUnknown = statusText.toLowerCase() === 'idle' || statusText.toLowerCase() === 'unknown';
+  const statusColor = isIdleOrUnknown ? 'default' : 'primary';
 
   // Connection color and spinner
   let connectionColor: 'success' | 'warning' | 'error' | 'default' = 'default';
@@ -53,7 +53,7 @@ export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseSt
               <Typography
                 color={statusColor}
                 sx={{ display: 'flex', alignItems: 'center' }}>
-                {!isIdle && (
+                {!isIdleOrUnknown && (
                       <CircularProgress size={16} sx={{ mr: 2 }} />
                     )}
                     {statusText}
