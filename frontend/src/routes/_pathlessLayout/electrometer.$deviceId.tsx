@@ -48,7 +48,11 @@ function RouteComponent() {
 
   useEffect(() => {
     if (startDate) localStorage.setItem(`${deviceIdFull}_startDate`, startDate.toISOString());
-    if (endDate) localStorage.setItem(`${deviceIdFull}_endDate`, endDate.toISOString());
+    if (endDate) {
+      localStorage.setItem(`${deviceIdFull}_endDate`, endDate.toISOString());
+    } else { // if endDate is null, clear it from localStorage, this allows to reset the end date
+      localStorage.removeItem(`${deviceIdFull}_endDate`);
+    }
   }, [startDate, endDate, deviceIdFull]);
 
 
