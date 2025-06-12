@@ -1,7 +1,7 @@
 import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
-import Button from '~/components/ui/Button'
+import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import { ElectrometerService, ElectrometerId, BaseState, CurrentDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceStateDisplay'
@@ -140,7 +140,7 @@ function RouteComponent() {
           label="Electrometer IP"
           sx={{ minWidth: 220 }}
         />
-        <Button
+        <ExecQueryButton
           onClick={async () => {
             return await ElectrometerService.electrometerConnectToElectrometer({
               path: { device_id: deviceIdFull, ip: ip }
@@ -148,24 +148,24 @@ function RouteComponent() {
           }}
         >
           Connect
-        </Button>
-        <Button
+        </ExecQueryButton>
+        <ExecQueryButton
           onClick={async () => {
             return await ElectrometerService.electrometerDisconnectElectrometer(deviceIdPathArg)
           }}
           color='warning'
         >
           Disconnect
-        </Button>
+        </ExecQueryButton>
         <Box flexGrow={1}></Box>
-        <Button
+        <ExecQueryButton
           onClick={async () => {
             return await ElectrometerService.electrometerResetElectrometerError(deviceIdPathArg)
           }}
 
         >
           Reset Error
-        </Button>
+        </ExecQueryButton>
       </Stack>
 
       <DateRangeSelect
@@ -196,20 +196,20 @@ function RouteComponent() {
       {tab === 0 && (
         <Box>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <Button
+            <ExecQueryButton
               onClick={async () => {
                 return await ElectrometerService.electrometerStartContinuousMeasurement(deviceIdPathArg)
               }}
             >
               Start Continuous
-            </Button>
-            <Button
+            </ExecQueryButton>
+            <ExecQueryButton
               onClick={async () => {
                 return await ElectrometerService.electrometerStopContinuousMeasurement(deviceIdPathArg)
               }}
             >
               Stop Continuous
-            </Button>
+            </ExecQueryButton>
           </Box>
           <DeviceSettingsForm
             settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
@@ -220,20 +220,20 @@ function RouteComponent() {
       {tab === 1 && (
         <Box>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <Button
+            <ExecQueryButton
               onClick={async () => {
                 return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement(deviceIdPathArg)
               }}
             >
               Init Trigger
-            </Button>
-            <Button
+            </ExecQueryButton>
+            <ExecQueryButton
               onClick={async () => {
                 return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
               }}
             >
               Start Trigger
-            </Button>
+            </ExecQueryButton>
           </Box>
           <DeviceSettingsForm
             settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => triggerKeys.includes(k)))}

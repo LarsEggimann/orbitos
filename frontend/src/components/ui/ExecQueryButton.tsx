@@ -1,18 +1,15 @@
 import * as React from 'react';
-import Button, { ButtonProps } from '@mui/material/Button';
 import type { AxiosResponse, AxiosError } from 'axios';
 import Snackbar from './Snackbar';
 import { isAxiosError } from '~/utils/helpers';
+import PrestyledButton from './PrestyledButton';
 
 export type ReusableButtonProps = {
     onClick?: () => Promise<AxiosResponse<any> | AxiosError<any> | void>;
-} & ButtonProps;
+} & React.ComponentProps<typeof PrestyledButton>;
 
-const ReusableButton: React.FC<ReusableButtonProps> = ({
+const ExecQueryButton: React.FC<ReusableButtonProps> = ({
     onClick,
-    variant = 'outlined',
-    color = 'primary',
-    sx,
     children,
     ...rest
 }) => {
@@ -20,7 +17,6 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
     const [toastMsg, setToastMsg] = React.useState<string | undefined>(undefined);
     const [toastSeverity, setToastSeverity] = React.useState<'success' | 'error'>('success');
     const [open, setOpen] = React.useState(false);
-
 
     const handleClick = async () => {
         if (!onClick) return;
@@ -57,24 +53,13 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
 
     return (
         <>
-            <Button
-                variant={variant}
-                color={color}
+            <PrestyledButton
                 onClick={handleClick}
-                loading={loading}
-                loadingPosition="start"
-                sx={{
-                    textTransform: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    ...sx,
-                }}
+                disabled={loading || rest.disabled}
                 {...rest}
             >
                 {children}
-            </Button>
-
+            </PrestyledButton>
             <Snackbar
                 openState={[open, setOpen]}
                 alertProps={{
@@ -86,4 +71,4 @@ const ReusableButton: React.FC<ReusableButtonProps> = ({
     );
 };
 
-export default ReusableButton;
+export default ExecQueryButton;
