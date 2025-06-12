@@ -950,7 +950,8 @@
           "unknown",
           "idle",
           "trigger_based_measurement_running",
-          "continuous_measurement_waiting_to_start",
+          "fetching_trigger_based_measurement_data",
+          "waiting_to_start_continuous_measurement",
           "continuous_measurement_running"
         ],
         "title": "ElectrometerStatus"

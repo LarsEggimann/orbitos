@@ -1,7 +1,8 @@
+import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import Button from '~/components/ui/Button'
-import { ElectrometerService, ElectrometerId, BaseState } from '~/generated'
+import { ElectrometerService, ElectrometerId, BaseState, CurrentDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceStateDisplay'
 import Box from '@mui/material/Box'
@@ -10,11 +11,13 @@ import Divider from '@mui/material/Divider'
 import { DeviceSettingsForm } from '~/components/ui/DeviceSettingsForm'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import type { AxiosResponse, AxiosError } from 'axios';
 import IpAutocomplete from '~/components/ui/IpAutocomplete';
 import Stack from '@mui/material/Stack'
+import { useQuery } from '@tanstack/react-query'
+import DateRangeSelect from '~/components/ui/DataRangeSelection'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -25,18 +28,40 @@ function RouteComponent() {
   const deviceIdFull = `electrometer_${deviceId}` as ElectrometerId
   const deviceIdPathArg = { path: { device_id: deviceIdFull } }
 
-  var { state, data, settings, connected } = useDeviceWebSocket({
+  const [startDate, setStartDate] = React.useState(new Date(new Date().setHours(0, 0, 0, 0)) as Date | null)
+  const [endDate, setEndDate] = React.useState(null as Date | null)
+
+  const [data, setData] = useState<CurrentDataResponse | undefined>(undefined)
+
+  useQuery({
+    queryKey: ['electrometerData', deviceIdFull, startDate, endDate],
+    queryFn: async () => {
+      const response = await ElectrometerService.electrometerGetCurrentData({
+        ...deviceIdPathArg,
+        query: {
+          start: startDate?.toISOString(),
+          end: endDate?.toISOString(),
+        }
+      })
+      setData(response.data)
+    },
+    refetchOnWindowFocus: false,
+  })
+
+
+  var { state, settings, connected } = useDeviceWebSocket<ElectrometerState, CurrentDataResponse, ElectrometerSettings>({
     url: `${import.meta.env.VITE_ORBITOS_API_WEBSOCKET_BASE_URL}/${deviceIdFull}`,
     fetchInitialState: async () => (await ElectrometerService.electrometerGetElectrometerState(deviceIdPathArg)).data!,
-    fetchInitialData: async () => (await ElectrometerService.electrometerGetCurrentData(deviceIdPathArg)).data!,
     fetchInitialSettings: async () => (await ElectrometerService.electrometerGetElectrometerSettings(deviceIdPathArg)).data!,
-    dataAppendFunction: (prevData, newData) => {
-      if (!prevData) return newData
-      return {
-        device_id: prevData.device_id,
-        time: [...prevData.time, ...newData.time],
-        current: [...prevData.current, ...newData.current],
-      }
+    dataAppendFunction: (newData) => {
+      setData(prevData => {
+        if (!prevData) return newData
+        return {
+          device_id: prevData.device_id,
+          time: [...prevData.time, ...newData.time],
+          current: [...prevData.current, ...newData.current],
+        }
+      })
     }
   })
 
@@ -137,11 +162,20 @@ function RouteComponent() {
           onClick={async () => {
             return await ElectrometerService.electrometerResetElectrometerError(deviceIdPathArg)
           }}
-          
+
         >
           Reset Error
         </Button>
       </Stack>
+
+      <DateRangeSelect
+        startState={[startDate, setStartDate]}
+        endState={[endDate, setEndDate]}
+      >
+        
+      </DateRangeSelect>
+
+
 
       <TimeSeriesChart
         xData={data?.time ?? []}
@@ -208,7 +242,7 @@ function RouteComponent() {
         </Box>
       )}
       <Divider sx={{ my: 2 }} />
-      
+
     </Box>
   )
 }

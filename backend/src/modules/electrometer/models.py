@@ -11,7 +11,8 @@ class ElectrometerStatus(str, Enum):
     UNKNOWN = "unknown"
     IDLE = "idle"
     TRIGGER_BASED_MEASUREMENT_RUNNING = "trigger_based_measurement_running"
-    CONTINUOUS_MEASUREMENT_WAITING_TO_START = "continuous_measurement_waiting_to_start"
+    FETCHING_TRIGGER_BASED_MEASUREMENT_DATA = "fetching_trigger_based_measurement_data"
+    WAITING_TO_START_CONTINUOUS_MEASUREMENT = "waiting_to_start_continuous_measurement"
     CONTINUOUS_MEASUREMENT_RUNNING = "continuous_measurement_running"
 
 

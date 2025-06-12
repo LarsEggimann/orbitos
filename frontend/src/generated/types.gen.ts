@@ -200,7 +200,7 @@ export type ElectrometerState = {
 /**
  * ElectrometerStatus
  */
-export type ElectrometerStatus = 'unknown' | 'idle' | 'trigger_based_measurement_running' | 'continuous_measurement_waiting_to_start' | 'continuous_measurement_running';
+export type ElectrometerStatus = 'unknown' | 'idle' | 'trigger_based_measurement_running' | 'fetching_trigger_based_measurement_data' | 'waiting_to_start_continuous_measurement' | 'continuous_measurement_running';
 
 /**
  * HTTPValidationError

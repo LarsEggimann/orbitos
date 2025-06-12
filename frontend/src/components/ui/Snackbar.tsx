@@ -1,14 +1,13 @@
 import * as React from 'react';
 import Snackbar, { SnackbarProps } from '@mui/material/Snackbar';
 import Alert, { AlertProps } from '@mui/material/Alert';
-import type { AxiosResponse, AxiosError } from 'axios';
 
 export type ReusableSnackbarProps = {
     openState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
     alertProps?: {
         message?: string;
         severity?: AlertProps['severity'];
-    };
+    } & AlertProps;
 } & SnackbarProps;
 
 const ReusableSnackbar: React.FC<ReusableSnackbarProps> = ({
@@ -25,7 +24,7 @@ const ReusableSnackbar: React.FC<ReusableSnackbarProps> = ({
 
     return (
         <>
-            <Snackbar open={open} autoHideDuration={4000} onClose={() => setOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+            <Snackbar open={open} autoHideDuration={4000} onClose={() => setOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} {...rest}>
                 <Alert onClose={() => setOpen(false)} severity={alertProps.severity} sx={{ width: '100%' }}>
                     {alertProps.message || children}
                 </Alert>

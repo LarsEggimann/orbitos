@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Plot from 'react-plotly.js'
 import * as Plotly from 'plotly.js-dist-min'
 
 interface TimeSeriesChartProps {
-  xData: number[] | string[]
+  xData: string[]
   yData: number[]
   title?: string
   xAxisLabel?: string
   yAxisLabel?: string
-  useTrnsitions?: boolean
+  useTransitions?: boolean
   animationDuration?: number // duration in milliseconds
   lineColor?: string
   hoverTemplate?: string
@@ -27,7 +27,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   title = 'Time Series Chart',
   xAxisLabel = 'Time',
   yAxisLabel = 'Value',
-  useTrnsitions: useTransitions = false,
+  useTransitions = false,
   animationDuration = 1000,
   hoverTemplate = '<b>X:</b> %{x}<br><b>Y:</b> %{y}<extra></extra>',
   lineColor,
@@ -36,7 +36,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   const textColor = '#1A202C'
   const gridColor = '#CBD5E0'
   const defaultLineColor = 'rgba(234, 104, 104, 0.9)'
-  
+
   const tooltipBgColor = 'rgba(255, 255, 255, 0.9)'
 
   const tooltipBorderColor = '#CBD5E0'
@@ -44,10 +44,32 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
   const finalLineColor = lineColor || defaultLineColor
 
-  const customData = x.map((i, j) => [new Date(i).toLocaleTimeString(), y[j]])
+  const [xAsDates, setXAsDates] = useState<Date[]>([])
+  const [customData, setCustomData] = useState<[string, number][]>([])
+
+  useEffect(() => {
+    const currentLength = xAsDates.length
+    if (x.length == currentLength + 1) { // compute only map the single new value (most common when we update via websocket)
+      const newX = x.slice(currentLength) // new x values as strings with timezone information
+      const newDates = newX.map(val => new Date(val)) // convert to Date objects, defaults to local timezone
+      setXAsDates(prev => prev.concat(newDates))
+      const newCustom = newDates.map((datetime, i) => [
+        datetime.toLocaleTimeString(),
+        y[currentLength + i],
+      ] as [string, number])
+      setCustomData(prev => prev.concat(newCustom))
+
+    } else { // if there is not exactly one new value, we map the full x array new
+      setXAsDates(x.map(val => new Date(val)))
+      setCustomData(x.map((val, i) => [
+        new Date(val).toLocaleTimeString(),
+        y[i],
+      ] as [string, number]))
+    }
+  }, [x, y])
 
   const getPlotData = (
-    xVals: number[] | string[],
+    xVals: Date[],
     yVals: number[],
   ): Plotly.Data[] => {
     return [
@@ -114,9 +136,9 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
       margin: { l: 60, r: 30, t: 35, b: 60 },
       transition: useTransitions
         ? {
-            duration: animationDuration,
-            easing: 'cubic-in-out',
-          }
+          duration: animationDuration,
+          easing: 'cubic-in-out',
+        }
         : undefined,
     }
   }
@@ -135,7 +157,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
   const getFigure = (): PlotlyFigure => {
     return {
-      data: getPlotData(x, y),
+      data: getPlotData(xAsDates, y),
       layout: getLayout(),
       config: getConfig(),
     }
@@ -144,7 +166,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   const [figure, setFigure] = useState<PlotlyFigure>(getFigure())
 
   useMemo(() => {
-    const xVals = x
+    const xVals = xAsDates
     const yVals = y
 
     const currentLayout = getLayout()
@@ -168,7 +190,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
         layout: newLayout,
       }))
     }
-  }, [x, y, textColor])
+  }, [xAsDates, y, textColor])
 
   return (
     <div>

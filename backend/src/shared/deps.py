@@ -1,7 +1,6 @@
-from typing import Annotated
-from fastapi import Depends
-from typing import Optional
 from datetime import datetime
+from typing import Annotated, Optional
+from fastapi import Depends
 
 from src.shared.models import TimeFrameInput
 

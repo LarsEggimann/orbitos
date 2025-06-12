@@ -139,7 +139,7 @@ class KeysightEM:
 
     def measure(self):
         self.state.update(
-            status=ElectrometerStatus.CONTINUOUS_MEASUREMENT_WAITING_TO_START
+            status=ElectrometerStatus.WAITING_TO_START_CONTINUOUS_MEASUREMENT
         )
         first_datapoint_received = False
         while not self._stop_continuous_measurement_event.is_set():
@@ -198,6 +198,7 @@ class KeysightEM:
                     f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time",
                     end="\r",
                 )
+            self.state.update(status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA)
             self._fetch_trigger_based_data(start)
             self.trigger_based_measurement_running = False
             self.state.update(status=ElectrometerStatus.IDLE)

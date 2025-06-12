@@ -157,17 +157,9 @@ async def get_current_data(
 
     if time_frame.start:
         log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
-
-        if time_frame.start.tzinfo is None:
-            time_frame.start = time_frame.start.replace(tzinfo=timezone.utc)
-
         statement = statement.where(CurrentData.time >= time_frame.start.timestamp())
     if time_frame.end:
         log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
-
-        if time_frame.end.tzinfo is None:
-            time_frame.end = time_frame.end.replace(tzinfo=timezone.utc)
-
         statement = statement.where(CurrentData.time <= time_frame.end.timestamp())
 
     logger.info(log_string)

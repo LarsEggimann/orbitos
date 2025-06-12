@@ -4,21 +4,18 @@ import { BaseWebSocketMessage } from '~/generated'
 interface UseDeviceWebSocketOptions<TState, TData, TSettings> {
     url: string
     fetchInitialState: () => Promise<TState>
-    fetchInitialData: () => Promise<TData>
     fetchInitialSettings: () => Promise<TSettings>
-    dataAppendFunction: (prev: TData | null, newData: TData) => TData
+    dataAppendFunction: (newData: TData) => void
 }
 
 export function useDeviceWebSocket<TState, TData, TSettings>({
     url,
     fetchInitialState,
-    fetchInitialData,
     fetchInitialSettings,
     dataAppendFunction,
 }: UseDeviceWebSocketOptions<TState, TData, TSettings>) {
     const wsRef = useRef<WebSocket | null>(null)
     const [state, setState] = useState<TState | null>(null)
-    const [data, setData] = useState<TData | null>(null)
     const [settings, setSettings] = useState<TSettings | null>(null)
     const [connected, setConnected] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -57,12 +54,7 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
                             setState(message.content as TState)
                             break
                         case 'data':
-                            setData((prevData) => {
-                                if (prevData) {
-                                    return dataAppendFunction(prevData, message.content as TData)
-                                }
-                                return message.content as TData
-                            })
+                            dataAppendFunction(message.content as TData)
                             break
                         case 'settings':
                             setSettings(message.content as TSettings)
@@ -91,14 +83,12 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
         const loadInitial = async () => {
             try {
                 setLoading(true)
-                const [s, d, set] = await Promise.all([
+                const [s, set] = await Promise.all([
                     fetchInitialState(),
-                    fetchInitialData(),
                     fetchInitialSettings(),
                 ])
                 if (!cancelled) {
                     setState(s)
-                    setData(d)
                     setSettings(set)
                 }
             } catch (err) {
@@ -117,5 +107,5 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
         }
     }, [])
 
-    return { state, data, settings, connected, loading, error }
+    return { state, settings, connected, loading, error }
 }
