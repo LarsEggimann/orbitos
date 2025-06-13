@@ -209,8 +209,7 @@ function RouteComponent() {
       <TimeSeriesChart
         xData={data?.time ?? []}
         yData={data?.current ?? []}
-        height={400}
-        title={`Electrometer ${deviceId}`}
+        height={500}
         xAxisLabel='Time'
         yAxisLabel='Current [A]'
         hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'

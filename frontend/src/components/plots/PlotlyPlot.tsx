@@ -24,7 +24,7 @@ type PlotlyFigure = {
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   xData: x,
   yData: y,
-  title = 'Time Series Chart',
+  title,
   xAxisLabel = 'Time',
   yAxisLabel = 'Value',
   useTransitions = false,
@@ -44,32 +44,53 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
   const finalLineColor = lineColor || defaultLineColor
 
-  const [xAsDates, setXAsDates] = useState<Date[]>([])
+  const [localizedXAsStrings, setLocalizedXAsStrings] = useState<string[]>([])
   const [customData, setCustomData] = useState<[string, number][]>([])
 
+  // parse and format ISO string with microsecond precision in local timezone
+  function fromatToLocalizedString(isoString: string): string {
+    // Example input:  "2025-06-13T19:02:30.244260Z"
+    // Example output: "2025-06-13T21:02:30.244260Z"
+    const match = isoString.match(
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.(\d{6})Z$/
+    );
+    if (!match) {
+      throw new Error("Invalid ISO format with microseconds");
+    }
+    const [_, __, micro] = match;
+    const date = new Date(isoString);
+    // Get the local timezone offset in minutes
+    const offsetMinutes = date.getTimezoneOffset();
+    const localTimestamp = date.getTime() - offsetMinutes * 60 * 1000;
+    const localDate = new Date(localTimestamp);
+    // Build the adjusted ISO string with original microseconds
+    const isoLocal = localDate.toISOString().replace(/\.\d{3}Z$/, '');
+    const result = `${isoLocal}.${micro}Z`;
+    return result;
+  }
+  
   useEffect(() => {
-    const currentLength = xAsDates.length
+    const currentLength = localizedXAsStrings.length
     if (x.length == currentLength + 1) { // compute only map the single new value (most common when we update via websocket)
       const newX = x.slice(currentLength) // new x values as strings with timezone information
-      const newDates = newX.map(val => new Date(val)) // convert to Date objects, defaults to local timezone
-      setXAsDates(prev => prev.concat(newDates))
+      const newDates = newX.map(val => fromatToLocalizedString(val)) // convert to Date objects, defaults to local timezone
+
+      setLocalizedXAsStrings(prev => prev.concat(newDates))
       const newCustom = newDates.map((datetime, i) => [
-        datetime.toLocaleTimeString(),
+        datetime.slice(0, -1), // remove the trailing 'Z' for display
         y[currentLength + i],
       ] as [string, number])
       setCustomData(prev => prev.concat(newCustom))
 
     } else { // if there is not exactly one new value, we map the full x array new
-      setXAsDates(x.map(val => new Date(val)))
-      setCustomData(x.map((val, i) => [
-        new Date(val).toLocaleTimeString(),
-        y[i],
-      ] as [string, number]))
+      const datesAsLocalizedStrings = x.map(val => fromatToLocalizedString(val))
+      setLocalizedXAsStrings(datesAsLocalizedStrings)
+      setCustomData(datesAsLocalizedStrings.map((dateStr, i) => [dateStr.slice(0, -1), y[i]] as [string, number]))
     }
   }, [x, y])
 
   const getPlotData = (
-    xVals: Date[],
+    xVals: string[],
     yVals: number[],
   ): Plotly.Data[] => {
     return [
@@ -133,7 +154,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
         gridwidth: 0.4,
         gridcolor: gridColor,
       },
-      margin: { l: 60, r: 30, t: 35, b: 60 },
+      margin: { l: 60, r: 30, t: 0, b: 60 },
       transition: useTransitions
         ? {
           duration: animationDuration,
@@ -157,7 +178,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
   const getFigure = (): PlotlyFigure => {
     return {
-      data: getPlotData(xAsDates, y),
+      data: getPlotData(localizedXAsStrings, y),
       layout: getLayout(),
       config: getConfig(),
     }
@@ -166,7 +187,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   const [figure, setFigure] = useState<PlotlyFigure>(getFigure())
 
   useMemo(() => {
-    const xVals = xAsDates
+    const xVals = localizedXAsStrings
     const yVals = y
 
     const currentLayout = getLayout()
@@ -190,7 +211,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
         layout: newLayout,
       }))
     }
-  }, [xAsDates, y, textColor])
+  }, [localizedXAsStrings, y, textColor])
 
   return (
     <div>
