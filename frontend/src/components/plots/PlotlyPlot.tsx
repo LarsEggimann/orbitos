@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Plot from 'react-plotly.js'
 import * as Plotly from 'plotly.js-dist-min'
+import { fromTimestampToLocalizedString } from '~/utils/helpers'
 
 interface TimeSeriesChartProps {
-  xData: string[]
+  xData: number[]
   yData: number[]
   title?: string
   xAxisLabel?: string
   yAxisLabel?: string
   useTransitions?: boolean
-  animationDuration?: number // duration in milliseconds
   lineColor?: string
   hoverTemplate?: string
   height?: string | number
@@ -27,8 +27,6 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   title,
   xAxisLabel = 'Time',
   yAxisLabel = 'Value',
-  useTransitions = false,
-  animationDuration = 1000,
   hoverTemplate = '<b>X:</b> %{x}<br><b>Y:</b> %{y}<extra></extra>',
   lineColor,
   height = '600px',
@@ -47,33 +45,11 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   const [localizedXAsStrings, setLocalizedXAsStrings] = useState<string[]>([])
   const [customData, setCustomData] = useState<[string, number][]>([])
 
-  // parse and format ISO string with microsecond precision in local timezone
-  function fromatToLocalizedString(isoString: string): string {
-    // Example input:  "2025-06-13T19:02:30.244260Z"
-    // Example output: "2025-06-13T21:02:30.244260Z"
-    const match = isoString.match(
-      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.(\d{6})Z$/
-    );
-    if (!match) {
-      throw new Error("Invalid ISO format with microseconds");
-    }
-    const [_, __, micro] = match;
-    const date = new Date(isoString);
-    // Get the local timezone offset in minutes
-    const offsetMinutes = date.getTimezoneOffset();
-    const localTimestamp = date.getTime() - offsetMinutes * 60 * 1000;
-    const localDate = new Date(localTimestamp);
-    // Build the adjusted ISO string with original microseconds
-    const isoLocal = localDate.toISOString().replace(/\.\d{3}Z$/, '');
-    const result = `${isoLocal}.${micro}Z`;
-    return result;
-  }
-  
   useEffect(() => {
     const currentLength = localizedXAsStrings.length
     if (x.length == currentLength + 1) { // compute only map the single new value (most common when we update via websocket)
       const newX = x.slice(currentLength) // new x values as strings with timezone information
-      const newDates = newX.map(val => fromatToLocalizedString(val)) // convert to Date objects, defaults to local timezone
+      const newDates = newX.map(val => fromTimestampToLocalizedString(val)) // convert to Date objects, defaults to local timezone
 
       setLocalizedXAsStrings(prev => prev.concat(newDates))
       const newCustom = newDates.map((datetime, i) => [
@@ -83,7 +59,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
       setCustomData(prev => prev.concat(newCustom))
 
     } else { // if there is not exactly one new value, we map the full x array new
-      const datesAsLocalizedStrings = x.map(val => fromatToLocalizedString(val))
+      const datesAsLocalizedStrings = x.map(val => fromTimestampToLocalizedString(val))
       setLocalizedXAsStrings(datesAsLocalizedStrings)
       setCustomData(datesAsLocalizedStrings.map((dateStr, i) => [dateStr.slice(0, -1), y[i]] as [string, number]))
     }
@@ -155,12 +131,6 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
         gridcolor: gridColor,
       },
       margin: { l: 60, r: 30, t: 0, b: 60 },
-      transition: useTransitions
-        ? {
-          duration: animationDuration,
-          easing: 'cubic-in-out',
-        }
-        : undefined,
     }
   }
 
@@ -190,25 +160,29 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
     const xVals = localizedXAsStrings
     const yVals = y
 
-    const currentLayout = getLayout()
+    // const currentLayout = getLayout()
 
     if (xVals.length > 0) {
-      const newLayout: Partial<Plotly.Layout> = {
-        ...currentLayout,
-        xaxis: {
-          ...currentLayout.xaxis,
-          range: [xVals[0], xVals[xVals.length - 1]], // update range to fit data
-        },
-        yaxis: {
-          ...currentLayout.yaxis,
-          range: [Math.min(...yVals), Math.max(...yVals)], // update range to fit data
-        },
-      }
+      // // Calculate min and max for y-axis based on current data, fast and efficient
+      // const yMin = yVals.reduce((min, val) => Math.min(min, val), Infinity) 
+      // const yMax = yVals.reduce((max, val) => Math.max(max, val), -Infinity)
+
+      // const newLayout: Partial<Plotly.Layout> = {
+      //   ...currentLayout,
+      //   xaxis: {
+      //     ...currentLayout.xaxis,
+      //     range: [xVals[0], xVals[xVals.length - 1]], // update range to fit data
+      //   },
+      //   yaxis: {
+      //     ...currentLayout.yaxis,
+      //     range: [yMin, yMax], // maybe not needed, Plotly auto-scales y-axis
+      //   },
+      // }
 
       setFigure((prevFigure) => ({
         ...prevFigure,
         data: getPlotData(xVals, yVals),
-        layout: newLayout,
+        // layout: newLayout,
       }))
     }
   }, [localizedXAsStrings, y, textColor])

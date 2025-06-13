@@ -694,8 +694,7 @@
           },
           "time": {
             "items": {
-              "type": "string",
-              "format": "date-time"
+              "type": "number"
             },
             "type": "array",
             "title": "Time"

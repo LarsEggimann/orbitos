@@ -56,7 +56,7 @@ class CurrentData(SQLModel, table=True):
 class CurrentDataResponse(BaseModel):
     device_id: str
     current: list[float]
-    time: list[datetime]
+    time: list[float]
 
 
 class ElectrometerSettingsSet(SQLModel):

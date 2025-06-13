@@ -69,7 +69,7 @@ export type CurrentDataResponse = {
     /**
      * Time
      */
-    time: Array<string>;
+    time: Array<number>;
 };
 
 /**
