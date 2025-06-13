@@ -138,11 +138,8 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
     return {
       responsive: true,
       displaylogo: false,
-      displayModeBar: false,
-      toImageButtonOptions: {
-        format: 'png',
-        filename: 'chart_export',
-      },
+      displayModeBar: 'hover',
+      modeBarButtonsToRemove: ['toImage', 'zoomIn2d', 'zoomOut2d', 'autoScale2d' ],
     }
   }
 

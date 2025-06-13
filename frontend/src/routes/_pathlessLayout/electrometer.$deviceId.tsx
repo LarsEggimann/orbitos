@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
@@ -18,6 +18,7 @@ import IpAutocomplete from '~/components/ui/IpAutocomplete';
 import Stack from '@mui/material/Stack'
 import { useQuery } from '@tanstack/react-query'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
+import Card from '@mui/material/Card'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -148,6 +149,32 @@ function RouteComponent() {
   const defaultIp = deviceId === '1' ? '192.168.113.72' : deviceId === '2' ? '192.168.113.73' : ipOptions[0].label;
   const [ip, setIp] = useState(defaultIp);
 
+
+  // TODO: move this to utils
+  function trapezoidIntegration(y: number[], x: number[]): number {
+    if (y.length !== x.length) {
+      throw new Error("y and x arrays must be the same length");
+    }
+
+    let integral = 0;
+    for (let i = 0; i < y.length - 1; i++) {
+      const dx = x[i + 1] - x[i];
+      const avgY = 0.5 * (y[i + 1] + y[i]);
+      integral += dx * avgY;
+    }
+
+    return integral;
+  }
+  const integratedCharge = useMemo(() => {
+    if (!data?.current || !data?.time) return null;
+    try {
+      return trapezoidIntegration(data.current, data.time);
+    } catch {
+      return null;
+    }
+  }, [data?.current, data?.time]);
+
+
   return (
     <Box sx={{ p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}>
       <Stack
@@ -201,7 +228,7 @@ function RouteComponent() {
         startState={[startDate, setStartDate]}
         endState={[endDate, setEndDate]}
       >
-        
+
       </DateRangeSelect>
 
 
@@ -214,6 +241,20 @@ function RouteComponent() {
         yAxisLabel='Current [A]'
         hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
       />
+
+      <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
+        <Typography variant="h6" gutterBottom>Data Information</Typography>
+        <Typography>Number of Datapoints lodaded: {data?.current.length}</Typography>
+        <Typography>
+          Total Duration: {data?.time ? ((data?.time[data.time.length - 1] - data.time[0]) / 60).toFixed(2) : "N/A"} minutes
+        </Typography>
+        <Typography>
+          Integrated Charge: {integratedCharge
+            ? integratedCharge.toExponential(3)
+            : "N/A"} C
+        </Typography>
+
+      </Card>
 
       <DeviceStateDisplay state={state as BaseState} />
 
