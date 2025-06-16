@@ -59,7 +59,7 @@ function RouteComponent() {
 
   const [data, setData] = useState<ElectrometerDataResponse | undefined>(undefined)
 
-  useQuery({
+  const dataQuery = useQuery({
     queryKey: [deviceName, startDate, endDate],
     queryFn: async () => {
       const response = await ElectrometerService.electrometerGetCurrentData({
@@ -236,6 +236,7 @@ function RouteComponent() {
       <TimeSeriesChart
         xData={data?.timestamp ?? []}
         yData={data?.current ?? []}
+        dataQuery={dataQuery}
         height={500}
         xAxisLabel='Time'
         yAxisLabel='Current [A]'

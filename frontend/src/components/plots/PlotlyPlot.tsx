@@ -2,10 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import Plot from 'react-plotly.js'
 import * as Plotly from 'plotly.js-dist-min'
 import { fromTimestampToLocalizedString } from '~/utils/helpers'
+import { UseQueryResult } from '@tanstack/react-query'
+import Box from '@mui/material/Box'
+import LoadingOverlay from '~/components/ui/LoadingOverlay'
 
 interface TimeSeriesChartProps {
   xData: number[]
   yData: number[]
+  dataQuery?: UseQueryResult<any, Error>
   title?: string
   xAxisLabel?: string
   yAxisLabel?: string
@@ -24,6 +28,7 @@ type PlotlyFigure = {
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   xData: x,
   yData: y,
+  dataQuery,
   title,
   xAxisLabel = 'Time',
   yAxisLabel = 'Value',
@@ -33,7 +38,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 }) => {
   const textColor = '#1A202C'
   const gridColor = '#CBD5E0'
-  const defaultLineColor = 'rgba(234, 104, 104, 0.9)'
+  const defaultLineColor = 'rgba(226, 40, 230, 0.9)'
 
   const tooltipBgColor = 'rgba(255, 255, 255, 0.9)'
 
@@ -185,16 +190,19 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   }, [localizedXAsStrings, y, textColor])
 
   return (
-    <div>
-      <Plot
-        data={figure.data}
-        layout={figure.layout}
-        frames={figure.frames || []}
-        config={figure.config}
-        useResizeHandler={true}
-        style={{ width: '100%', height: height }}
-      />
-    </div>
+    <Box sx={{ position: 'relative', width: '100%', height: height }}>
+      <LoadingOverlay query={dataQuery} height={height} />
+      <Box sx={{ opacity: (dataQuery?.isLoading || dataQuery?.isFetching) ? 0.3 : 1, transition: 'opacity 0.2s', width: '100%', height: height }}>
+        <Plot
+          data={figure.data}
+          layout={figure.layout}
+          frames={figure.frames || []}
+          config={figure.config}
+          useResizeHandler={true}
+          style={{ width: '100%', height: height }}
+        />
+      </Box>
+    </Box>
   )
 }
 
