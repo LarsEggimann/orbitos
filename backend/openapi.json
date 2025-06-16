@@ -465,49 +465,6 @@
         }
       }
     },
-    "/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/initialize": {
-      "post": {
-        "tags": [
-          "electrometer"
-        ],
-        "summary": "Initialize Trigger Based Measurement",
-        "description": "Initialize trigger-based measurement on the electrometer.",
-        "operationId": "electrometer-initialize_trigger_based_measurement",
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BaseResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/start": {
       "post": {
         "tags": [

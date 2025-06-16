@@ -207,22 +207,6 @@ def stop_continuous_measurement(controller: ControllerDep):
         message=f"Continuous measurement stopped for {controller.device_name}"
     )
 
-
-@router.post(
-    "/{device_id}/trigger-based-measurement/initialize", response_model=BaseResponse
-)
-def initialize_trigger_based_measurement(controller: ControllerDep):
-    """
-    Initialize trigger-based measurement on the electrometer.
-    """
-    assert_connected(controller)
-    assert_idle(controller)
-    controller.init_trigger_based_measurement()
-    return BaseResponse(
-        message=f"Trigger-based measurement initialized for {controller.device_name}"
-    )
-
-
 @router.post(
     "/{device_id}/trigger-based-measurement/start", response_model=BaseResponse
 )

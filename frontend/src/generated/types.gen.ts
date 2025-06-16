@@ -531,36 +531,6 @@ export type ElectrometerStopContinuousMeasurementResponses = {
 
 export type ElectrometerStopContinuousMeasurementResponse = ElectrometerStopContinuousMeasurementResponses[keyof ElectrometerStopContinuousMeasurementResponses];
 
-export type ElectrometerInitializeTriggerBasedMeasurementData = {
-    body?: never;
-    path: {
-        /**
-         * Device Id
-         */
-        device_id: number;
-    };
-    query?: never;
-    url: '/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/initialize';
-};
-
-export type ElectrometerInitializeTriggerBasedMeasurementErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ElectrometerInitializeTriggerBasedMeasurementError = ElectrometerInitializeTriggerBasedMeasurementErrors[keyof ElectrometerInitializeTriggerBasedMeasurementErrors];
-
-export type ElectrometerInitializeTriggerBasedMeasurementResponses = {
-    /**
-     * Successful Response
-     */
-    200: BaseResponse;
-};
-
-export type ElectrometerInitializeTriggerBasedMeasurementResponse = ElectrometerInitializeTriggerBasedMeasurementResponses[keyof ElectrometerInitializeTriggerBasedMeasurementResponses];
-
 export type ElectrometerStartTriggerBasedMeasurementData = {
     body?: never;
     path: {

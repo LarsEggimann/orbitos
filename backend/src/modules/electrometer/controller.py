@@ -121,24 +121,16 @@ class KeysightEM:
         self.continuous_measurement_thread.start()
 
     def stop_continuous_measurement(self):
-        logger.info("Stopping continuous measurement!")
         if (
             self.continuous_measurement_thread
             and self.continuous_measurement_thread.is_alive()
         ):
+            logger.info("Stopping continuous measurement!")
             self._stop_continuous_measurement_event.set() # signal the thread to stop
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
         # state is set in measurement thread when it stops
-
-    def restart_continuous_measurement_if_running(self):
-        if (
-            self.continuous_measurement_thread
-            and self.continuous_measurement_thread.is_alive()
-        ):
-            logger.info("Restarting continuous measurement thread")
-            self.start_continuous_measurement()
 
     def measure(self):
         self.state.update(
@@ -167,7 +159,7 @@ class KeysightEM:
             time.sleep(0.01)  # Add a sleep to avoid tight loop
         self.state.update(status=ElectrometerStatus.IDLE)
 
-    def init_trigger_based_measurement(self):
+    def _init_trigger_based_measurement(self):
         logger.info("Initializing trigger based measurement")
         self.stop_continuous_measurement()
         self.set_sensor()
@@ -177,6 +169,7 @@ class KeysightEM:
         if self.trigger_based_measurement_running:
             logger.warning("Trigger based measurement is already running!")
         else:
+            self._init_trigger_based_measurement()
             self.trigger_based_measurement_running = True
             self.state.update(
                 status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
@@ -192,9 +185,13 @@ class KeysightEM:
             start = time.time()
             while time.time() - start < wait_time:
                 time.sleep(0.2)
+                progress = f"{(time.time() - start):.2f} / {wait_time:.2f}"
                 print(
-                    f"Keysight controller info: {(time.time() - start):.2f} / {wait_time:.2f} seconds measurement time",
+                    f"Keysight controller info: {progress} seconds measurement time",
                     end="\r",
+                )
+                self.state.update(
+                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING + f", {progress} seconds"
                 )
             self.state.update(status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA)
             self._fetch_trigger_based_data(start)

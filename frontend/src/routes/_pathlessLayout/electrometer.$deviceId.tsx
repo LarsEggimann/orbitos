@@ -258,12 +258,8 @@ function RouteComponent() {
 
       <DeviceStateDisplay state={state as BaseState} />
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-        <Tab label="Continuous Measurement" />
-        <Tab label="Trigger Measurement" />
-      </Tabs>
-      {tab === 0 && (
-        <Box>
+
+        <Box sx={{ m: 2 }}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             <ExecQueryButton
               onClick={async () => {
@@ -284,18 +280,8 @@ function RouteComponent() {
             settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
             onChange={handleSettingChange}
           />
-        </Box>
-      )}
-      {tab === 1 && (
-        <Box>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <ExecQueryButton
-              onClick={async () => {
-                return await ElectrometerService.electrometerInitializeTriggerBasedMeasurement(deviceIdPathArg)
-              }}
-            >
-              Init Trigger
-            </ExecQueryButton>
+
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', m: 2 }}>
             <ExecQueryButton
               onClick={async () => {
                 return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
@@ -309,7 +295,6 @@ function RouteComponent() {
             onChange={handleSettingChange}
           />
         </Box>
-      )}
       <Divider sx={{ my: 2 }} />
 
     </Box>
