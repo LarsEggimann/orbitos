@@ -5,7 +5,7 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/orbitos-api/v1/{device_id}/connect/{ip}": {
+    "/orbitos-api/v1/electrometer/{device_id}/connect/{ip}": {
       "post": {
         "tags": [
           "electrometer"
@@ -28,7 +28,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -56,7 +57,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/disconnect": {
+    "/orbitos-api/v1/electrometer/{device_id}/disconnect": {
       "post": {
         "tags": [
           "electrometer"
@@ -70,7 +71,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -98,7 +100,7 @@
         }
       }
     },
-    "/orbitos-api/v1/electrometers/reset": {
+    "/orbitos-api/v1/electrometer/electrometers/reset": {
       "post": {
         "tags": [
           "electrometer"
@@ -120,7 +122,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/state": {
+    "/orbitos-api/v1/electrometer/{device_id}/state": {
       "get": {
         "tags": [
           "electrometer"
@@ -134,7 +136,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -162,7 +165,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/settings": {
+    "/orbitos-api/v1/electrometer/{device_id}/settings": {
       "get": {
         "tags": [
           "electrometer"
@@ -176,7 +179,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -216,7 +220,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -254,7 +259,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/state/reset-error": {
+    "/orbitos-api/v1/electrometer/{device_id}/state/reset-error": {
       "post": {
         "tags": [
           "electrometer"
@@ -268,7 +273,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -296,7 +302,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/data": {
+    "/orbitos-api/v1/electrometer/{device_id}/data": {
       "get": {
         "tags": [
           "electrometer"
@@ -310,7 +316,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           },
           {
@@ -354,7 +361,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CurrentDataResponse"
+                  "$ref": "#/components/schemas/ElectrometerDataResponse"
                 }
               }
             }
@@ -372,7 +379,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/continuous-measurement/start": {
+    "/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/start": {
       "post": {
         "tags": [
           "electrometer"
@@ -386,7 +393,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -414,7 +422,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/continuous-measurement/stop": {
+    "/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/stop": {
       "post": {
         "tags": [
           "electrometer"
@@ -428,7 +436,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -456,7 +465,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/trigger-based-measurement/initialize": {
+    "/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/initialize": {
       "post": {
         "tags": [
           "electrometer"
@@ -470,7 +479,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -498,7 +508,7 @@
         }
       }
     },
-    "/orbitos-api/v1/{device_id}/trigger-based-measurement/start": {
+    "/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/start": {
       "post": {
         "tags": [
           "electrometer"
@@ -512,7 +522,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ElectrometerID"
+              "type": "integer",
+              "title": "Device Id"
             }
           }
         ],
@@ -611,9 +622,9 @@
       },
       "BaseState": {
         "properties": {
-          "device_id": {
+          "device_name": {
             "type": "string",
-            "title": "Device Id"
+            "title": "Device Name"
           },
           "status": {
             "type": "string",
@@ -638,7 +649,7 @@
         },
         "type": "object",
         "required": [
-          "device_id"
+          "device_name"
         ],
         "title": "BaseState",
         "description": "Base class for all state models."
@@ -648,9 +659,9 @@
           "type": {
             "$ref": "#/components/schemas/WebSocketMessageType"
           },
-          "device_id": {
+          "device_name": {
             "type": "string",
-            "title": "Device Id"
+            "title": "Device Name"
           },
           "content": {
             "anyOf": [
@@ -665,7 +676,7 @@
         "type": "object",
         "required": [
           "type",
-          "device_id"
+          "device_name"
         ],
         "title": "BaseWebSocketMessage"
       },
@@ -679,11 +690,10 @@
         ],
         "title": "ConnectionStatus"
       },
-      "CurrentDataResponse": {
+      "ElectrometerDataResponse": {
         "properties": {
-          "device_id": {
-            "type": "string",
-            "title": "Device Id"
+          "device_name": {
+            "$ref": "#/components/schemas/ElectrometerName"
           },
           "current": {
             "items": {
@@ -692,34 +702,34 @@
             "type": "array",
             "title": "Current"
           },
-          "time": {
+          "timestamp": {
             "items": {
               "type": "number"
             },
             "type": "array",
-            "title": "Time"
+            "title": "Timestamp"
           }
         },
         "type": "object",
         "required": [
-          "device_id",
+          "device_name",
           "current",
-          "time"
+          "timestamp"
         ],
-        "title": "CurrentDataResponse"
+        "title": "ElectrometerDataResponse"
       },
-      "ElectrometerID": {
+      "ElectrometerName": {
         "type": "string",
         "enum": [
           "electrometer_1",
           "electrometer_2"
         ],
-        "title": "ElectrometerID"
+        "title": "ElectrometerName"
       },
       "ElectrometerSettings": {
         "properties": {
           "device_id": {
-            "type": "string",
+            "type": "integer",
             "title": "Device Id"
           },
           "trigger_count": {
@@ -913,9 +923,9 @@
       },
       "ElectrometerState": {
         "properties": {
-          "device_id": {
+          "device_name": {
             "type": "string",
-            "title": "Device Id"
+            "title": "Device Name"
           },
           "status": {
             "$ref": "#/components/schemas/ElectrometerStatus",
@@ -939,7 +949,7 @@
         },
         "type": "object",
         "required": [
-          "device_id"
+          "device_name"
         ],
         "title": "ElectrometerState"
       },

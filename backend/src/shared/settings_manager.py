@@ -11,12 +11,14 @@ class SettingsManager(Generic[T]):
     def __init__(
         self,
         model: Type[T],
-        device_id: str,
+        device_id: int,
+        device_name: str,
         engine: Engine,
         on_settings_update: Optional[Callable[[str, T], Any]] = None,
     ):
         self.model = model
         self.device_id = device_id
+        self.device_name = device_name
         self.engine = engine
         self._settings: T | None = None
         self.on_settings_update_func = on_settings_update
@@ -108,4 +110,4 @@ class SettingsManager(Generic[T]):
 
     def _on_settings_update(self, settings: T) -> None:
         if self.on_settings_update_func:
-            self.on_settings_update_func(self.device_id, settings)
+            self.on_settings_update_func(self.device_name, settings)

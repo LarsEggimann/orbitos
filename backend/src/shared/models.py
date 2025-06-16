@@ -13,7 +13,7 @@ class WebSocketMessageType(str, Enum):
 
 class BaseWebSocketMessage(BaseModel):
     type: WebSocketMessageType
-    device_id: str
+    device_name: str
     content: Optional[Any] = None
 
 
@@ -34,7 +34,7 @@ class BaseState(BaseModel):
     Base class for all state models.
     """
 
-    device_id: str
+    device_name: str
     status: str = "unknown"
     connection_status: ConnectionStatus = ConnectionStatus.DISCONNECTED
     error: Optional[str] = None
@@ -45,7 +45,7 @@ class BaseSetting(SQLModel):
     Base class for all setting models.
     """
 
-    device_id: str = Field(primary_key=True, index=True)
+    device_id: int = Field(primary_key=True, index=True)
 
 
 class TimeFrameInput(BaseModel):

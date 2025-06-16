@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
-import { ElectrometerService, ElectrometerId, BaseState, CurrentDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
+import { ElectrometerService, ElectrometerName, BaseState, ElectrometerDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceStateDisplay'
 import Box from '@mui/material/Box'
@@ -25,9 +25,9 @@ export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')(
 })
 
 function RouteComponent() {
-  const { deviceId } = Route.useParams()
-  const deviceIdFull = `electrometer_${deviceId}` as ElectrometerId
-  const deviceIdPathArg = { path: { device_id: deviceIdFull } }
+  const deviceId = parseInt(Route.useParams().deviceId)
+  const deviceName = `electrometer_${deviceId}` as ElectrometerName
+  const deviceIdPathArg = { path: { device_id: deviceId } }
 
   const [startDate, setStartDate] = React.useState(null as Date | null)
   const [endDate, setEndDate] = React.useState(null as Date | null)
@@ -35,8 +35,8 @@ function RouteComponent() {
 
   // persist date range in localStorage using deviceIdFull as key
   useEffect(() => {
-    const savedStart = localStorage.getItem(`${deviceIdFull}_startDate`);
-    const savedEnd = localStorage.getItem(`${deviceIdFull}_endDate`);
+    const savedStart = localStorage.getItem(`${deviceName}_startDate`);
+    const savedEnd = localStorage.getItem(`${deviceName}_endDate`);
     if (savedStart) {
       setStartDate(new Date(savedStart));
     } else {
@@ -45,22 +45,22 @@ function RouteComponent() {
     }
     if (savedEnd) setEndDate(new Date(savedEnd));
     setDatesLoaded(true);
-  }, [deviceIdFull]);
+  }, [deviceName]);
 
   useEffect(() => {
-    if (startDate) localStorage.setItem(`${deviceIdFull}_startDate`, startDate.toISOString());
+    if (startDate) localStorage.setItem(`${deviceName}_startDate`, startDate.toISOString());
     if (endDate) {
-      localStorage.setItem(`${deviceIdFull}_endDate`, endDate.toISOString());
+      localStorage.setItem(`${deviceName}_endDate`, endDate.toISOString());
     } else { // if endDate is null, clear it from localStorage, this allows to reset the end date
-      localStorage.removeItem(`${deviceIdFull}_endDate`);
+      localStorage.removeItem(`${deviceName}_endDate`);
     }
-  }, [startDate, endDate, deviceIdFull]);
+  }, [startDate, endDate, deviceName]);
 
 
-  const [data, setData] = useState<CurrentDataResponse | undefined>(undefined)
+  const [data, setData] = useState<ElectrometerDataResponse | undefined>(undefined)
 
   useQuery({
-    queryKey: [deviceIdFull, startDate, endDate],
+    queryKey: [deviceName, startDate, endDate],
     queryFn: async () => {
       const response = await ElectrometerService.electrometerGetCurrentData({
         ...deviceIdPathArg,
@@ -79,17 +79,17 @@ function RouteComponent() {
   })
 
 
-  var { state, settings, connected } = useDeviceWebSocket<ElectrometerState, CurrentDataResponse, ElectrometerSettings>({
-    url: `${import.meta.env.VITE_ORBITOS_API_WEBSOCKET_BASE_URL}/${deviceIdFull}`,
+  var { state, settings, connected } = useDeviceWebSocket<ElectrometerState, ElectrometerDataResponse, ElectrometerSettings>({
+    url: `${import.meta.env.VITE_ORBITOS_API_WEBSOCKET_BASE_URL}/electrometer/ws/${deviceId}`,
     fetchInitialState: async () => (await ElectrometerService.electrometerGetElectrometerState(deviceIdPathArg)).data!,
     fetchInitialSettings: async () => (await ElectrometerService.electrometerGetElectrometerSettings(deviceIdPathArg)).data!,
     dataAppendFunction: (newData) => {
       setData(prevData => {
         if (!prevData) return newData
         return {
-          device_id: prevData.device_id,
-          time: [...prevData.time, ...newData.time],
-          current: [...prevData.current, ...newData.current],
+          device_name: prevData.device_name,
+          timestamp: prevData.timestamp.concat(newData.timestamp),
+          current: prevData.current.concat(newData.current),
         }
       })
     }
@@ -113,7 +113,7 @@ function RouteComponent() {
         reject: (reason?: any) => void
       ) => {
         ElectrometerService.electrometerSetElectrometerSettings({
-          path: { device_id: deviceIdFull },
+          path: { device_id: deviceId },
           body: { [key]: value }
         })
           .then(resolve)
@@ -126,14 +126,14 @@ function RouteComponent() {
   const handleSettingChange = useCallback(
     (key: string, value: any): Promise<AxiosResponse<any> | AxiosError<any> | void> => {
       setLocalSettings(prev => {
-        if (!prev) return { device_id: deviceIdFull, [key]: value };
+        if (!prev) return { device_id: deviceId, [key]: value };
         return { ...prev, [key]: value };
       });
       return new Promise((resolve, reject) => {
         debouncedUpdate(key, value, resolve, reject);
       });
     },
-    [debouncedUpdate, deviceIdFull]
+    [debouncedUpdate, deviceId]
   )
 
   // Settings keys for tabs
@@ -146,7 +146,7 @@ function RouteComponent() {
     { label: '192.168.113.73' }
   ];
   // Default IP logic: 72 for electrometer 1, 73 for electrometer 2
-  const defaultIp = deviceId === '1' ? '192.168.113.72' : deviceId === '2' ? '192.168.113.73' : ipOptions[0].label;
+  const defaultIp = deviceId === 1 ? '192.168.113.72' : deviceId === 2 ? '192.168.113.73' : ipOptions[0].label;
   const [ip, setIp] = useState(defaultIp);
 
 
@@ -166,13 +166,13 @@ function RouteComponent() {
     return integral;
   }
   const integratedCharge = useMemo(() => {
-    if (!data?.current || !data?.time) return null;
+    if (!data?.current || !data?.timestamp) return null;
     try {
-      return trapezoidIntegration(data.current, data.time);
+      return trapezoidIntegration(data.current, data.timestamp);
     } catch {
       return null;
     }
-  }, [data?.current, data?.time]);
+  }, [data?.current, data?.timestamp]);
 
 
   return (
@@ -199,7 +199,7 @@ function RouteComponent() {
         <ExecQueryButton
           onClick={async () => {
             return await ElectrometerService.electrometerConnectToElectrometer({
-              path: { device_id: deviceIdFull, ip: ip }
+              path: { device_id: deviceId, ip: ip }
             })
           }}
         >
@@ -234,7 +234,7 @@ function RouteComponent() {
 
 
       <TimeSeriesChart
-        xData={data?.time ?? []}
+        xData={data?.timestamp ?? []}
         yData={data?.current ?? []}
         height={500}
         xAxisLabel='Time'
@@ -246,7 +246,7 @@ function RouteComponent() {
         <Typography variant="h6" gutterBottom>Data Information</Typography>
         <Typography>Number of Datapoints lodaded: {data?.current.length}</Typography>
         <Typography>
-          Total Duration: {data?.time ? ((data?.time[data.time.length - 1] - data.time[0]) / 60).toFixed(2) : "N/A"} minutes
+          Total Duration: {data?.timestamp ? ((data?.timestamp[data.timestamp.length - 1] - data.timestamp[0]) / 60).toFixed(2) : "N/A"} minutes
         </Typography>
         <Typography>
           Integrated Charge: {integratedCharge

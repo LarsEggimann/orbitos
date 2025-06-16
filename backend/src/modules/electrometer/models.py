@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Optional
-from datetime import datetime
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Index
 
@@ -16,7 +15,7 @@ class ElectrometerStatus(str, Enum):
     CONTINUOUS_MEASUREMENT_RUNNING = "continuous_measurement_running"
 
 
-class ElectrometerID(str, Enum):
+class ElectrometerName(str, Enum):
     electrometer_1 = "electrometer_1"
     electrometer_2 = "electrometer_2"
 
@@ -44,19 +43,19 @@ class ElectrometerSettings(BaseSetting, table=True):
     current_range_auto_lower_limit: float = Field(default=1e-16)
 
 
-class CurrentData(SQLModel, table=True):
+class ElectrometerData(SQLModel, table=True):
     __tablename__ = "electrometer_data"
-    device_id: ElectrometerID = Field(primary_key=True, index=True)
-    time: float = Field(primary_key=True, index=True)
-    current: float = Field(default=0.0, le=1e35)
+    device_id: int = Field(primary_key=True, index=True)
+    timestamp: float = Field(primary_key=True, index=True)
+    current: float = Field(default=0.0, lt=1e35)
 
-    __table_args__ = (Index("idx_device_time", "device_id", "time"),)
+    __table_args__ = (Index("idx_device_time", "device_id", "timestamp"),)
 
 
-class CurrentDataResponse(BaseModel):
-    device_id: str
+class ElectrometerDataResponse(BaseModel):
+    device_name: ElectrometerName
     current: list[float]
-    time: list[float]
+    timestamp: list[float]
 
 
 class ElectrometerSettingsSet(SQLModel):

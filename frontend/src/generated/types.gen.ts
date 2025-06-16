@@ -20,9 +20,9 @@ export type BaseResponse = {
  */
 export type BaseState = {
     /**
-     * Device Id
+     * Device Name
      */
-    device_id: string;
+    device_name: string;
     /**
      * Status
      */
@@ -40,9 +40,9 @@ export type BaseState = {
 export type BaseWebSocketMessage = {
     type: WebSocketMessageType;
     /**
-     * Device Id
+     * Device Name
      */
-    device_id: string;
+    device_name: string;
     /**
      * Content
      */
@@ -55,27 +55,24 @@ export type BaseWebSocketMessage = {
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'health check failed';
 
 /**
- * CurrentDataResponse
+ * ElectrometerDataResponse
  */
-export type CurrentDataResponse = {
-    /**
-     * Device Id
-     */
-    device_id: string;
+export type ElectrometerDataResponse = {
+    device_name: ElectrometerName;
     /**
      * Current
      */
     current: Array<number>;
     /**
-     * Time
+     * Timestamp
      */
-    time: Array<number>;
+    timestamp: Array<number>;
 };
 
 /**
- * ElectrometerID
+ * ElectrometerName
  */
-export type ElectrometerId = 'electrometer_1' | 'electrometer_2';
+export type ElectrometerName = 'electrometer_1' | 'electrometer_2';
 
 /**
  * ElectrometerSettings
@@ -84,7 +81,7 @@ export type ElectrometerSettings = {
     /**
      * Device Id
      */
-    device_id: string;
+    device_id: number;
     /**
      * Trigger Count
      */
@@ -186,9 +183,9 @@ export type ElectrometerSettingsSet = {
  */
 export type ElectrometerState = {
     /**
-     * Device Id
+     * Device Name
      */
-    device_id: string;
+    device_name: string;
     status?: ElectrometerStatus;
     connection_status?: ConnectionStatus;
     /**
@@ -242,10 +239,13 @@ export type ElectrometerConnectToElectrometerData = {
          * Ip
          */
         ip: string;
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/connect/{ip}';
+    url: '/orbitos-api/v1/electrometer/{device_id}/connect/{ip}';
 };
 
 export type ElectrometerConnectToElectrometerErrors = {
@@ -269,10 +269,13 @@ export type ElectrometerConnectToElectrometerResponse = ElectrometerConnectToEle
 export type ElectrometerDisconnectElectrometerData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/disconnect';
+    url: '/orbitos-api/v1/electrometer/{device_id}/disconnect';
 };
 
 export type ElectrometerDisconnectElectrometerErrors = {
@@ -297,7 +300,7 @@ export type ElectrometerResetElectrometerData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/orbitos-api/v1/electrometers/reset';
+    url: '/orbitos-api/v1/electrometer/electrometers/reset';
 };
 
 export type ElectrometerResetElectrometerResponses = {
@@ -312,10 +315,13 @@ export type ElectrometerResetElectrometerResponse = ElectrometerResetElectromete
 export type ElectrometerGetElectrometerStateData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/state';
+    url: '/orbitos-api/v1/electrometer/{device_id}/state';
 };
 
 export type ElectrometerGetElectrometerStateErrors = {
@@ -339,10 +345,13 @@ export type ElectrometerGetElectrometerStateResponse = ElectrometerGetElectromet
 export type ElectrometerGetElectrometerSettingsData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/settings';
+    url: '/orbitos-api/v1/electrometer/{device_id}/settings';
 };
 
 export type ElectrometerGetElectrometerSettingsErrors = {
@@ -366,10 +375,13 @@ export type ElectrometerGetElectrometerSettingsResponse = ElectrometerGetElectro
 export type ElectrometerSetElectrometerSettingsData = {
     body: ElectrometerSettingsSet;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/settings';
+    url: '/orbitos-api/v1/electrometer/{device_id}/settings';
 };
 
 export type ElectrometerSetElectrometerSettingsErrors = {
@@ -393,10 +405,13 @@ export type ElectrometerSetElectrometerSettingsResponse = ElectrometerSetElectro
 export type ElectrometerResetElectrometerErrorData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/state/reset-error';
+    url: '/orbitos-api/v1/electrometer/{device_id}/state/reset-error';
 };
 
 export type ElectrometerResetElectrometerErrorErrors = {
@@ -420,7 +435,10 @@ export type ElectrometerResetElectrometerErrorResponse = ElectrometerResetElectr
 export type ElectrometerGetCurrentDataData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: {
         /**
@@ -432,7 +450,7 @@ export type ElectrometerGetCurrentDataData = {
          */
         end?: string | null;
     };
-    url: '/orbitos-api/v1/{device_id}/data';
+    url: '/orbitos-api/v1/electrometer/{device_id}/data';
 };
 
 export type ElectrometerGetCurrentDataErrors = {
@@ -448,7 +466,7 @@ export type ElectrometerGetCurrentDataResponses = {
     /**
      * Successful Response
      */
-    200: CurrentDataResponse;
+    200: ElectrometerDataResponse;
 };
 
 export type ElectrometerGetCurrentDataResponse = ElectrometerGetCurrentDataResponses[keyof ElectrometerGetCurrentDataResponses];
@@ -456,10 +474,13 @@ export type ElectrometerGetCurrentDataResponse = ElectrometerGetCurrentDataRespo
 export type ElectrometerStartContinuousMeasurementData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/continuous-measurement/start';
+    url: '/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/start';
 };
 
 export type ElectrometerStartContinuousMeasurementErrors = {
@@ -483,10 +504,13 @@ export type ElectrometerStartContinuousMeasurementResponse = ElectrometerStartCo
 export type ElectrometerStopContinuousMeasurementData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/continuous-measurement/stop';
+    url: '/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/stop';
 };
 
 export type ElectrometerStopContinuousMeasurementErrors = {
@@ -510,10 +534,13 @@ export type ElectrometerStopContinuousMeasurementResponse = ElectrometerStopCont
 export type ElectrometerInitializeTriggerBasedMeasurementData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/trigger-based-measurement/initialize';
+    url: '/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/initialize';
 };
 
 export type ElectrometerInitializeTriggerBasedMeasurementErrors = {
@@ -537,10 +564,13 @@ export type ElectrometerInitializeTriggerBasedMeasurementResponse = Electrometer
 export type ElectrometerStartTriggerBasedMeasurementData = {
     body?: never;
     path: {
-        device_id: ElectrometerId;
+        /**
+         * Device Id
+         */
+        device_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/{device_id}/trigger-based-measurement/start';
+    url: '/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/start';
 };
 
 export type ElectrometerStartTriggerBasedMeasurementErrors = {

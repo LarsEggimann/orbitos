@@ -26,7 +26,7 @@ export class ElectrometerService {
     public static electrometerConnectToElectrometer<ThrowOnError extends boolean = false>(options: Options<ElectrometerConnectToElectrometerData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerConnectToElectrometerResponses, ElectrometerConnectToElectrometerErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/connect/{ip}',
+            url: '/orbitos-api/v1/electrometer/{device_id}/connect/{ip}',
             ...options
         });
     }
@@ -38,7 +38,7 @@ export class ElectrometerService {
     public static electrometerDisconnectElectrometer<ThrowOnError extends boolean = false>(options: Options<ElectrometerDisconnectElectrometerData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerDisconnectElectrometerResponses, ElectrometerDisconnectElectrometerErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/disconnect',
+            url: '/orbitos-api/v1/electrometer/{device_id}/disconnect',
             ...options
         });
     }
@@ -50,7 +50,7 @@ export class ElectrometerService {
     public static electrometerResetElectrometer<ThrowOnError extends boolean = false>(options?: Options<ElectrometerResetElectrometerData, ThrowOnError>) {
         return (options?.client ?? _heyApiClient).post<ElectrometerResetElectrometerResponses, unknown, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/electrometers/reset',
+            url: '/orbitos-api/v1/electrometer/electrometers/reset',
             ...options
         });
     }
@@ -62,7 +62,7 @@ export class ElectrometerService {
     public static electrometerGetElectrometerState<ThrowOnError extends boolean = false>(options: Options<ElectrometerGetElectrometerStateData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).get<ElectrometerGetElectrometerStateResponses, ElectrometerGetElectrometerStateErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/state',
+            url: '/orbitos-api/v1/electrometer/{device_id}/state',
             ...options
         });
     }
@@ -74,7 +74,7 @@ export class ElectrometerService {
     public static electrometerGetElectrometerSettings<ThrowOnError extends boolean = false>(options: Options<ElectrometerGetElectrometerSettingsData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).get<ElectrometerGetElectrometerSettingsResponses, ElectrometerGetElectrometerSettingsErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/settings',
+            url: '/orbitos-api/v1/electrometer/{device_id}/settings',
             ...options
         });
     }
@@ -86,7 +86,7 @@ export class ElectrometerService {
     public static electrometerSetElectrometerSettings<ThrowOnError extends boolean = false>(options: Options<ElectrometerSetElectrometerSettingsData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerSetElectrometerSettingsResponses, ElectrometerSetElectrometerSettingsErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/settings',
+            url: '/orbitos-api/v1/electrometer/{device_id}/settings',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export class ElectrometerService {
     public static electrometerResetElectrometerError<ThrowOnError extends boolean = false>(options: Options<ElectrometerResetElectrometerErrorData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerResetElectrometerErrorResponses, ElectrometerResetElectrometerErrorErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/state/reset-error',
+            url: '/orbitos-api/v1/electrometer/{device_id}/state/reset-error',
             ...options
         });
     }
@@ -114,7 +114,7 @@ export class ElectrometerService {
     public static electrometerGetCurrentData<ThrowOnError extends boolean = false>(options: Options<ElectrometerGetCurrentDataData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).get<ElectrometerGetCurrentDataResponses, ElectrometerGetCurrentDataErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/data',
+            url: '/orbitos-api/v1/electrometer/{device_id}/data',
             ...options
         });
     }
@@ -126,7 +126,7 @@ export class ElectrometerService {
     public static electrometerStartContinuousMeasurement<ThrowOnError extends boolean = false>(options: Options<ElectrometerStartContinuousMeasurementData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerStartContinuousMeasurementResponses, ElectrometerStartContinuousMeasurementErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/continuous-measurement/start',
+            url: '/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/start',
             ...options
         });
     }
@@ -138,7 +138,7 @@ export class ElectrometerService {
     public static electrometerStopContinuousMeasurement<ThrowOnError extends boolean = false>(options: Options<ElectrometerStopContinuousMeasurementData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerStopContinuousMeasurementResponses, ElectrometerStopContinuousMeasurementErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/continuous-measurement/stop',
+            url: '/orbitos-api/v1/electrometer/{device_id}/continuous-measurement/stop',
             ...options
         });
     }
@@ -150,7 +150,7 @@ export class ElectrometerService {
     public static electrometerInitializeTriggerBasedMeasurement<ThrowOnError extends boolean = false>(options: Options<ElectrometerInitializeTriggerBasedMeasurementData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerInitializeTriggerBasedMeasurementResponses, ElectrometerInitializeTriggerBasedMeasurementErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/trigger-based-measurement/initialize',
+            url: '/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/initialize',
             ...options
         });
     }
@@ -162,7 +162,7 @@ export class ElectrometerService {
     public static electrometerStartTriggerBasedMeasurement<ThrowOnError extends boolean = false>(options: Options<ElectrometerStartTriggerBasedMeasurementData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<ElectrometerStartTriggerBasedMeasurementResponses, ElectrometerStartTriggerBasedMeasurementErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/{device_id}/trigger-based-measurement/start',
+            url: '/orbitos-api/v1/electrometer/{device_id}/trigger-based-measurement/start',
             ...options
         });
     }
