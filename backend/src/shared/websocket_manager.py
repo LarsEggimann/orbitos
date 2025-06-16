@@ -77,7 +77,6 @@ class WebSocketManager(Generic[T, G, H]):
         await self._broadcast_message(device_name, message)
 
     def broadcast_state_sync(self, device_name: str, state: T):
-        print(f"Broadcasting state sync for device {device_name}, with type {type(device_name)}")
         run_async_in_background(self.broadcast_state(device_name, state))
 
     def broadcast_data_sync(self, device_name: str, data: G):

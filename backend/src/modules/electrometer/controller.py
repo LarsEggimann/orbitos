@@ -130,9 +130,6 @@ class KeysightEM:
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
-        print(
-            f"Continuous measurement stopped for {self.device_name.value}, current thread: {threading.current_thread().name}"
-        )
         # state is set in measurement thread when it stops
 
     def restart_continuous_measurement_if_running(self):
@@ -207,23 +204,14 @@ class KeysightEM:
     def update_settings(self, set_settings: ElectrometerSettingsSet):
         logger.info("Updating settings for Keysight EM %s", self.device_name.value)
 
-        settings_before_update = self.settings.get()
-        print(f"settings before update: {settings_before_update}")
-
         self.settings.update(**set_settings.model_dump(exclude_unset=True))
         current_settings = self.settings.get()
-        print(f"settings after update: {current_settings}")
 
         self.set_sensor()
         self.set_trigger()
 
-        print(f"settings updated ? -> error state {self.state.get().error}")
         if self.state.get().error is not None:
-            print(
-                f"Error state is not None, resetting error state for Keysight EM {self.device_name.value}"
-            )
             self.settings.undo_last_update()
-            print(f"settings after undo: {self.settings.get()}")
             raise ValueError(
                 f"Error while updating settings for Keysight EM {self.device_name.value}: {self.state.get().error}"
             )
