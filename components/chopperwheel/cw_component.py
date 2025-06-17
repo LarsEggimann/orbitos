@@ -177,14 +177,21 @@ class CWComponent(ComponentBase):
                     slider_limits=(0, 255),
                 )
 
-                param_settings_row.create_param_settings_row(
-                    label_text="Plot Refresh Wait Time [s]",
-                    number_input_value=self.redraw_plot_wait_time,
-                    setting_on_change=lambda e: setattr(
-                        self, "redraw_plot_wait_time", e.value
+            versions = {
+                290: "v1 - small chopper wheel, free rotation angle of 290°",
+                275: "v2 - large chopper wheel, free rotation angle of 275°",
+            }
+
+            with ui.row(wrap=False).classes("w-full justify-between items-center"):
+                ui.label("Chopper Wheel Version")
+                ui.select(
+                    options=versions,
+                    value=self.settings_handler.settings["free_rot_angle"],
+                    on_change=lambda e: self.settings_handler.change_setting(
+                        "free_rot_angle", e.value
                     ),
-                    slider_limits=(0.01, 1),
-                )
+                ).props(props_select).classes("w-full")
+
 
         with ui.card().classes("w-full mb-2"):
             self.file_handler.alternative_filename_ui()

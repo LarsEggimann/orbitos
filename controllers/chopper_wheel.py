@@ -35,7 +35,9 @@ class ChopperWheel(ControllerBase):
         self.velocity_list: list[float] = []
         self.angular_position_list: list[float] = []
 
-        self.free_rot_angle = 290  # degrees
+        self.free_rot_angle = float(
+            self.settings_handler.settings["free_rot_angle"]
+        )
 
         self.wait_time_after_rotation = 0  # seconds
         self.interface_args = (
@@ -124,6 +126,9 @@ class ChopperWheel(ControllerBase):
                 case "max_current":
                     self.motor.drive_settings.max_current = value
                     logger.info("Setting max_current to %s", value)
+                case "free_rot_angle":
+                    self.free_rot_angle = value
+                    logger.info("Setting free_rot_angle to %s", value)
 
     async def exec_rotation_command(self, func: Callable):
         acquire_data_task = asyncio.create_task(self.acquire_data())
