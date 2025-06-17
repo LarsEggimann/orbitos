@@ -14,7 +14,7 @@ import debounce from 'lodash.debounce'
 import type { AxiosResponse, AxiosError } from 'axios';
 import IpAutocomplete from '~/components/ui/IpAutocomplete';
 import Stack from '@mui/material/Stack'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
 import Card from '@mui/material/Card'
 import Table from '@mui/material/Table'
@@ -22,6 +22,10 @@ import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
+import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField'
+import Button from '@mui/material/Button'
+import Snackbar from '~/components/ui/Snackbar'
+import { BaseResponse } from '~/generated'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -98,7 +102,6 @@ function RouteComponent() {
     }
   })
 
-  const [tab, setTab] = useState(0)
   const [localSettings, setLocalSettings] = useState(settings)
 
   // Sync localSettings with websocket settings
@@ -189,6 +192,78 @@ function RouteComponent() {
     // Save conversion factor to localStorage whenever it changes
     localStorage.setItem(`${deviceName}_conversionFactor`, conversionFactor.toString());
   }, [conversionFactor, deviceName]);
+
+  const field1Ref = useRef<DirtyTextFieldHandle>(null);
+
+  const applyAll = () => {
+    field1Ref.current?.tryApply();
+  };
+
+  const [snackbar, setSnackbar] = React.useState<{ open: boolean, msg: string, severity: 'success' | 'error' }>({ open: false, msg: '', severity: 'success' });
+
+  const openSnackbar = (msg: string, severity: 'success' | 'error') => {
+    setSnackbar({ open: true, msg, severity });
+  };
+
+  const setSettingsQuery = useMutation({
+    mutationFn: async (settings: Record<string, any>) => {
+      return await ElectrometerService.electrometerSetElectrometerSettings({
+        path: { device_id: deviceId },
+        body: settings
+      });
+    },
+    onSuccess: (result) => {
+
+      console.log(result);
+      const status = result.status
+
+      if (status != 200) {
+
+        let msg = 'An error occurred while changing setting';
+
+        if (result.request && result.request.statusText) {
+          msg = result.request.statusText;
+        }
+
+        // look for result.error and then result.error.detail
+        if (result.error && result.error.detail) {
+          msg = msg + ': ' + result.error.detail;
+        }
+
+        openSnackbar(msg, 'error');
+        throw new Error('Error setting settings: ' + msg);
+
+      } else {
+        let msg = 'Settings updated successfully';
+        if (result.data && result.data.message) {
+          msg = result.data.message;
+        }
+
+        openSnackbar(msg, 'success');
+      }
+    },
+    onError: (error: AxiosError) => {
+      console.error(error);
+    }
+  });
+
+  function makeSettingApplyHandler(key: string) {
+  return async (value: string) => {
+    console.log(`Applying setting ${key} with value:`, value);
+    return new Promise<boolean>((resolve) => {
+      setSettingsQuery.mutate(
+        { [key]: value },
+        {
+          onSuccess: () => resolve(true),
+          onError: () => resolve(false),
+        }
+      );
+    });
+  };
+}
+
+
+
 
 
   return (
@@ -294,6 +369,7 @@ function RouteComponent() {
               <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
                 <TextField
                   variant='standard'
+                  size='small'
                   label={'Conversion Factor [Gy/C]'}
                   value={conversionFactor}
                   onChange={(e) => {
@@ -342,6 +418,27 @@ function RouteComponent() {
           onChange={handleSettingChange}
         />
 
+        <DirtyTextField
+          label={'Auto Current Range Upper Limit [A]'}
+          value={settings?.current_range_auto_upper_limit ?? ''}
+          onApply={makeSettingApplyHandler('current_range_auto_upper_limit')}
+        />
+
+        <DirtyTextField
+          label={'Auto Current Range [ON/OFF]'}
+          onOff={true}
+          value={settings?.current_range_auto ?? ''}
+          onApply={makeSettingApplyHandler('current_range_auto')}
+        />
+
+        <Button
+          onClick={applyAll}>
+          Apply All Settings
+
+        </Button>
+
+
+
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', m: 2 }}>
           <ExecQueryButton
             onClick={async () => {
@@ -357,6 +454,15 @@ function RouteComponent() {
         />
       </Box>
       <Divider sx={{ my: 2 }} />
+
+      <Snackbar
+        openState={[snackbar.open, (open) => setSnackbar(prev => ({ ...prev, open: open as boolean }))]}
+        alertProps={{
+          message: snackbar.msg,
+          severity: snackbar.severity
+        }}
+
+      />
 
     </Box>
   )

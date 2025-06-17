@@ -39,7 +39,7 @@ def assert_connected(controller: ControllerDep):
     if controller.state.get().connection_status != ConnectionStatus.CONNECTED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_name} is not connected. Please connect first.",
+            detail=f"{controller.device_name.value} is not connected. Please connect first.",
         )
 
 
@@ -50,7 +50,7 @@ def assert_idle(controller: ControllerDep):
     if controller.state.get().status != ElectrometerStatus.IDLE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_name} is not idle. Please stop any ongoing measurements first.",
+            detail=f"{controller.device_name.value} is not idle. Please stop any ongoing measurements first.",
         )
 
 
@@ -61,7 +61,7 @@ def assert_no_errors(controller: ControllerDep):
     if controller.state.get().error is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_name} has pending error, reset the error.",
+            detail=f"{controller.device_name.value} has pending error, reset the error.",
         )
 
 

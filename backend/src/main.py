@@ -1,11 +1,10 @@
 import logging
 import json
 
-from datetime import datetime
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, APIRouter, Request
+from fastapi import FastAPI, APIRouter, Request, HTTPException
+
 from fastapi.routing import APIRoute
-from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
 from src.shared.models import WebSocketMessageType, BaseWebSocketMessage, BaseState, ConnectionStatus
@@ -108,12 +107,8 @@ async def global_exception_handler(request: Request, exc: Exception):
     elif hasattr(exc, "status_code"):  # For custom exceptions
         status_code = exc.status_code
 
-    return JSONResponse(
+    return HTTPException(
         status_code=status_code,
-        content={
-            "message": str(exc),
-            "error_type": error_type,
-            "timestamp": datetime.now().isoformat(),
-            "path": str(request.url),
-        },
+        detail=f"An error occurred: {str(exc)}",
+        headers={"X-Error-Type": error_type}
     )
