@@ -45,7 +45,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
 
             <Stack
                 direction="row"
-                sx={{ alignItems: 'center', gap: 2, my: 4, justifyContent: 'space-between' }}
+                sx={{ alignItems: 'center', gap: 2, my: 4, justifyContent: 'space-between', flexWrap: 'wrap' }}
             >
                 <Stack
                     direction="row"

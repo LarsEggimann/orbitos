@@ -12,13 +12,13 @@ import Card from '@mui/material/Card';
 
 export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseState }) => {
   const {
-    device_id = 'unknown',
+    device_name = 'unknown',
     status = 'unknown',
     connection_status = 'unknown',
     error = 'unknown',
   } = state || {};
 
-  const deviceId = replaceUnderscores(device_id)?.charAt(0).toUpperCase() + replaceUnderscores(device_id)?.slice(1);
+  const deviceName = replaceUnderscores(device_name)?.charAt(0).toUpperCase() + replaceUnderscores(device_name)?.slice(1);
   const statusText = replaceUnderscores(status);
   const connectionStatusText = replaceUnderscores(connection_status);
   const errorText = error;
@@ -42,7 +42,7 @@ export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseSt
 
   return (
     <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
-      <Typography variant="h6" gutterBottom>{deviceId} State</Typography>
+      <Typography variant="h6">{deviceName} State</Typography>
       <Table sx={{ minWidth: 300 }}>
         <TableBody>
           <TableRow>

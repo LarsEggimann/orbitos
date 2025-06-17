@@ -9,8 +9,6 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import { DeviceSettingsForm } from '~/components/ui/DeviceSettingsForm'
-import Tabs from '@mui/material/Tabs'
-import Tab from '@mui/material/Tab'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import type { AxiosResponse, AxiosError } from 'axios';
@@ -19,6 +17,11 @@ import Stack from '@mui/material/Stack'
 import { useQuery } from '@tanstack/react-query'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
 import Card from '@mui/material/Card'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
+import TextField from '@mui/material/TextField'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -174,6 +177,19 @@ function RouteComponent() {
     }
   }, [data?.current, data?.timestamp]);
 
+  const [conversionFactor, setConversionFactor] = useState(1); // Default conversion factor
+  useEffect(() => {
+    // Load conversion factor from localStorage if available
+    const savedFactor = localStorage.getItem(`${deviceName}_conversionFactor`);
+    if (savedFactor) {
+      setConversionFactor(parseFloat(savedFactor));
+    }
+  }, [deviceName]);
+  useEffect(() => {
+    // Save conversion factor to localStorage whenever it changes
+    localStorage.setItem(`${deviceName}_conversionFactor`, conversionFactor.toString());
+  }, [conversionFactor, deviceName]);
+
 
   return (
     <Box sx={{ p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}>
@@ -228,10 +244,7 @@ function RouteComponent() {
         startState={[startDate, setStartDate]}
         endState={[endDate, setEndDate]}
       >
-
       </DateRangeSelect>
-
-
 
       <TimeSeriesChart
         xData={data?.timestamp ?? []}
@@ -244,58 +257,105 @@ function RouteComponent() {
       />
 
       <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
-        <Typography variant="h6" gutterBottom>Data Information</Typography>
-        <Typography>Number of Datapoints lodaded: {data?.current.length}</Typography>
-        <Typography>
-          Total Duration: {data?.timestamp ? ((data?.timestamp[data.timestamp.length - 1] - data.timestamp[0]) / 60).toFixed(2) : "N/A"} minutes
-        </Typography>
-        <Typography>
-          Integrated Charge: {integratedCharge
-            ? integratedCharge.toExponential(3)
-            : "N/A"} C
-        </Typography>
-
+        <Typography variant="h6">Plot Data Information</Typography>
+        <Table sx={{ minWidth: 300 }}>
+          <TableBody>
+            <TableRow>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '30%' }}>
+                <Typography>Number of Datapoints loaded:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0 }}>
+                <Typography>
+                  {data?.current.length}
+                </Typography>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
+                <Typography>Loaded Timeframe:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0 }}>
+                <Typography>
+                  {data?.timestamp ? ((data?.timestamp[data.timestamp.length - 1] - data.timestamp[0]) / 60).toFixed(2) : "N/A"} minutes
+                </Typography>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
+                <Typography>Integrated Charge:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0 }}>
+                <Typography>
+                  {integratedCharge
+                    ? integratedCharge.toExponential(6)
+                    : "N/A"} C
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
+                <TextField
+                  variant='standard'
+                  label={'Conversion Factor [Gy/C]'}
+                  value={conversionFactor}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value)) {
+                      setConversionFactor(value);
+                    }
+                  }}
+                  type={'number'}
+                />
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0 }}>
+                <Typography>
+                  {integratedCharge
+                    ? (integratedCharge * conversionFactor).toExponential(6)
+                    : "N/A"} Gy
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </Card>
 
       <DeviceStateDisplay state={state as BaseState} />
 
 
-        <Box sx={{ m: 2 }}>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <ExecQueryButton
-              onClick={async () => {
-                return await ElectrometerService.electrometerStartContinuousMeasurement(deviceIdPathArg)
-              }}
-            >
-              Start Continuous
-            </ExecQueryButton>
-            <ExecQueryButton
-              onClick={async () => {
-                return await ElectrometerService.electrometerStopContinuousMeasurement(deviceIdPathArg)
-              }}
-            >
-              Stop Continuous
-            </ExecQueryButton>
-          </Box>
-          <DeviceSettingsForm
-            settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
-            onChange={handleSettingChange}
-          />
-
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', m: 2 }}>
-            <ExecQueryButton
-              onClick={async () => {
-                return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
-              }}
-            >
-              Start Trigger
-            </ExecQueryButton>
-          </Box>
-          <DeviceSettingsForm
-            settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => triggerKeys.includes(k)))}
-            onChange={handleSettingChange}
-          />
+      <Box sx={{ m: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+          <ExecQueryButton
+            onClick={async () => {
+              return await ElectrometerService.electrometerStartContinuousMeasurement(deviceIdPathArg)
+            }}
+          >
+            Start Continuous
+          </ExecQueryButton>
+          <ExecQueryButton
+            onClick={async () => {
+              return await ElectrometerService.electrometerStopContinuousMeasurement(deviceIdPathArg)
+            }}
+          >
+            Stop Continuous
+          </ExecQueryButton>
         </Box>
+        <DeviceSettingsForm
+          settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
+          onChange={handleSettingChange}
+        />
+
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', m: 2 }}>
+          <ExecQueryButton
+            onClick={async () => {
+              return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
+            }}
+          >
+            Start Trigger
+          </ExecQueryButton>
+        </Box>
+        <DeviceSettingsForm
+          settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => triggerKeys.includes(k)))}
+          onChange={handleSettingChange}
+        />
+      </Box>
       <Divider sx={{ my: 2 }} />
 
     </Box>
