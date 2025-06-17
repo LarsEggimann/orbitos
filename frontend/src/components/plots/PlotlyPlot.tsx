@@ -189,6 +189,11 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
     }
   }, [localizedXAsStrings, y, textColor])
 
+  // reload figure when dataQuery changes
+  useEffect(() => {
+    setFigure(getFigure())
+  }, [dataQuery])
+
   return (
     <Box sx={{ position: 'relative', width: '100%', height: height }}>
       <LoadingOverlay query={dataQuery} height={height} />
