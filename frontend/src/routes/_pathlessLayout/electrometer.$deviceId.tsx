@@ -4,13 +4,11 @@ import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import { ElectrometerService, ElectrometerName, BaseState, ElectrometerDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
-import { DeviceStateDisplay, DeviceSettingsDisplay } from '~/components/ui/DeviceStateDisplay'
+import { DeviceStateDisplay } from '~/components/ui/DeviceStateDisplay'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
-import { DeviceSettingsForm } from '~/components/ui/DeviceSettingsForm'
-import { useState, useEffect, useCallback, useRef } from 'react'
-import debounce from 'lodash.debounce'
+import { useState, useEffect, useRef } from 'react'
 import type { AxiosResponse, AxiosError } from 'axios';
 import IpAutocomplete from '~/components/ui/IpAutocomplete';
 import Stack from '@mui/material/Stack'
@@ -23,9 +21,7 @@ import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
 import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField'
-import Button from '@mui/material/Button'
 import Snackbar from '~/components/ui/Snackbar'
-import { BaseResponse } from '~/generated'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -101,50 +97,6 @@ function RouteComponent() {
       })
     }
   })
-
-  const [localSettings, setLocalSettings] = useState(settings)
-
-  // Sync localSettings with websocket settings
-  useEffect(() => {
-    setLocalSettings(settings)
-  }, [settings])
-
-  // Debounced update for settings (waits 1.5s after last change before sending)
-  const debouncedUpdate = useRef(
-    debounce(
-      (
-        key: string,
-        value: any,
-        resolve: (value: AxiosResponse<any> | AxiosError<any> | void) => void,
-        reject: (reason?: any) => void
-      ) => {
-        ElectrometerService.electrometerSetElectrometerSettings({
-          path: { device_id: deviceId },
-          body: { [key]: value }
-        })
-          .then(resolve)
-          .catch(reject);
-      },
-      200 // debounce time
-    )
-  ).current;
-
-  const handleSettingChange = useCallback(
-    (key: string, value: any): Promise<AxiosResponse<any> | AxiosError<any> | void> => {
-      setLocalSettings(prev => {
-        if (!prev) return { device_id: deviceId, [key]: value };
-        return { ...prev, [key]: value };
-      });
-      return new Promise((resolve, reject) => {
-        debouncedUpdate(key, value, resolve, reject);
-      });
-    },
-    [debouncedUpdate, deviceId]
-  )
-
-  // Settings keys for tabs
-  const triggerKeys = ['trigger_count', 'trigger_time_interval', 'trigger_delay']
-  const continuousKeys = ['aperture_integration_time', 'aperture_auto', 'current_range', 'current_range_auto', 'current_range_auto_upper_limit', 'current_range_auto_lower_limit']
 
   // IP Dropdown State
   const ipOptions = [
@@ -248,22 +200,29 @@ function RouteComponent() {
   });
 
   function makeSettingApplyHandler(key: string) {
-  return async (value: string) => {
-    console.log(`Applying setting ${key} with value:`, value);
-    return new Promise<boolean>((resolve) => {
-      setSettingsQuery.mutate(
-        { [key]: value },
-        {
-          onSuccess: () => resolve(true),
-          onError: () => resolve(false),
-        }
-      );
-    });
-  };
-}
+    return async (value: string) => {
+      console.log(`Applying setting ${key} with value:`, value);
+      return new Promise<boolean>((resolve) => {
+        setSettingsQuery.mutate(
+          { [key]: value },
+          {
+            onSuccess: () => resolve(true),
+            onError: () => resolve(false),
+          }
+        );
+      });
+    };
+  }
 
+  const [triggerCount, setTriggerCount] = useState(settings?.trigger_count || 0)
+  useEffect(() => {
+    setTriggerCount(Number(settings?.trigger_count) || 0)
+  }, [settings?.trigger_count])
 
-
+  const [triggerTime, setTriggerTime] = useState(settings?.trigger_time_interval || 0)
+  useEffect(() => {
+    setTriggerTime(Number(settings?.trigger_time_interval) || 0)
+  }, [settings?.trigger_time_interval])
 
 
   return (
@@ -412,34 +371,7 @@ function RouteComponent() {
           >
             Stop Continuous
           </ExecQueryButton>
-        </Box>
-        <DeviceSettingsForm
-          settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => continuousKeys.includes(k)))}
-          onChange={handleSettingChange}
-        />
 
-        <DirtyTextField
-          label={'Auto Current Range Upper Limit [A]'}
-          value={settings?.current_range_auto_upper_limit ?? ''}
-          onApply={makeSettingApplyHandler('current_range_auto_upper_limit')}
-        />
-
-        <DirtyTextField
-          label={'Auto Current Range [ON/OFF]'}
-          onOff={true}
-          value={settings?.current_range_auto ?? ''}
-          onApply={makeSettingApplyHandler('current_range_auto')}
-        />
-
-        <Button
-          onClick={applyAll}>
-          Apply All Settings
-
-        </Button>
-
-
-
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', m: 2 }}>
           <ExecQueryButton
             onClick={async () => {
               return await ElectrometerService.electrometerStartTriggerBasedMeasurement(deviceIdPathArg)
@@ -448,12 +380,102 @@ function RouteComponent() {
             Start Trigger
           </ExecQueryButton>
         </Box>
-        <DeviceSettingsForm
-          settings={Object.fromEntries(Object.entries(localSettings || {}).filter(([k]) => triggerKeys.includes(k)))}
-          onChange={handleSettingChange}
-        />
+
+        <Box
+          sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
+            <Typography variant='h6'>
+              Current Range Settings
+            </Typography>
+            <DirtyTextField
+              label={'Auto Current Range [ON/OFF]'}
+              onOff={true}
+              value={settings?.current_range_auto ?? ''}
+              onApply={makeSettingApplyHandler('current_range_auto')}
+            />
+            <DirtyTextField
+              label={'Manual Current Range [A]'}
+              value={settings?.current_range ?? ''}
+              onApply={makeSettingApplyHandler('current_range')}
+              disabled={settings?.current_range_auto == 'ON'}
+            />
+            <DirtyTextField
+              label={'Auto Current Range Upper Limit [A]'}
+              value={settings?.current_range_auto_upper_limit ?? ''}
+              onApply={makeSettingApplyHandler('current_range_auto_upper_limit')}
+              disabled={settings?.current_range_auto == 'OFF'}
+            />
+            <DirtyTextField
+              label={'Auto Current Range Lower Limit [A]'}
+              value={settings?.current_range_auto_lower_limit ?? ''}
+              onApply={makeSettingApplyHandler('current_range_auto_lower_limit')}
+              disabled={settings?.current_range_auto == 'OFF'}
+            />
+          </Box>
+
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
+            <Typography variant='h6'>
+              Aperture Settings
+            </Typography>
+            <DirtyTextField
+              label={'Auto Aperture [ON/OFF]'}
+              onOff={true}
+              value={settings?.aperture_auto ?? ''}
+              onApply={makeSettingApplyHandler('aperture_auto')}
+            />
+            <DirtyTextField
+              label={'Manual Aperture Integration Time [s]'}
+              value={settings?.aperture_integration_time ?? ''}
+              onApply={makeSettingApplyHandler('aperture_integration_time')}
+              disabled={settings?.aperture_auto == 'ON'}
+            />
+          </Box>
+
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
+            <Typography variant='h6'>
+              Trigger Settings
+            </Typography>
+            <DirtyTextField
+              label={'Trigger Count [#]'}
+              value={settings?.trigger_count ?? ''}
+              onApply={makeSettingApplyHandler('trigger_count')}
+              onChange={e => setTriggerCount(Number(e.target.value) || 0)}
+            />
+            <DirtyTextField
+
+              label={'Trigger Time Interval [s]'}
+              value={settings?.trigger_time_interval ?? ''}
+              onApply={makeSettingApplyHandler('trigger_time_interval')}
+              onChange={e => setTriggerTime(Number(e.target.value) || 0)}
+
+            />
+            <Typography>
+              Total Measurement Time: {triggerCount * triggerTime} s
+            </Typography>
+            <DirtyTextField
+              label={'Trigger Delay [s]'}
+              value={settings?.trigger_delay ?? ''}
+              onApply={makeSettingApplyHandler('trigger_delay')}
+            />
+          </Box>
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
+            <Typography variant='h6'>
+              Bias Voltage Control
+            </Typography>
+            <Typography>
+              not implemented yet ...
+            </Typography>
+            
+          </Box>
+
+        </Box>
+
       </Box>
-      <Divider sx={{ my: 2 }} />
 
       <Snackbar
         openState={[snackbar.open, (open) => setSnackbar(prev => ({ ...prev, open: open as boolean }))]}

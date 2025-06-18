@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { replaceUnderscores } from '~/utils/helpers';
@@ -92,13 +90,4 @@ export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseSt
     </Card>
   );
 };
-
-export const DeviceSettingsDisplay = ({ settings }: { settings: any }) => (
-  <Box sx={{ flexGrow: 1, mb: 2 }}>
-    <Typography variant="h6">Settings</Typography>
-    <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
-      <pre style={{ margin: 0 }}>{JSON.stringify(settings, null, 2)}</pre>
-    </Paper>
-  </Box>
-);
 

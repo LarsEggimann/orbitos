@@ -2,12 +2,11 @@ import React, {
   useState,
   forwardRef,
   useImperativeHandle,
-  useRef,
   useEffect
 } from 'react';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { SxProps, Theme } from '@mui/material/styles';
 
 export type DirtyTextFieldProps = {
   /**
@@ -35,10 +34,6 @@ const DirtyTextField = forwardRef<DirtyTextFieldHandle, DirtyTextFieldProps>(
       setValue(rest.value);
     }, [rest.value]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDirty(true);
-      setValue(e.target.value);
-    };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
@@ -70,10 +65,19 @@ const DirtyTextField = forwardRef<DirtyTextFieldHandle, DirtyTextFieldProps>(
       tryApply,
     }));
 
+    const sx: SxProps<Theme>  = {
+      ...rest.sx,
+      width: '100%',
+    }
+
     return (
       onOff ? (
-        <Select
-          {...rest} // TODO fix this mess!!!
+        <TextField
+          {...rest}
+          variant='outlined'
+          size='small'
+          label={rest.label}
+          select
           value={value}
           onChange={e => {
             console.log('Select changed:', e.target.value);
@@ -81,22 +85,39 @@ const DirtyTextField = forwardRef<DirtyTextFieldHandle, DirtyTextFieldProps>(
             setValue(e.target.value);
             doTryApply(e.target.value as string);
 
+            // call onChange from rest
+            if (rest.onChange) {
+              rest.onChange(e);
+            }
+
 
           }}
           color={dirty ? 'warning' : rest.color || 'primary'}
+          focused={dirty || rest.focused}
+          sx={sx}
         >
           <MenuItem value="ON">ON</MenuItem>
           <MenuItem value="OFF">OFF</MenuItem>
-        </Select>
+        </TextField>
       ) : (
         <TextField
           {...rest}
+          variant='outlined'
+          size='small'
           value={value}
-          onChange={handleInputChange}
+          onChange={e =>{
+            setDirty(true);
+            setValue(e.target.value);
+            // call onChange from rest
+            if (rest.onChange) {
+              rest.onChange(e);
+            }
+          }}
           onKeyDown={handleKeyDown}
           color={dirty ? 'warning' : rest.color || 'primary'}
-          type={typeof value === 'number' ? 'number' : 'text'}
+          type={'number'}
           focused={dirty || rest.focused}
+          sx={sx}
         />
       )
     );
