@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as PathlessLayoutImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexImport } from './routes/_pathlessLayout/index'
 import { Route as PathlessLayoutElectrometerDeviceIdImport } from './routes/_pathlessLayout/electrometer.$deviceId'
+import { Route as PathlessLayoutElectrometerDeviceId1AndDeviceId2Import } from './routes/_pathlessLayout/electrometer.$deviceId1.and.$deviceId2'
 
 // Create/Update Routes
 
@@ -32,6 +33,13 @@ const PathlessLayoutElectrometerDeviceIdRoute =
   PathlessLayoutElectrometerDeviceIdImport.update({
     id: '/electrometer/$deviceId',
     path: '/electrometer/$deviceId',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
+
+const PathlessLayoutElectrometerDeviceId1AndDeviceId2Route =
+  PathlessLayoutElectrometerDeviceId1AndDeviceId2Import.update({
+    id: '/electrometer/$deviceId1/and/$deviceId2',
+    path: '/electrometer/$deviceId1/and/$deviceId2',
     getParentRoute: () => PathlessLayoutRoute,
   } as any)
 
@@ -60,6 +68,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutElectrometerDeviceIdImport
       parentRoute: typeof PathlessLayoutImport
     }
+    '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': {
+      id: '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
+      path: '/electrometer/$deviceId1/and/$deviceId2'
+      fullPath: '/electrometer/$deviceId1/and/$deviceId2'
+      preLoaderRoute: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Import
+      parentRoute: typeof PathlessLayoutImport
+    }
   }
 }
 
@@ -68,12 +83,15 @@ declare module '@tanstack/react-router' {
 interface PathlessLayoutRouteChildren {
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
+  PathlessLayoutElectrometerDeviceId1AndDeviceId2Route: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
 const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,
+  PathlessLayoutElectrometerDeviceId1AndDeviceId2Route:
+    PathlessLayoutElectrometerDeviceId1AndDeviceId2Route,
 }
 
 const PathlessLayoutRouteWithChildren = PathlessLayoutRoute._addFileChildren(
@@ -84,11 +102,13 @@ export interface FileRoutesByFullPath {
   '': typeof PathlessLayoutRouteWithChildren
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
 export interface FileRoutesByTo {
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
 export interface FileRoutesById {
@@ -96,18 +116,27 @@ export interface FileRoutesById {
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/' | '/electrometer/$deviceId'
+  fullPaths:
+    | ''
+    | '/'
+    | '/electrometer/$deviceId'
+    | '/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/electrometer/$deviceId'
+  to:
+    | '/'
+    | '/electrometer/$deviceId'
+    | '/electrometer/$deviceId1/and/$deviceId2'
   id:
     | '__root__'
     | '/_pathlessLayout'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
+    | '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesById: FileRoutesById
 }
 
@@ -136,7 +165,8 @@ export const routeTree = rootRoute
       "filePath": "_pathlessLayout.tsx",
       "children": [
         "/_pathlessLayout/",
-        "/_pathlessLayout/electrometer/$deviceId"
+        "/_pathlessLayout/electrometer/$deviceId",
+        "/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2"
       ]
     },
     "/_pathlessLayout/": {
@@ -145,6 +175,10 @@ export const routeTree = rootRoute
     },
     "/_pathlessLayout/electrometer/$deviceId": {
       "filePath": "_pathlessLayout/electrometer.$deviceId.tsx",
+      "parent": "/_pathlessLayout"
+    },
+    "/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2": {
+      "filePath": "_pathlessLayout/electrometer.$deviceId1.and.$deviceId2.tsx",
       "parent": "/_pathlessLayout"
     }
   }
