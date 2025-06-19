@@ -1,8 +1,11 @@
 # exclude data files
-data
+*.db
 
 
 # python stuff
 __pycache__
-.nicegui
+.mypy_cache
+.pytest_cache
+.venv
+
 *.log

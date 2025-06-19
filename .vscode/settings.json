@@ -3,7 +3,7 @@
     "editor.glyphMargin": true,
     "editor.folding": true,
 
-    // "editor.scrollbar.verticalScrollbarSize": 5,
+    "editor.scrollbar.verticalScrollbarSize": 3,
     "editor.scrollbar.horizontalScrollbarSize": 3,
 
     "python.analysis.extraPaths": [
