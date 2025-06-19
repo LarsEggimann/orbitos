@@ -45,11 +45,11 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
 
             <Stack
                 direction="row"
-                sx={{ alignItems: 'center', gap: 2, my: 4, justifyContent: 'space-between', flexWrap: 'wrap' }}
+                sx={{ alignItems: 'center', gap: 1, justifyContent: 'space-between', flexWrap: 'wrap' }}
             >
                 <Stack
                     direction="row"
-                    sx={{ alignItems: 'center', gap: 2, my: 4, justifyContent: 'flex-end' }}
+                    sx={{ alignItems: 'center', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap'  }}
                 >
 
                     <DateTimePicker
@@ -59,6 +59,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
                         onChange={(newValue) => {
                             setStartDate(newValue ? newValue.toDate() : null);
                         }}
+                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
                         {...rest}
                     />
 
@@ -109,7 +110,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
 
                 <Stack
                     direction="row"
-                    sx={{ alignItems: 'center', gap: 2, my: 4, justifyContent: 'flex-end' }}
+                    sx={{ alignItems: 'center', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap'  }}
                 >
 
 
@@ -120,7 +121,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
                         onChange={(newValue) => {
                             setEndDate(newValue ? newValue.toDate() : null);
                         }}
-
+                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
                         {...rest}
                     />
 

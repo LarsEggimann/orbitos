@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import { useState, useEffect, useRef } from 'react'
 import type { AxiosResponse, AxiosError } from 'axios';
-import IpAutocomplete from '~/components/ui/IpAutocomplete';
+import IpAutocomplete from '~/components/electrometer/IpAutocomplete';
 import Stack from '@mui/material/Stack'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
@@ -22,6 +22,7 @@ import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
 import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField'
 import Snackbar from '~/components/ui/Snackbar'
+import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 
 export const Route = createFileRoute('/_pathlessLayout/electrometer/$deviceId')({
   component: RouteComponent,
@@ -61,6 +62,7 @@ function RouteComponent() {
 
 
   const [data, setData] = useState<ElectrometerDataResponse | undefined>(undefined)
+  
 
   const dataQuery = useQuery({
     queryKey: [deviceName, startDate, endDate],
@@ -146,10 +148,6 @@ function RouteComponent() {
   }, [conversionFactor, deviceName]);
 
   const field1Ref = useRef<DirtyTextFieldHandle>(null);
-
-  const applyAll = () => {
-    field1Ref.current?.tryApply();
-  };
 
   const [snackbar, setSnackbar] = React.useState<{ open: boolean, msg: string, severity: 'success' | 'error' }>({ open: false, msg: '', severity: 'success' });
 
@@ -280,18 +278,8 @@ function RouteComponent() {
       >
       </DateRangeSelect>
 
-      <TimeSeriesChart
-        xData={data?.timestamp ?? []}
-        yData={data?.current ?? []}
-        dataQuery={dataQuery}
-        height={500}
-        xAxisLabel='Time'
-        yAxisLabel='Current [A]'
-        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
-      />
-
       <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
-        <Typography variant="h6">Plot Data Information</Typography>
+        <Typography variant="h6">Plot Data</Typography>
         <Table sx={{ minWidth: 300 }}>
           <TableBody>
             <TableRow>
@@ -303,15 +291,14 @@ function RouteComponent() {
                   {data?.current.length}
                 </Typography>
               </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
-                <Typography>Loaded Timeframe:</Typography>
-              </TableCell>
-              <TableCell sx={{ border: 0, pl: 0 }}>
-                <Typography>
-                  {data?.timestamp ? ((data?.timestamp[data.timestamp.length - 1] - data.timestamp[0]) / 60).toFixed(2) : "N/A"} minutes
-                </Typography>
+              <TableCell colSpan={2} sx={{ border: 0, pl: 0 }}>
+                <DownloadCSVButton
+                  data={{
+                    timestamp: data?.timestamp ?? [],
+                    current: data?.current ?? []
+                  }}
+                  defaultFilename={`em${deviceId}_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                />
               </TableCell>
             </TableRow>
             <TableRow>
@@ -327,7 +314,7 @@ function RouteComponent() {
               </TableCell>
               <TableCell sx={{ border: 0, pl: 0, pr: 2 }}>
                 <TextField
-                  variant='standard'
+                  variant='outlined'
                   size='small'
                   label={'Conversion Factor [Gy/C]'}
                   value={conversionFactor}
@@ -351,6 +338,16 @@ function RouteComponent() {
           </TableBody>
         </Table>
       </Card>
+
+      <TimeSeriesChart
+        xData={data?.timestamp ?? []}
+        yData={data?.current ?? []}
+        dataQuery={dataQuery}
+        height={500}
+        xAxisLabel='Time'
+        yAxisLabel='Current [A]'
+        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
+      />
 
       <DeviceStateDisplay state={state as BaseState} />
 
@@ -470,7 +467,7 @@ function RouteComponent() {
             <Typography>
               not implemented yet ...
             </Typography>
-            
+
           </Box>
 
         </Box>
