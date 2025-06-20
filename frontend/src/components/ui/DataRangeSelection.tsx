@@ -1,150 +1,151 @@
-import * as React from 'react';
-import dayjs from 'dayjs';
-import 'dayjs/locale/de';
-import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import Stack from '@mui/material/Stack';
+import * as React from 'react'
+import dayjs from 'dayjs'
+import 'dayjs/locale/de'
+import {
+  DateTimePicker,
+  DateTimePickerProps,
+} from '@mui/x-date-pickers/DateTimePicker'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import Stack from '@mui/material/Stack'
 
-import PrestyledButton from './PrestyledButton';
-
+import PrestyledButton from './PrestyledButton'
 
 export type DateRangeSelectProps = {
-    startState: [Date | null, React.Dispatch<React.SetStateAction<Date | null>>];
-    endState: [Date | null, React.Dispatch<React.SetStateAction<Date | null>>];
-} & DateTimePickerProps;
+  startState: [Date | null, React.Dispatch<React.SetStateAction<Date | null>>]
+  endState: [Date | null, React.Dispatch<React.SetStateAction<Date | null>>]
+} & DateTimePickerProps
 
 const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
-    startState,
-    endState,
-    ...rest
+  startState,
+  endState,
+  ...rest
 }) => {
+  const [startDate, setStartDate] = startState
+  const [endDate, setEndDate] = endState
 
-    const [startDate, setStartDate] = startState;
-    const [endDate, setEndDate] = endState;
+  React.useEffect(() => {
+    dayjs.locale('de')
+  }, [])
 
-    React.useEffect(() => {
-        dayjs.locale('de');
-    }, []);
+  const setRangeToToday = () => {
+    const today = new Date()
+    setStartDate(
+      new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0),
+    )
+    setEndDate(null)
+  }
 
-    const setRangeToToday = () => {
-        const today = new Date();
-        setStartDate(new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0));
-        setEndDate(null);
-    };
+  const lastNMinutes = (n: number) => {
+    const now = new Date()
+    const start = new Date(now.getTime() - n * 60 * 1000)
+    setStartDate(start)
+    setEndDate(null) // Reset end date to null
+  }
 
-    const lastNMinutes = (n: number) => {
-        const now = new Date();
-        const start = new Date(now.getTime() - n * 60 * 1000);
-        setStartDate(start);
-        setEndDate(null);   // Reset end date to null
-    }
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='de'>
+      <Stack
+        direction='row'
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+        }}
+      >
+        <Stack
+          direction='row'
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+          }}
+        >
+          <DateTimePicker
+            label='Start Date Time'
+            ampm={false}
+            value={startDate ? dayjs(startDate) : null}
+            onChange={(newValue) => {
+              setStartDate(newValue ? newValue.toDate() : null)
+            }}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            {...rest}
+          />
 
+          <PrestyledButton
+            onClick={() => {
+              lastNMinutes(0)
+            }}
+          >
+            Now
+          </PrestyledButton>
 
-    return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+          <PrestyledButton
+            onClick={() => {
+              lastNMinutes(5)
+            }}
+          >
+            Last 5 Minutes
+          </PrestyledButton>
 
-            <Stack
-                direction="row"
-                sx={{ alignItems: 'center', gap: 1, justifyContent: 'space-between', flexWrap: 'wrap' }}
-            >
-                <Stack
-                    direction="row"
-                    sx={{ alignItems: 'center', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap'  }}
-                >
+          <PrestyledButton
+            onClick={() => {
+              lastNMinutes(20)
+            }}
+          >
+            Last 20 Minutes
+          </PrestyledButton>
 
-                    <DateTimePicker
-                        label="Start Date Time"
-                        ampm={false}
-                        value={startDate ? dayjs(startDate) : null}
-                        onChange={(newValue) => {
-                            setStartDate(newValue ? newValue.toDate() : null);
-                        }}
-                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                        {...rest}
-                    />
+          <PrestyledButton
+            onClick={() => {
+              lastNMinutes(60)
+            }}
+          >
+            Last 60 Minutes
+          </PrestyledButton>
 
-                    <PrestyledButton
-                        onClick={() => {
-                            lastNMinutes(0);
+          <PrestyledButton
+            onClick={() => {
+              setRangeToToday()
+            }}
+          >
+            Today
+          </PrestyledButton>
+        </Stack>
 
-                        }}
-                    >
-                        Now
-                    </PrestyledButton>
+        <Stack
+          direction='row'
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+          }}
+        >
+          <DateTimePicker
+            label='End Date Time'
+            ampm={false}
+            value={endDate ? dayjs(endDate) : null}
+            onChange={(newValue) => {
+              setEndDate(newValue ? newValue.toDate() : null)
+            }}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            {...rest}
+          />
 
-                    <PrestyledButton
-                        onClick={() => {
-                            lastNMinutes(5);
+          <PrestyledButton
+            onClick={() => {
+              setEndDate(null)
+            }}
+          >
+            Reset End Date
+          </PrestyledButton>
+        </Stack>
+      </Stack>
+    </LocalizationProvider>
+  )
+}
 
-                        }}
-                    >
-                        Last 5 Minutes
-                    </PrestyledButton>
-
-                    <PrestyledButton
-                        onClick={() => {
-                            lastNMinutes(20);
-
-                        }}
-                    >
-                        Last 20 Minutes
-                    </PrestyledButton>
-
-                    <PrestyledButton
-                        onClick={() => {
-                            lastNMinutes(60);
-                        }}
-                    >
-                        Last 60 Minutes
-                    </PrestyledButton>
-
-                    <PrestyledButton
-                        onClick={() => {
-                            setRangeToToday();
-                        }}
-                    >
-                        Today
-                    </PrestyledButton>
-                </Stack>
-
-
-                <Stack
-                    direction="row"
-                    sx={{ alignItems: 'center', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap'  }}
-                >
-
-
-                    <DateTimePicker
-                        label="End Date Time"
-                        ampm={false}
-                        value={endDate ? dayjs(endDate) : null}
-                        onChange={(newValue) => {
-                            setEndDate(newValue ? newValue.toDate() : null);
-                        }}
-                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                        {...rest}
-                    />
-
-                    <PrestyledButton
-                        onClick={() => {
-                            setEndDate(null);
-                        }}
-                    >
-                        Reset End Date
-                    </PrestyledButton>
-                </Stack>
-
-
-
-
-
-
-            </Stack>
-
-        </LocalizationProvider>
-
-    );
-};
-
-export default DateRangeSelect;
+export default DateRangeSelect

@@ -11,6 +11,6 @@ ruff format src tests
 
 # format frontend code
 cd ../frontend
-# TODO
+npm run format
 
 cd ..

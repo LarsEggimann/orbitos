@@ -4,9 +4,9 @@ export default function Logo() {
   return (
     <img
       src={logoImage}
-      alt="ORBITOS Logo"
+      alt='ORBITOS Logo'
       style={{ height: 40, width: 'auto', display: 'block' }}
       draggable={false}
     />
-  );
+  )
 }

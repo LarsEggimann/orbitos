@@ -1,5 +1,4 @@
 import logging
-import json
 
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -8,7 +7,12 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from src.shared.models import WebSocketMessageType, BaseWebSocketMessage, BaseState, ConnectionStatus
+from src.shared.models import (
+    WebSocketMessageType,
+    BaseWebSocketMessage,
+    BaseState,
+    ConnectionStatus,
+)
 from src.core.config import config
 from src.core.logging import setup_logging
 from src.core.db import init_db
@@ -21,13 +25,13 @@ api_router = APIRouter()
 
 common_types_router = APIRouter(tags=["types"], prefix="/types")
 
+
 @common_types_router.get("/websocket", response_model=BaseWebSocketMessage)
 async def get_websocket_type():
     return BaseWebSocketMessage(
-        type=WebSocketMessageType.STATE,
-        device_id="",
-        content={}
+        type=WebSocketMessageType.STATE, device_id="", content={}
     )
+
 
 @common_types_router.get("/base-state", response_model=BaseState)
 async def get_base_state_type():
@@ -35,8 +39,9 @@ async def get_base_state_type():
         device_id="",
         status="unknown",
         connection_status=ConnectionStatus.DISCONNECTED,
-        error=None
+        error=None,
     )
+
 
 api_router.include_router(electrometer_router)
 api_router.include_router(common_types_router)
@@ -48,7 +53,6 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-
     # setup logging
     setup_logging()
 

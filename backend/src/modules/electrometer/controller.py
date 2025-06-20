@@ -88,7 +88,10 @@ class KeysightEM:
         logger.info("Starting health check for Keysight EM %s", self.device_name.value)
         while True:
             # only perform health check if the device is connected and idle
-            if self.state.get().connection_status != ConnectionStatus.DISCONNECTED and self.state.get().status == ElectrometerStatus.IDLE:
+            if (
+                self.state.get().connection_status != ConnectionStatus.DISCONNECTED
+                and self.state.get().status == ElectrometerStatus.IDLE
+            ):
                 try:
                     self._wait_for_device_ready()
                     error_request = self._em_query("SYST:ERR?")
@@ -99,7 +102,9 @@ class KeysightEM:
                     )
                     if error_request != '+0,"No error"':
                         logger.error("Error during health check: %s", error_request)
-                        self.state.update(error="Error in health check: " + error_request)
+                        self.state.update(
+                            error="Error in health check: " + error_request
+                        )
                         self._em_write("*CLS")
                 except Exception as e:
                     self.state.update(
@@ -126,7 +131,7 @@ class KeysightEM:
             and self.continuous_measurement_thread.is_alive()
         ):
             logger.info("Stopping continuous measurement!")
-            self._stop_continuous_measurement_event.set() # signal the thread to stop
+            self._stop_continuous_measurement_event.set()  # signal the thread to stop
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
         self.turn_off_io()
@@ -191,9 +196,12 @@ class KeysightEM:
                     end="\r",
                 )
                 self.state.update(
-                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING + f", {progress} seconds"
+                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
+                    + f", {progress} seconds"
                 )
-            self.state.update(status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA)
+            self.state.update(
+                status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA
+            )
             self._fetch_trigger_based_data(start)
             self.trigger_based_measurement_running = False
             self.state.update(status=ElectrometerStatus.IDLE)
@@ -289,18 +297,20 @@ class KeysightEM:
             except pyvisa.errors.VisaIOError as e:
                 logger.error("Error while disconnecting: %s", e)
         else:
-            logger.warning("EM %s is not connected, cannot disconnect.", self.device_name.value)
+            logger.warning(
+                "EM %s is not connected, cannot disconnect.", self.device_name.value
+            )
 
     def _save_data(self):
         data: list[ElectrometerData] = []
 
         for timestamp, current in zip(self.time_list, self.current_list):
             cur = float(current)
-            if cur > 1e30: # if the current is too high, skip this measurement
-                self.state.update(error=f"Current value {cur} is too high, overflow! -> Adjust current limits.")
-                raise ValueError(
-                    f"Current value {cur} is too high, overflow!"
+            if cur > 1e30:  # if the current is too high, skip this measurement
+                self.state.update(
+                    error=f"Current value {cur} is too high, overflow! -> Adjust current limits."
                 )
+                raise ValueError(f"Current value {cur} is too high, overflow!")
 
             data.append(
                 ElectrometerData(

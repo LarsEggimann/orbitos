@@ -132,7 +132,9 @@ def set_electrometer_settings(
     assert_idle(controller)
     assert_no_errors(controller)
     controller.update_settings(settings)
-    changed_fields = controller.settings.get_changed_fields_compared_to_settings_before_change()
+    changed_fields = (
+        controller.settings.get_changed_fields_compared_to_settings_before_change()
+    )
     return BaseResponse(
         message=f"Settings updated for {controller.device_name}. Changed fields: {changed_fields}"
     )
@@ -162,10 +164,14 @@ async def get_current_data(
 
     if time_frame.start:
         log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
-        statement = statement.where(ElectrometerData.timestamp >= time_frame.start.timestamp())
+        statement = statement.where(
+            ElectrometerData.timestamp >= time_frame.start.timestamp()
+        )
     if time_frame.end:
         log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
-        statement = statement.where(ElectrometerData.timestamp <= time_frame.end.timestamp())
+        statement = statement.where(
+            ElectrometerData.timestamp <= time_frame.end.timestamp()
+        )
 
     logger.info(log_string)
 
@@ -174,7 +180,7 @@ async def get_current_data(
 
     session_hr = session.exec(statement).all()
 
-    time, current, _ = zip(*session_hr) if session_hr else ([], [], [])    
+    time, current, _ = zip(*session_hr) if session_hr else ([], [], [])
 
     return ElectrometerDataResponse(
         device_name=ElectrometerName("electrometer_" + str(device_id)),
@@ -206,6 +212,7 @@ def stop_continuous_measurement(controller: ControllerDep):
     return BaseResponse(
         message=f"Continuous measurement stopped for {controller.device_name}"
     )
+
 
 @router.post(
     "/{device_id}/trigger-based-measurement/start", response_model=BaseResponse

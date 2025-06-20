@@ -52,28 +52,35 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
   useEffect(() => {
     const currentLength = localizedXAsStrings.length
-    if (x.length == currentLength + 1) { // compute only map the single new value (most common when we update via websocket)
+    if (x.length == currentLength + 1) {
+      // compute only map the single new value (most common when we update via websocket)
       const newX = x.slice(currentLength) // new x values as strings with timezone information
-      const newDates = newX.map(val => fromTimestampToLocalizedString(val)) // convert to Date objects, defaults to local timezone
+      const newDates = newX.map((val) => fromTimestampToLocalizedString(val)) // convert to Date objects, defaults to local timezone
 
-      setLocalizedXAsStrings(prev => prev.concat(newDates))
-      const newCustom = newDates.map((datetime, i) => [
-        datetime.slice(0, -1), // remove the trailing 'Z' for display
-        y[currentLength + i],
-      ] as [string, number])
-      setCustomData(prev => prev.concat(newCustom))
-
-    } else { // if there is not exactly one new value, we map the full x array new
-      const datesAsLocalizedStrings = x.map(val => fromTimestampToLocalizedString(val))
+      setLocalizedXAsStrings((prev) => prev.concat(newDates))
+      const newCustom = newDates.map(
+        (datetime, i) =>
+          [
+            datetime.slice(0, -1), // remove the trailing 'Z' for display
+            y[currentLength + i],
+          ] as [string, number],
+      )
+      setCustomData((prev) => prev.concat(newCustom))
+    } else {
+      // if there is not exactly one new value, we map the full x array new
+      const datesAsLocalizedStrings = x.map((val) =>
+        fromTimestampToLocalizedString(val),
+      )
       setLocalizedXAsStrings(datesAsLocalizedStrings)
-      setCustomData(datesAsLocalizedStrings.map((dateStr, i) => [dateStr.slice(0, -1), y[i]] as [string, number]))
+      setCustomData(
+        datesAsLocalizedStrings.map(
+          (dateStr, i) => [dateStr.slice(0, -1), y[i]] as [string, number],
+        ),
+      )
     }
   }, [x, y])
 
-  const getPlotData = (
-    xVals: string[],
-    yVals: number[],
-  ): Plotly.Data[] => {
+  const getPlotData = (xVals: string[], yVals: number[]): Plotly.Data[] => {
     return [
       {
         x: xVals,
@@ -144,7 +151,12 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
       responsive: true,
       displaylogo: false,
       displayModeBar: 'hover',
-      modeBarButtonsToRemove: ['toImage', 'zoomIn2d', 'zoomOut2d', 'autoScale2d' ],
+      modeBarButtonsToRemove: [
+        'toImage',
+        'zoomIn2d',
+        'zoomOut2d',
+        'autoScale2d',
+      ],
     }
   }
 
@@ -166,7 +178,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
 
     if (xVals.length > 0) {
       // // Calculate min and max for y-axis based on current data, fast and efficient
-      // const yMin = yVals.reduce((min, val) => Math.min(min, val), Infinity) 
+      // const yMin = yVals.reduce((min, val) => Math.min(min, val), Infinity)
       // const yMax = yVals.reduce((max, val) => Math.max(max, val), -Infinity)
 
       // const newLayout: Partial<Plotly.Layout> = {
@@ -198,7 +210,14 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   return (
     <Box sx={{ position: 'relative', width: '100%', height: height }}>
       <LoadingOverlay query={dataQuery} height={height} />
-      <Box sx={{ opacity: (dataQuery?.isLoading || dataQuery?.isFetching) ? 0.3 : 1, transition: 'opacity 0.2s', width: '100%', height: height }}>
+      <Box
+        sx={{
+          opacity: dataQuery?.isLoading || dataQuery?.isFetching ? 0.3 : 1,
+          transition: 'opacity 0.2s',
+          width: '100%',
+          height: height,
+        }}
+      >
         <Plot
           data={figure.data}
           layout={figure.layout}

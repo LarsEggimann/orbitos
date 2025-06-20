@@ -49,7 +49,9 @@ def init_module() -> None:
     count_device_id = 1
 
     for device_name in device_names:
-        controller = KeysightEM(device_id=count_device_id, device_name=device_name, ws_manager=ws_manager)
+        controller = KeysightEM(
+            device_id=count_device_id, device_name=device_name, ws_manager=ws_manager
+        )
         module_state.controllers[count_device_id] = controller
         count_device_id += 1
 

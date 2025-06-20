@@ -16,7 +16,10 @@ function Home() {
         Go to Electrometer 2
       </Link>
       <br />
-      <Link to='/electrometer/$deviceId1/and/$deviceId2' params={{ deviceId1: '1', deviceId2: '2' }}>
+      <Link
+        to='/electrometer/$deviceId1/and/$deviceId2'
+        params={{ deviceId1: '1', deviceId2: '2' }}
+      >
         Go to Electrometer 1 and 2
       </Link>
     </div>

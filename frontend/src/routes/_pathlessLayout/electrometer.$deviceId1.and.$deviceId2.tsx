@@ -12,18 +12,16 @@ function RouteComponent() {
   const { deviceId1, deviceId2 } = Route.useParams()
   return (
     <Stack
-      direction="row"
+      direction='row'
       sx={{
         width: '100%',
         height: '100%',
         gap: 1,
-      }}>
-
+      }}
+    >
       <Electrometer deviceId={parseInt(deviceId1)} />
 
       <Electrometer deviceId={parseInt(deviceId2)} />
-
     </Stack>
-
   )
 }

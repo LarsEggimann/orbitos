@@ -56,7 +56,7 @@ class WebSocketManager(Generic[T, G, H]):
         message = BaseWebSocketMessage(
             type=WebSocketMessageType.STATE,
             device_name=device_name,
-            content=state.model_dump(warnings='none'),
+            content=state.model_dump(warnings="none"),
         )
         await self._broadcast_message(device_name, message)
 

@@ -92,20 +92,20 @@ class SettingsManager(Generic[T]):
         self.save()
         self._on_settings_update(self._settings)
         return self._settings
-    
+
     def get_changed_fields_compared_to_settings_before_change(self) -> dict[str, Any]:
         if not self._settings_before_change:
             raise ValueError("No previous settings to compare against.")
-        
+
         current_settings = self.get()
         changed_fields = {}
-        
+
         for field in current_settings.model_fields:
             current_value = getattr(current_settings, field)
             previous_value = getattr(self._settings_before_change, field)
             if current_value != previous_value:
                 changed_fields[field] = (previous_value, current_value)
-        
+
         return changed_fields
 
     def _on_settings_update(self, settings: T) -> None:

@@ -1,13 +1,16 @@
-import { ReactNode } from 'react';
-import { Box } from '@mui/material';
+import { ReactNode } from 'react'
+import { Box } from '@mui/material'
 
-import { AppProvider, DashboardLayout, type Navigation } from '@toolpad/core';
-import { MdElectricBolt } from 'react-icons/md';
-import { FaHome } from 'react-icons/fa';
+import { AppProvider, DashboardLayout, type Navigation } from '@toolpad/core'
+import { MdElectricBolt } from 'react-icons/md'
+import { FaHome } from 'react-icons/fa'
 
-import Logo from '~/components/ui/Logo';
-import { SnackbarProvider, useSnackbarContext } from '~/provider/SnackbarProvider';
-import Snackbar from '~/components/ui/Snackbar';
+import Logo from '~/components/ui/Logo'
+import {
+  SnackbarProvider,
+  useSnackbarContext,
+} from '~/provider/SnackbarProvider'
+import Snackbar from '~/components/ui/Snackbar'
 
 const NAVIGATION: Navigation = [
   {
@@ -20,22 +23,22 @@ const NAVIGATION: Navigation = [
     title: 'Electrometer 1',
     icon: <MdElectricBolt />,
   },
-];
+]
 
 type LayoutProps = {
-  children: ReactNode;
-};
+  children: ReactNode
+}
 
 function Layout({ children }: LayoutProps) {
   return (
     <SnackbarProvider>
       <LayoutWithSnackbar>{children}</LayoutWithSnackbar>
     </SnackbarProvider>
-  );
+  )
 }
 
 function LayoutWithSnackbar({ children }: { children: ReactNode }) {
-  const { snackbar, closeSnackbar } = useSnackbarContext();
+  const { snackbar, closeSnackbar } = useSnackbarContext()
   return (
     <Box
       sx={{
@@ -55,7 +58,7 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
         }}
       />
     </Box>
-  );
+  )
 }
 
-export default Layout;
+export default Layout
