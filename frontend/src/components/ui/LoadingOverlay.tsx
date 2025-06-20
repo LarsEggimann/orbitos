@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import CircularProgress from '@mui/material/CircularProgress'
+import * as React from 'react'
 import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
 import Skeleton from '@mui/material/Skeleton'
 import type { UseQueryResult } from '@tanstack/react-query'
 
@@ -34,9 +34,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   slowTimeoutMs = 3000,
 }) => {
   const isLoading = loading ?? (query?.isLoading || query?.isFetching)
-  const [showSlowMsg, setShowSlowMsg] = useState(false)
+  const [showSlowMsg, setShowSlowMsg] = React.useState(false)
 
-  useEffect(() => {
+  React.useEffect(() => {
     let timer: NodeJS.Timeout | undefined
     if (isLoading) {
       setShowSlowMsg(false)

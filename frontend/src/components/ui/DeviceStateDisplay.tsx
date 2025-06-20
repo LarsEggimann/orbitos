@@ -1,12 +1,13 @@
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-import { replaceUnderscores } from '~/utils/helpers';
-import { BaseState } from '~/generated';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
+
+import { BaseState } from '~/generated';
+import { replaceUnderscores } from '~/utils/helpers';
 
 export const DeviceStateDisplay = ({ state = {} as BaseState }: { state?: BaseState }) => {
   const {

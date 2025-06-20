@@ -1,6 +1,7 @@
 import * as React from 'react';
+import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import { createFilterOptions } from '@mui/material/Autocomplete';
 
 const filter = createFilterOptions<IpOptionType>();
 

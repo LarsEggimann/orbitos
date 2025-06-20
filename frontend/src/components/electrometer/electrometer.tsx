@@ -1,26 +1,26 @@
-import React, { useMemo } from 'react'
-import TimeSeriesChart from '~/components/plots/PlotlyPlot'
-import ExecQueryButton from '~/components/ui/ExecQueryButton'
-import { ElectrometerService, ElectrometerName, BaseState, ElectrometerDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated'
-import { useDeviceWebSocket } from '~/utils/webSocketHook'
-import { DeviceStateDisplay } from '~/components/ui/DeviceStateDisplay'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
-import { useState, useEffect, useRef } from 'react'
-import type { AxiosResponse, AxiosError } from 'axios';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import type { AxiosError } from 'axios';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
+
+import TimeSeriesChart from '~/components/plots/PlotlyPlot';
+import ExecQueryButton from '~/components/ui/ExecQueryButton';
+import { ElectrometerService, ElectrometerName, BaseState, ElectrometerDataResponse, ElectrometerState, ElectrometerSettings } from '~/generated';
+import { useDeviceWebSocket } from '~/utils/webSocketHook';
+import { DeviceStateDisplay } from '~/components/ui/DeviceStateDisplay';
 import IpAutocomplete from '~/components/electrometer/IpAutocomplete';
-import Stack from '@mui/material/Stack'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import DateRangeSelect from '~/components/ui/DataRangeSelection'
-import Card from '@mui/material/Card'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableRow from '@mui/material/TableRow'
-import TableCell from '@mui/material/TableCell'
-import TextField from '@mui/material/TextField'
-import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField'
-import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
+import DateRangeSelect from '~/components/ui/DataRangeSelection';
+import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField';
+import DownloadCSVButton from '~/components/ui/DownloadCSVButton';
 import { useSnackbarContext } from '~/provider/SnackbarProvider';
 import { trapezoidIntegration } from '~/utils/helpers'
 

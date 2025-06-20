@@ -1,8 +1,9 @@
 import * as React from 'react';
 import type { AxiosResponse, AxiosError } from 'axios';
-import { useSnackbarContext } from '~/provider/SnackbarProvider';
-import { isAxiosError } from '~/utils/helpers';
+
 import PrestyledButton from './PrestyledButton';
+import { isAxiosError } from '~/utils/helpers';
+import { useSnackbarContext } from '~/provider/SnackbarProvider';
 
 export type ReusableButtonProps = {
     onClick?: () => Promise<AxiosResponse<any> | AxiosError<any> | void>;

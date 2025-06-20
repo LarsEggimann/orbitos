@@ -1,10 +1,11 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
+import { Box } from '@mui/material';
+
 import { AppProvider, DashboardLayout, type Navigation } from '@toolpad/core';
-import { MdElectricBolt } from "react-icons/md";
-import { FaHome } from "react-icons/fa";
+import { MdElectricBolt } from 'react-icons/md';
+import { FaHome } from 'react-icons/fa';
 
 import Logo from '~/components/ui/Logo';
-import { Box } from '@mui/material';
 import { SnackbarProvider, useSnackbarContext } from '~/provider/SnackbarProvider';
 import Snackbar from '~/components/ui/Snackbar';
 
@@ -21,10 +22,9 @@ const NAVIGATION: Navigation = [
   },
 ];
 
-
 type LayoutProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 function Layout({ children }: LayoutProps) {
   return (
@@ -51,7 +51,7 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
         openState={[snackbar.open, closeSnackbar]}
         alertProps={{
           message: snackbar.msg,
-          severity: snackbar.severity
+          severity: snackbar.severity,
         }}
       />
     </Box>

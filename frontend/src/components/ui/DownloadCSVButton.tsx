@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import PrestyledButton from './PrestyledButton';
+import * as React from 'react';
+import DownloadIcon from '@mui/icons-material/Download';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
+import PrestyledButton from './PrestyledButton';
 
 // created with ChatJypidyyi
 
@@ -36,7 +37,7 @@ function toCSV(data: Record<string, any[]>): string {
 }
 
 const DownloadCSVButton: React.FC<DownloadCSVButtonProps> = ({ data, defaultFilename }) => {
-  const [prefix, setPrefix] = useState('');
+  const [prefix, setPrefix] = React.useState('');
 
   const handleDownload = () => {
     if (!data) return;
@@ -67,6 +68,7 @@ const DownloadCSVButton: React.FC<DownloadCSVButtonProps> = ({ data, defaultFile
       <PrestyledButton
         onClick={handleDownload}
         disabled={!hasData}
+        startIcon={<DownloadIcon />}
       >
         Download CSV
       </PrestyledButton>
