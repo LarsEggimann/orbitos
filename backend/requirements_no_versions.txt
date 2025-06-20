@@ -11,3 +11,10 @@ orjson
 
 # formatting stuff
 ruff
+
+# general purpose
+numpy
+
+# electrometer
+pyvisa
+pyvisa-py
