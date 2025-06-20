@@ -28,3 +28,17 @@ export function fromTimestampToLocalizedString(timestampSeconds: number): string
 
     return `${isoBase}.${microsecondStr}`;
 }
+
+// Trapezoidal integration utility
+export function trapezoidIntegration(y: number[], x: number[]): number {
+    if (y.length !== x.length) {
+        throw new Error("y and x arrays must be the same length");
+    }
+    let integral = 0;
+    for (let i = 0; i < y.length - 1; i++) {
+        const dx = x[i + 1] - x[i];
+        const avgY = 0.5 * (y[i + 1] + y[i]);
+        integral += dx * avgY;
+    }
+    return integral;
+}

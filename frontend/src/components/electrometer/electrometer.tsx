@@ -20,8 +20,9 @@ import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
 import DirtyTextField, { DirtyTextFieldHandle } from '~/components/ui/DirtyTextField'
-import Snackbar from '~/components/ui/Snackbar'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
+import { useSnackbarContext } from '~/provider/SnackbarProvider';
+import { trapezoidIntegration } from '~/utils/helpers'
 
 type ElectrometerProps = {
     deviceId: number
@@ -74,9 +75,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({
           end: endDate?.toISOString(),
         }
       })
-      console.log('startDate:', startDate, 'endDate:', endDate)
       setData(response.data)
-      console.log(response)
       return response.data
     },
     refetchOnWindowFocus: false,
@@ -110,21 +109,6 @@ const Electrometer: React.FC<ElectrometerProps> = ({
   const [ip, setIp] = useState(defaultIp);
 
 
-  // TODO: move this to utils
-  function trapezoidIntegration(y: number[], x: number[]): number {
-    if (y.length !== x.length) {
-      throw new Error("y and x arrays must be the same length");
-    }
-
-    let integral = 0;
-    for (let i = 0; i < y.length - 1; i++) {
-      const dx = x[i + 1] - x[i];
-      const avgY = 0.5 * (y[i + 1] + y[i]);
-      integral += dx * avgY;
-    }
-
-    return integral;
-  }
   const integratedCharge = useMemo(() => {
     if (!data?.current || !data?.timestamp) return null;
     try {
@@ -149,11 +133,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({
 
   const field1Ref = useRef<DirtyTextFieldHandle>(null);
 
-  const [snackbar, setSnackbar] = React.useState<{ open: boolean, msg: string, severity: 'success' | 'error' }>({ open: false, msg: '', severity: 'success' });
-
-  const openSnackbar = (msg: string, severity: 'success' | 'error') => {
-    setSnackbar({ open: true, msg, severity });
-  };
+  const { openSnackbar } = useSnackbarContext();
 
   const setSettingsQuery = useMutation({
     mutationFn: async (settings: Record<string, any>) => {
@@ -473,15 +453,6 @@ const Electrometer: React.FC<ElectrometerProps> = ({
         </Box>
 
       </Box>
-
-      <Snackbar
-        openState={[snackbar.open, (open) => setSnackbar(prev => ({ ...prev, open: open as boolean }))]}
-        alertProps={{
-          message: snackbar.msg,
-          severity: snackbar.severity
-        }}
-
-      />
 
     </Box>
   )

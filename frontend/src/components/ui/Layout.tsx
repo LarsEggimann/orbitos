@@ -5,6 +5,8 @@ import { FaHome } from "react-icons/fa";
 
 import Logo from '~/components/ui/Logo';
 import { Box } from '@mui/material';
+import { SnackbarProvider, useSnackbarContext } from '~/provider/SnackbarProvider';
+import Snackbar from '~/components/ui/Snackbar';
 
 const NAVIGATION: Navigation = [
   {
@@ -26,32 +28,33 @@ type LayoutProps = {
 
 function Layout({ children }: LayoutProps) {
   return (
-    // <AppProvider
-    //   navigation={NAVIGATION}
-      
-    // >
-    //   <DashboardLayout
-    //     branding={{
-    //       title: "ORBITOS v2",
-    //       homeUrl: "/",
-    //       logo: <Logo />,
-    //     }}
-        
-    //   >
-    //     </DashboardLayout>
-    //   </AppProvider>
+    <SnackbarProvider>
+      <LayoutWithSnackbar>{children}</LayoutWithSnackbar>
+    </SnackbarProvider>
+  );
+}
 
-        <Box
-          sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'left',
-            textAlign: 'left',
-          }}
-        >
-          {children}
-        </Box>
+function LayoutWithSnackbar({ children }: { children: ReactNode }) {
+  const { snackbar, closeSnackbar } = useSnackbarContext();
+  return (
+    <Box
+      sx={{
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'left',
+        textAlign: 'left',
+      }}
+    >
+      {children}
+      <Snackbar
+        openState={[snackbar.open, closeSnackbar]}
+        alertProps={{
+          message: snackbar.msg,
+          severity: snackbar.severity
+        }}
+      />
+    </Box>
   );
 }
 
