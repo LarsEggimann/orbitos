@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { ThemeToggleButton } from '~/components/ui/ThemeToggleButton'
 
 export const Route = createFileRoute('/_pathlessLayout/')({
   component: Home,
@@ -22,6 +23,8 @@ function Home() {
       >
         Go to Electrometer 1 and 2
       </Link>
+      <br />
+      <ThemeToggleButton/>
     </div>
   )
 }
