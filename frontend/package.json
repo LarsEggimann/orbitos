@@ -1,5 +1,5 @@
 {
-  "name": "tanstack-start-example-basic-react-query",
+  "name": "orbitos-v2-frontend",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -9,7 +9,10 @@
     "start": "node .output/server/index.mjs",
     "generate-client": "openapi-ts",
     "format": "prettier --write .",
-    "win-run:all": "concurrently \"cd ../backend && ..\\.venv\\Scripts\\python.exe -m uvicorn src.main:app --host 0.0.0.0 --port 8000\" \"npm run dev\""
+    "win:prod":   "concurrently \"cd ../backend && ..\\.venv\\Scripts\\python.exe -m uvicorn src.main:app --host 0.0.0.0 --port 8000\" \"npm run dev\"",
+    "win:dev":    "concurrently \"cd ../backend && ..\\.venv\\Scripts\\python.exe -m uvicorn src.main:app --host 0.0.0 --port 8000 --reload\" \"npm run dev\"",
+    "linux:prod": "concurrently \"cd ../backend && source ../.venv/bin/activate && python3 -m fastapi run src/main.py\" \"npm run start\"",
+    "linux:dev":  "concurrently \"cd ../backend && source ../.venv/bin/activate && python3 -m fastapi dev src/main.py\" \"npm run dev\""
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
