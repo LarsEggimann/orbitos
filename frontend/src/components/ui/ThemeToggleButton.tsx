@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { useThemeMode } from './ThemeProvider';
+import { useThemeMode } from '../../provider/ThemeProvider';
 
 export const ThemeToggleButton = () => {
   const { mode, setMode, resolvedMode } = useThemeMode();

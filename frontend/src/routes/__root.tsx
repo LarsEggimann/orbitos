@@ -14,7 +14,7 @@ import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
 import { client } from '~/generated/client.gen'
-import { ThemeProvider } from '~/components/ui/ThemeProvider'
+import { ThemeProvider } from '~/provider/ThemeProvider'
 
 client.setConfig({
   baseURL: import.meta.env.VITE_ORBITOS_API_BASE_URL,
