@@ -5,6 +5,7 @@ import { fromTimestampToLocalizedString } from '~/utils/helpers'
 import { UseQueryResult } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import LoadingOverlay from '~/components/ui/LoadingOverlay'
+import { useTheme } from '@mui/material/styles'
 
 interface TimeSeriesChartProps {
   xData: number[]
@@ -36,14 +37,15 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   lineColor,
   height = '600px',
 }) => {
-  const textColor = '#1A202C'
-  const gridColor = '#CBD5E0'
-  const defaultLineColor = 'rgba(226, 40, 230, 0.9)'
+  const muiTheme = useTheme();
+  const isDark = muiTheme.palette.mode === 'dark';
 
-  const tooltipBgColor = 'rgba(255, 255, 255, 0.9)'
-
-  const tooltipBorderColor = '#CBD5E0'
-  const bgColor = 'transparent'
+  const textColor = muiTheme.palette.text.primary;
+  const gridColor = muiTheme.palette.divider;
+  const defaultLineColor = isDark ? muiTheme.palette.primary.main : muiTheme.palette.primary.main;
+  const tooltipBgColor = muiTheme.palette.background.paper;
+  const tooltipBorderColor = muiTheme.palette.divider;
+  const bgColor = 'transparent';
 
   const finalLineColor = lineColor || defaultLineColor
 
@@ -201,11 +203,11 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
     }
   }, [localizedXAsStrings, y, textColor])
 
-  // reload figure when dataQuery changes
+  // reload figure when dataQuery changes or muiTheme changes
   useEffect(() => {
     console.log('Data query changed, reloading figure')
     setFigure(getFigure())
-  }, [dataQuery?.data])
+  }, [dataQuery?.data, muiTheme])
 
   return (
     <Box sx={{ position: 'relative', width: '100%', height: height }}>

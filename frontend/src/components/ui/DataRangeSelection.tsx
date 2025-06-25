@@ -43,6 +43,14 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
     setEndDate(null) // Reset end date to null
   }
 
+  const startMinusNMinutes = (n: number) => {
+    if (!startDate) {
+      return
+    }
+    const start = new Date(startDate.getTime() - n * 60 * 1000)
+    setStartDate(start)
+  }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='de'>
       <Stack
@@ -84,26 +92,10 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
 
           <PrestyledButton
             onClick={() => {
-              lastNMinutes(5)
+              startMinusNMinutes(5)
             }}
           >
-            Last 5 Minutes
-          </PrestyledButton>
-
-          <PrestyledButton
-            onClick={() => {
-              lastNMinutes(20)
-            }}
-          >
-            Last 20 Minutes
-          </PrestyledButton>
-
-          <PrestyledButton
-            onClick={() => {
-              lastNMinutes(60)
-            }}
-          >
-            Last 60 Minutes
+            - 5 Minutes
           </PrestyledButton>
 
           <PrestyledButton
