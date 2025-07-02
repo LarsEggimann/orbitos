@@ -271,10 +271,11 @@ class KeysightEM:
         self.state.update(source_voltage_status='Starting source voltage sweep ...')
 
 
-        # this is terribly ugly and should be cleaned up, basically we need to pause the continous measurement for the trigger to become idle, then we can set the source voltage stuff
+        # this is terribly ugly and should be cleaned up, basically we need to pause the continuous measurement for the trigger to become idle, then we can set the source voltage stuff
         # maybe we can fix this with context managers or something similar in the future, for now it works ...
         self._pause_continuous_measurement_event.set()  # pause any ongoing continuous measurement
         time.sleep(0.5)  # give some time to pause the measurement
+        # command as sent by old labview code: :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000000;:SOUR1:VOLT 0.000000;:SOUR1:VOLT:RANG 1000.000000;:SOUR1:VOLT:RLIM:STAT OFF;
         self._safe_write_and_log(
             ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
             )
