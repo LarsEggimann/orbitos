@@ -62,6 +62,8 @@ class KeysightEM:
 
         self.continuous_measurement_thread: threading.Thread | None = None
         self._stop_continuous_measurement_event = threading.Event()
+        self._pause_continuous_measurement_event = threading.Event()
+        self._resume_continuous_measurement_event = threading.Event()
 
         self.trigger_based_measurement_running = False
         self._voltage_sweep_cancel_event = threading.Event()
@@ -143,6 +145,11 @@ class KeysightEM:
         )
         first_datapoint_received = False
         while not self._stop_continuous_measurement_event.is_set():
+
+            if self._pause_continuous_measurement_event.is_set():
+                logger.info("Continuous measurement paused for %s", self.device_name.value)
+                self._resume_continuous_measurement_event.wait()
+
             self._em_write(":INIT:ACQ (@1);")
             self._wait_for_device_ready()
             cur = self._em_query(":FETC:CURR? (@1);")
@@ -263,10 +270,19 @@ class KeysightEM:
         
         self.state.update(source_voltage_status='Starting source voltage sweep ...')
 
+
+        # this is terribly ugly and should be cleaned up, basically we need to pause the continous measurement for the trigger to become idle, then we can set the source voltage stuff
+        # maybe we can fix this with context managers or something similar in the future, for now it works ...
+        self._pause_continuous_measurement_event.set()  # pause any ongoing continuous measurement
+        time.sleep(0.5)  # give some time to pause the measurement
         self._safe_write_and_log(
             ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
             )
-        
+        self._resume_continuous_measurement_event.set()  # resume continuous measurement if it was paused
+        time.sleep(0.5)
+        self._pause_continuous_measurement_event.clear()
+        self._resume_continuous_measurement_event.clear()
+
         voltages = [self.settings.get().voltage_start]
         while voltages[-1] + self.settings.get().voltage_step < self.settings.get().voltage_stop:
             voltages.append(voltages[-1] + self.settings.get().voltage_step)
