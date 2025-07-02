@@ -126,6 +126,22 @@ export type ElectrometerSettings = {
      * Current Range Auto Lower Limit
      */
     current_range_auto_lower_limit?: number;
+    /**
+     * Voltage Start
+     */
+    voltage_start?: number;
+    /**
+     * Voltage Stop
+     */
+    voltage_stop?: number;
+    /**
+     * Voltage Step
+     */
+    voltage_step?: number;
+    /**
+     * Voltage Settle Time
+     */
+    voltage_settle_time?: number;
 };
 
 /**
@@ -176,6 +192,22 @@ export type ElectrometerSettingsSet = {
      * Current Range Auto Lower Limit
      */
     current_range_auto_lower_limit?: number | null;
+    /**
+     * Voltage Start
+     */
+    voltage_start?: number | null;
+    /**
+     * Voltage Stop
+     */
+    voltage_stop?: number | null;
+    /**
+     * Voltage Step
+     */
+    voltage_step?: number | null;
+    /**
+     * Voltage Settle Time
+     */
+    voltage_settle_time?: number | null;
 };
 
 /**
@@ -192,6 +224,14 @@ export type ElectrometerState = {
      * Error
      */
     error?: string | null;
+    /**
+     * Trigger Based Measurement Status
+     */
+    trigger_based_measurement_status?: string;
+    /**
+     * Source Voltage Status
+     */
+    source_voltage_status?: string;
 };
 
 /**
@@ -560,6 +600,66 @@ export type ElectrometerStartTriggerBasedMeasurementResponses = {
 };
 
 export type ElectrometerStartTriggerBasedMeasurementResponse = ElectrometerStartTriggerBasedMeasurementResponses[keyof ElectrometerStartTriggerBasedMeasurementResponses];
+
+export type ElectrometerStartSourceVoltageSweepData = {
+    body?: never;
+    path: {
+        /**
+         * Device Id
+         */
+        device_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/electrometer/{device_id}/source-voltage/sweep';
+};
+
+export type ElectrometerStartSourceVoltageSweepErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ElectrometerStartSourceVoltageSweepError = ElectrometerStartSourceVoltageSweepErrors[keyof ElectrometerStartSourceVoltageSweepErrors];
+
+export type ElectrometerStartSourceVoltageSweepResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ElectrometerStartSourceVoltageSweepResponse = ElectrometerStartSourceVoltageSweepResponses[keyof ElectrometerStartSourceVoltageSweepResponses];
+
+export type ElectrometerTurnOffSourceVoltageData = {
+    body?: never;
+    path: {
+        /**
+         * Device Id
+         */
+        device_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/electrometer/{device_id}/source-voltage/off';
+};
+
+export type ElectrometerTurnOffSourceVoltageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ElectrometerTurnOffSourceVoltageError = ElectrometerTurnOffSourceVoltageErrors[keyof ElectrometerTurnOffSourceVoltageErrors];
+
+export type ElectrometerTurnOffSourceVoltageResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ElectrometerTurnOffSourceVoltageResponse = ElectrometerTurnOffSourceVoltageResponses[keyof ElectrometerTurnOffSourceVoltageResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;

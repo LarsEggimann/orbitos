@@ -15,7 +15,7 @@ import TextField from '@mui/material/TextField'
 import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
-  ElectrometerService,
+  Electrometer as ElectrometerService,
   ElectrometerName,
   BaseState,
   ElectrometerDataResponse,
