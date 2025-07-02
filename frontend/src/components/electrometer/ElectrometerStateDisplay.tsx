@@ -1,8 +1,5 @@
 import CircularProgress from '@mui/material/CircularProgress'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableRow from '@mui/material/TableRow'
+import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 
@@ -23,9 +20,6 @@ export const ElectrometerStateDisplay = ({
     trigger_based_measurement_status = 'unknown',
   } = state || {}
 
-  const deviceName =
-    replaceUnderscores(device_name)?.charAt(0).toUpperCase() +
-    replaceUnderscores(device_name)?.slice(1)
   const statusText = replaceUnderscores(status)
   const connectionStatusText = replaceUnderscores(connection_status)
   const errorText = error
@@ -52,73 +46,63 @@ export const ElectrometerStateDisplay = ({
 
   return (
     <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
-      <Typography variant='h6'>{deviceName} State</Typography>
-      <Table sx={{ minWidth: 300 }}>
-        <TableBody>
-          <TableRow>
-            <TableCell sx={{ border: 0, pl: 0, pr: 2, width: 120 }}>
-              <Typography>Connection:</Typography>
-            </TableCell>
-            <TableCell sx={{ border: 0, pl: 0 }}>
-              <Typography
-                color={connectionColor}
-                sx={{ display: 'flex', alignItems: 'center' }}
-              >
-                {showConnectionSpinner && (
-                  <CircularProgress size={16} sx={{ mr: 2 }} />
-                )}
-                {connectionStatusText}
-              </Typography>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ border: 0, pl: 0, pr: 2, width: 200 }}>
-              <Typography>Status:</Typography>
-            </TableCell>
-            <TableCell sx={{ border: 0, pl: 0 }}>
-              <Typography
-                color={statusColor}
-                sx={{ display: 'flex', alignItems: 'center' }}
-              >
-                {!isIdleOrUnknown && (
-                  <CircularProgress size={16} sx={{ mr: 2 }} />
-                )}
-                {statusText}
-              </Typography>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ border: 0, pl: 0, pr: 2, width: 200 }}>
-              <Typography>Source Voltage:</Typography>
-            </TableCell>
-            <TableCell sx={{ border: 0, pl: 0 }}>
-              <Typography color='default'>
-                {replaceUnderscores(source_voltage_status)}
-              </Typography>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ border: 0, pl: 0, pr: 2, width: 200 }}>
-              <Typography>Trigger Measurement:</Typography>
-            </TableCell>
-            <TableCell sx={{ border: 0, pl: 0 }}>
-              <Typography color='default'>
-                {replaceUnderscores(trigger_based_measurement_status)}
-              </Typography>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ border: 0, pl: 0, pr: 2, width: 120 }}>
-              <Typography>Error:</Typography>
-            </TableCell>
-            <TableCell sx={{ border: 0, pl: 0 }}>
-              <Typography color={errorColor} sx={{ wordBreak: 'break-word' }}>
-                {hasError ? errorText : 'no error reported'}
-              </Typography>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <Grid container spacing={4}>
+        <Grid sx={{ minWidth: 120 }}>
+          <Typography variant="body1" color="text.secondary">
+            Connection
+          </Typography>
+          <Typography
+            variant="body1"
+            color={connectionColor}
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            {showConnectionSpinner && (
+              <CircularProgress size={14} sx={{ mr: 1 }} />
+            )}
+            {connectionStatusText}
+          </Typography>
+        </Grid>
+        <Grid sx={{ minWidth: 350 }}>
+          <Typography variant="body1" color="text.secondary">
+            Status
+          </Typography>
+          <Typography
+            variant="body1"
+            color={statusColor}
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            {!isIdleOrUnknown && (
+              <CircularProgress size={14} sx={{ mr: 1 }} />
+            )}
+            {statusText}
+          </Typography>
+        </Grid>
+        <Grid sx={{ minWidth: 250 }}>
+          <Typography variant="body1" color="text.secondary">
+            Trigger Meas.
+          </Typography>
+          <Typography variant="body1" color="default">
+            {replaceUnderscores(trigger_based_measurement_status)}
+          </Typography>
+        </Grid>
+        <Grid sx={{ minWidth: 150 }}>
+          <Typography variant="body1" color="text.secondary">
+            Source Voltage
+          </Typography>
+          <Typography variant="body1" color="default">
+            {replaceUnderscores(source_voltage_status)}
+          </Typography>
+        </Grid>
+
+        <Grid sx={{ minWidth: 150 }}>
+          <Typography variant="body1" color="text.secondary">
+            Error
+          </Typography>
+          <Typography variant="body1" color={errorColor} sx={{ wordBreak: 'break-word' }}>
+            {hasError ? errorText : 'no error reported'}
+          </Typography>
+        </Grid>
+      </Grid>
     </Card>
   )
 }

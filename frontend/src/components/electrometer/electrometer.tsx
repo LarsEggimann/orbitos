@@ -357,8 +357,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
 
       <ElectrometerStateDisplay state={state as ElectrometerState} />
 
-      <Box sx={{ m: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+        <Box sx={{ flexGrow: 1, mb: 1, p: 2, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
           <ExecQueryButton
             onClick={async () => {
               return await ElectrometerService.electrometerStartContinuousMeasurement(
@@ -377,7 +376,6 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
           >
             Stop Continuous
           </ExecQueryButton>
-
           <ExecQueryButton
             onClick={async () => {
               return await ElectrometerService.electrometerStartTriggerBasedMeasurement(
@@ -532,7 +530,6 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
               </ExecQueryButton>
             </Box>
           </Box>
-        </Box>
       </Box>
     </Box>
   )
