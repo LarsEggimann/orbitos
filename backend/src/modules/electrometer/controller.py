@@ -270,7 +270,6 @@ class KeysightEM:
         
         self.state.update(source_voltage_status='Starting source voltage sweep ...')
 
-
         # this is terribly ugly and should be cleaned up, basically we need to pause the continuous measurement for the trigger to become idle, then we can set the source voltage stuff
         # maybe we can fix this with context managers or something similar in the future, for now it works ...
         self._pause_continuous_measurement_event.set()  # pause any ongoing continuous measurement
@@ -284,12 +283,31 @@ class KeysightEM:
         self._pause_continuous_measurement_event.clear()
         self._resume_continuous_measurement_event.clear()
 
-        voltages = [self.settings.get().voltage_start]
-        while voltages[-1] + self.settings.get().voltage_step < self.settings.get().voltage_stop:
-            voltages.append(voltages[-1] + self.settings.get().voltage_step)
+        start = self.settings.get().voltage_start
+        stop = self.settings.get().voltage_stop
+        step = self.settings.get().voltage_step
 
-        if voltages[-1] != self.settings.get().voltage_stop:
-            voltages.append(self.settings.get().voltage_stop)  # ensure the stop voltage is included
+        # validate the step to prevent infinite loop
+        if step == 0:
+            self.state.update(
+                error="Voltage step must not be zero. Please set a valid voltage step."
+            )
+            raise ValueError("voltage_step must not be zero")
+
+        voltages = [start]
+
+        # check direction and generate range accordingly
+        if (stop - start) * step > 0:  # Ensure we're moving in the correct direction
+            while (step > 0 and voltages[-1] + step < stop) or (step < 0 and voltages[-1] + step > stop):
+                voltages.append(voltages[-1] + step)
+
+            if voltages[-1] != stop:
+                voltages.append(stop)
+        else:
+            self.state.update(
+                error="Voltage step direction does not lead toward voltage stop. Please check your settings."
+            )
+            raise ValueError("voltage_step direction does not lead toward voltage_stop")
 
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
 
