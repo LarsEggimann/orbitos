@@ -198,7 +198,7 @@ class KeysightEM:
                 )
                 self.state.update(
                     status = ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING,
-                    trigger_based_measurement_status = f", {progress} seconds"
+                    trigger_based_measurement_status = f"{progress} seconds"
                 )
             self.state.update(
                 status = ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA,
@@ -297,7 +297,7 @@ class KeysightEM:
             logger.info(
                 "Source voltage set to: %s V)", set_value
             )
-            self.state.update(source_voltage_status = f'Voltage set to: {float(set_value)} V')
+            self.state.update(source_voltage_status = f'Voltage set to: {float(set_value)} V (requested: {self.settings.get().voltage_stop} V)')
 
             time.sleep(self.settings.get().voltage_settle_time)
 
