@@ -1,6 +1,19 @@
-import { ReactNode } from 'react'
-import { Box } from '@mui/material'
-
+import { ReactNode, useState } from 'react'
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  ListItemButton,
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import { Link } from '@tanstack/react-router'
 import { AppProvider, DashboardLayout, type Navigation } from '@toolpad/core'
 import { MdElectricBolt } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
@@ -12,17 +25,14 @@ import {
 } from '~/provider/SnackbarProvider'
 import Snackbar from '~/components/ui/Snackbar'
 
-const NAVIGATION: Navigation = [
-  {
-    segment: '/',
-    title: 'Home',
-    icon: <FaHome />,
-  },
-  {
-    segment: 'electrometer/1',
-    title: 'Electrometer 1',
-    icon: <MdElectricBolt />,
-  },
+
+const drawerWidth = 220
+
+const navLinks = [
+  { text: 'Home', icon: <FaHome />, to: '/' },
+  { text: 'Electrometer 1', icon: <MdElectricBolt />, to: '/electrometer/1' },
+  { text: 'Electrometer 2', icon: <MdElectricBolt />, to: '/electrometer/2' },
+  { text: 'Electrometer 1 and 2', icon: <><MdElectricBolt /><MdElectricBolt /></>, to: '/electrometer/1/and/2' },
 ]
 
 type LayoutProps = {
@@ -39,24 +49,91 @@ function Layout({ children }: LayoutProps) {
 
 function LayoutWithSnackbar({ children }: { children: ReactNode }) {
   const { snackbar, closeSnackbar } = useSnackbarContext()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen((open) => !open)
+  }
+
   return (
-    <Box
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'left',
-        textAlign: 'left',
-      }}
-    >
-      {children}
-      <Snackbar
-        openState={[snackbar.open, closeSnackbar]}
-        alertProps={{
-          message: snackbar.msg,
-          severity: snackbar.severity,
+    <Box sx={{ display: 'flex' }}>
+      {/* Side Drawer */}
+      <Drawer
+        variant="temporary"
+        anchor="left"
+        open={drawerOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
         }}
-      />
+      >
+        <Toolbar />
+        <List>
+          {navLinks.map((link) => (
+            <ListItem key={link.text} disablePadding sx={{ m: 0, p: 0 }}>
+              <ListItemButton
+                component={Link}
+                to={link.to}
+                onClick={handleDrawerToggle}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                  py: 1.5,
+                  px: 2,
+                }}
+              >
+                <ListItemIcon>{link.icon}</ListItemIcon>
+                <ListItemText primary={link.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+      <Box sx={{ flexGrow: 1 }}>
+        {/* Top Bar */}
+        <AppBar position="fixed" elevation={0} color="default" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+              <Logo />
+            </Box>
+            <Typography variant="h6" noWrap component="div">
+              ORBITOS v2
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        {/* Main Content */}
+        <Toolbar />
+        <Box
+          sx={{
+            p: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'left',
+            textAlign: 'left',
+          }}
+        >
+          {children}
+          <Snackbar
+            openState={[snackbar.open, closeSnackbar]}
+            alertProps={{
+              message: snackbar.msg,
+              severity: snackbar.severity,
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
   )
 }

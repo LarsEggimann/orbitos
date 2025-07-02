@@ -229,13 +229,13 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
 
   return (
     <Box
-      sx={{ p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}
+      sx={{ bgcolor: 'background.paper' }}
     >
       <Stack
         direction='row'
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Typography variant='h4'>Electrometer {deviceId}</Typography>
+        <Typography variant='h5'>Electrometer {deviceId}</Typography>
         <Typography variant='subtitle1'>
           Live State via WebSocket {connected ? '🟢' : '🔴'}
         </Typography>
