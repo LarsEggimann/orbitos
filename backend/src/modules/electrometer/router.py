@@ -237,6 +237,32 @@ def start_trigger_based_measurement(
         message=f"Trigger-based measurement started for {controller.device_name}"
     )
 
+@router.post("/{device_id}/source-voltage/sweep", response_model=BaseResponse)
+def start_source_voltage_sweep(controller: ControllerDep, background_tasks: BackgroundTasks):
+    """
+    Start a source voltage sweep on the electrometer.
+    """
+    assert_connected(controller)
+    assert_no_errors(controller)
+
+    background_tasks.add_task(controller.do_source_voltage_sweep)
+    return BaseResponse(
+        message=f"Source voltage sweep started for {controller.device_name}"
+    )
+
+@router.post("/{device_id}/source-voltage/off", response_model=BaseResponse)
+def turn_off_source_voltage(controller: ControllerDep):
+    """
+    Turn off the source voltage on the electrometer.
+    """
+
+    assert_connected(controller)
+
+    controller.turn_off_source_voltage()
+    return BaseResponse(
+        message=f"Source voltage sweep stopped for {controller.device_name}"
+    )
+
 
 @router.websocket("/ws/{device_id}")
 async def electrometer_ws(websocket: WebSocket, controller: ControllerDep):

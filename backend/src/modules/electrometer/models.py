@@ -22,6 +22,8 @@ class ElectrometerName(str, Enum):
 
 class ElectrometerState(BaseState):
     status: ElectrometerStatus = ElectrometerStatus.UNKNOWN
+    trigger_based_measurement_status: str = "unknown"
+    source_voltage_status: str = "unknown"
 
 
 class ElectrometerSettings(BaseSetting, table=True):
@@ -42,6 +44,10 @@ class ElectrometerSettings(BaseSetting, table=True):
     current_range_auto_upper_limit: float = Field(default=1e-7)
     current_range_auto_lower_limit: float = Field(default=1e-16)
 
+    voltage_start: float = Field(default=0.0)
+    voltage_stop: float = Field(default=10.0)
+    voltage_step: float = Field(default=1)
+    voltage_settle_time: float = Field(default=1)
 
 class ElectrometerData(SQLModel, table=True):
     __tablename__ = "electrometer_data"
@@ -73,3 +79,8 @@ class ElectrometerSettingsSet(SQLModel):
     current_range_auto: Optional[str] = None
     current_range_auto_upper_limit: Optional[float] = None
     current_range_auto_lower_limit: Optional[float] = None
+
+    voltage_start: Optional[float] = None
+    voltage_stop: Optional[float] = None
+    voltage_step: Optional[float] = None
+    voltage_settle_time: Optional[float] = None

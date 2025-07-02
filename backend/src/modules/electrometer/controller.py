@@ -64,6 +64,7 @@ class KeysightEM:
         self._stop_continuous_measurement_event = threading.Event()
 
         self.trigger_based_measurement_running = False
+        self._voltage_sweep_cancel_event = threading.Event()
 
         self.time_list: list[str] = []
         self.current_list: list[str] = []
@@ -82,7 +83,6 @@ class KeysightEM:
         )
         self.set_trigger()
         self.set_sensor()
-        self.enable_io()
 
     def _health_check(self):
         logger.info("Starting health check for Keysight EM %s", self.device_name.value)
@@ -120,7 +120,7 @@ class KeysightEM:
         logger.info("Starting continuous measurement!")
         self._safe_write_and_log("*RST")
         self.set_sensor()
-        self.enable_io()
+        self.enable_input()
         self._stop_continuous_measurement_event.clear()
         self.continuous_measurement_thread = threading.Thread(target=self.measure)
         self.continuous_measurement_thread.start()
@@ -134,7 +134,7 @@ class KeysightEM:
             self._stop_continuous_measurement_event.set()  # signal the thread to stop
             self.continuous_measurement_thread.join()
         self.continuous_measurement_thread = None
-        self.turn_off_io()
+        self.disable_input()
         # state is set in measurement thread when it stops
 
     def measure(self):
@@ -180,7 +180,8 @@ class KeysightEM:
                 status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
             )
             logger.info("Starting trigger based measurement")
-            self.enable_io()
+            self.enable_input()
+            self.enable_output()
             self._safe_write_and_log(":INIT:ALL (@1);")
             wait_time = int(
                 float(self.settings.get().trigger_count)
@@ -196,15 +197,18 @@ class KeysightEM:
                     end="\r",
                 )
                 self.state.update(
-                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
-                    + f", {progress} seconds"
+                    status = ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING,
+                    trigger_based_measurement_status = f", {progress} seconds"
                 )
             self.state.update(
-                status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA
+                status = ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA,
+                trigger_based_measurement_status = "Fetching data ...",
             )
             self._fetch_trigger_based_data(start)
+            self.disable_input()
+            self.disable_output()
             self.trigger_based_measurement_running = False
-            self.state.update(status=ElectrometerStatus.IDLE)
+            self.state.update(status=ElectrometerStatus.IDLE, trigger_based_measurement_status="Done")
 
     def update_settings(self, set_settings: ElectrometerSettingsSet):
         logger.info("Updating settings for Keysight EM %s", self.device_name.value)
@@ -250,11 +254,72 @@ class KeysightEM:
                 f"{aperture_command}:SENS1:CURR:RANG {self.settings.get().current_range};RANG:AUTO {self.settings.get().current_range_auto}"
             )
 
-    def enable_io(self):
-        self._safe_write_and_log(":OUTP1 ON;:INP1 ON;")
+    def do_source_voltage_sweep(self):
+        """ Do the source voltage sweep for the Keysight EM. """
+        logger.info(
+            "Do source voltage sweep with %s",
+            self.device_name.value,
+        )
+        
+        self.state.update(source_voltage_status='Starting source voltage sweep ...')
 
-    def turn_off_io(self):
-        self._safe_write_and_log(":OUTP1 OFF;:INP1 OFF;")
+        self._safe_write_and_log(
+            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
+            )
+        
+        voltages = [self.settings.get().voltage_start]
+        while voltages[-1] + self.settings.get().voltage_step < self.settings.get().voltage_stop:
+            voltages.append(voltages[-1] + self.settings.get().voltage_step)
+
+        if voltages[-1] != self.settings.get().voltage_stop:
+            voltages.append(self.settings.get().voltage_stop)  # ensure the stop voltage is included
+
+        self._voltage_sweep_cancel_event.clear()  # reset the cancel event
+
+        for v in voltages:
+            if self._voltage_sweep_cancel_event.is_set():
+                logger.info("Voltage sweep cancelled.")
+                self._voltage_sweep_cancel_event.clear()
+                break
+
+            logger.info("Setting source voltage to %s V", v)
+
+            if v < 20 and v >= 0:
+                v_range = 20
+            elif v < 0:
+                v_range = -1000
+            else:
+                v_range = 1000
+
+            self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};:SOUR1:VOLT {v};")
+
+            set_value = self._em_query("SOUR1:VOLT?")
+            logger.info(
+                "Source voltage set to: %s V)", set_value
+            )
+            self.state.update(source_voltage_status = f'Voltage set to: {float(set_value)} V')
+
+            time.sleep(self.settings.get().voltage_settle_time)
+
+    
+    def turn_off_source_voltage(self):
+        """ Turn off the source voltage for the Keysight EM. """
+        logger.info("Turning off source voltage for %s", self.device_name.value)
+        self._voltage_sweep_cancel_event.set()  # cancel any ongoing voltage sweep
+        self._safe_write_and_log(":SOUR1:VOLT 0;")
+        self.state.update(source_voltage_status = 'Voltage set to: 0.0 V')
+
+    def enable_input(self):
+        self._safe_write_and_log(":INP1 ON;")
+    
+    def enable_output(self):
+        self._safe_write_and_log(":OUTP1 ON;")
+
+    def disable_input(self):
+        self._safe_write_and_log(":INP1 OFF;")
+
+    def disable_output(self):
+        self._safe_write_and_log(":OUTP1 OFF;")
 
     def connect_to_keysight_em(self, ip) -> str:
         try:
@@ -349,7 +414,6 @@ class KeysightEM:
             self.time_list = time_arr.tolist()  # type: ignore
             self.current_list = current_list
             self._save_data()
-            self.turn_off_io()
         except Exception as e:
             logger.error("Error in converting data to float: %s", e)
 
