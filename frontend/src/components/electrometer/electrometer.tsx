@@ -23,7 +23,7 @@ import {
   ElectrometerSettings,
 } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
-import { DeviceStateDisplay } from '~/components/ui/DeviceStateDisplay'
+import { ElectrometerStateDisplay } from '~/components/electrometer/ElectrometerStateDisplay'
 import IpAutocomplete from '~/components/electrometer/IpAutocomplete'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
 import DirtyTextField, {
@@ -355,7 +355,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
       />
 
-      <DeviceStateDisplay state={state as BaseState} />
+      <ElectrometerStateDisplay state={state as ElectrometerState} />
 
       <Box sx={{ m: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
@@ -491,7 +491,46 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             }}
           >
             <Typography variant='h6'>Bias Voltage Control</Typography>
-            <Typography>not implemented yet ...</Typography>
+            <DirtyTextField
+              label={'Start [V]'}
+              value={settings?.voltage_start ?? ''}
+              onApply={makeSettingApplyHandler('voltage_start')}
+            />
+            <DirtyTextField
+              label={'Stop [V]'}
+              value={settings?.voltage_stop ?? ''}
+              onApply={makeSettingApplyHandler('voltage_stop')}
+            />
+            <DirtyTextField
+              label={'Step [V]'}
+              value={settings?.voltage_step ?? ''}
+              onApply={makeSettingApplyHandler('voltage_step')}
+            />
+            <DirtyTextField
+              label={'Settle Time [s]'}
+              value={settings?.voltage_settle_time ?? ''}
+              onApply={makeSettingApplyHandler('voltage_settle_time')}
+            />
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+              <ExecQueryButton
+                onClick={async () => {
+                  return await ElectrometerService.electrometerStartSourceVoltageSweep(
+                    deviceIdPathArg,
+                  )
+                }}
+              >
+                Start Voltage Sweep
+              </ExecQueryButton>
+              <ExecQueryButton
+                onClick={async () => {
+                  return await ElectrometerService.electrometerTurnOffSourceVoltage(
+                    deviceIdPathArg,
+                  )
+                }}
+              >
+                Turn Off Voltage
+              </ExecQueryButton>
+            </Box>
           </Box>
         </Box>
       </Box>
