@@ -275,8 +275,9 @@ class KeysightEM:
         self._pause_continuous_measurement_event.set()  # pause any ongoing continuous measurement
         time.sleep(0.5)  # give some time to pause the measurement
         # command as sent by old labview code: :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000000;:SOUR1:VOLT 0.000000;:SOUR1:VOLT:RANG 1000.000000;:SOUR1:VOLT:RLIM:STAT OFF;
+        self.disable_output()
         self._safe_write_and_log(
-            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
+            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:VOLT:RANG 1000;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
             )
         self._resume_continuous_measurement_event.set()  # resume continuous measurement if it was paused
         time.sleep(0.5)
@@ -310,7 +311,7 @@ class KeysightEM:
             raise ValueError("voltage_step direction does not lead toward voltage_stop")
 
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
-
+        self.enable_output()
         for v in voltages:
             if self._voltage_sweep_cancel_event.is_set():
                 logger.info("Voltage sweep cancelled.")
@@ -326,7 +327,7 @@ class KeysightEM:
             else:
                 v_range = 1000
 
-            self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};:SOUR1:VOLT {v};")
+            self._safe_write_and_log(f":SOUR1:VOLT {v};")
 
             set_value = self._em_query("SOUR1:VOLT?")
             logger.info(
