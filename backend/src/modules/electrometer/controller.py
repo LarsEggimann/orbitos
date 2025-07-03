@@ -239,12 +239,6 @@ class KeysightEM:
         )
         return self.settings
 
-    def reset_error(self):
-        logger.info("Resetting error state for Keysight EM %s", self.device_name.value)
-        self.state.update(error=None)
-        self._em_write("*CLS")
-        self.init_settings()
-
     def set_trigger(self):
         self._safe_write_and_log(
             f":TRIG1:ALL:SOUR TIM;COUN {self.settings.get().trigger_count};TIM {self.settings.get().trigger_time_interval};BYP {self.settings.get().trigger_bypass};DEL {self.settings.get().trigger_delay}"
@@ -334,27 +328,18 @@ class KeysightEM:
         time.sleep(0.5)
         self._pause_continuous_measurement_event.clear()
         self._resume_continuous_measurement_event.clear()
-
         voltages = self.generate_sweep_voltages_with_zero(self.settings.get().voltage_start, self.settings.get().voltage_stop, self.settings.get().voltage_step)
-
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
-
         prev_range = self._set_source_voltage_with_range(0, None) # set initial voltage to 0 and range to 1000 V
-
         self.enable_output()
-
         for v in voltages:
             if self._voltage_sweep_cancel_event.is_set():
                 logger.info("Voltage sweep cancelled.")
                 self._voltage_sweep_cancel_event.clear()
                 break
-
             logger.info("Setting source voltage to %s V", v)
-
             prev_range = self._set_source_voltage_with_range(v, prev_range)
-
             time.sleep(self.settings.get().voltage_settle_time)
-
     
     def turn_off_source_voltage(self):
         """ Turn off the source voltage for the Keysight EM. """
