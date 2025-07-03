@@ -290,12 +290,27 @@ class KeysightEM:
 
         return voltages
 
-    def _set_source_voltage(self, voltage: float):
+    def _set_source_voltage_with_range(self, voltage: float, prev_range: float | None = None) -> float:
+        # decide range based on voltage sign
+        v_range = 1000 if voltage >= 0 else -1000
+
+        # only change range if it is different from previous one
+        if prev_range is None:
+            logger.info("Setting initial voltage range to %s V", v_range)
+            self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
+            self.enable_output()
+        elif v_range != prev_range:
+            logger.info("Switching voltage range to %s V, disabling output temporarily.", v_range)
+            self.disable_output()
+            self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
+            self.enable_output()
+
         logger.info("Setting source voltage to %s V", voltage)
         self._safe_write_and_log(f":SOUR1:VOLT {voltage};")
         set_value = self._em_query("SOUR1:VOLT?")
         logger.info("Source voltage set to: %s V", set_value)
         self.state.update(source_voltage_status=f'{float(set_value)} V (requested: {voltage} V)')
+        return v_range
 
     def do_source_voltage_sweep(self):
         """ Do the source voltage sweep for the Keysight EM. """
@@ -313,9 +328,8 @@ class KeysightEM:
         # command as sent by old labview code: :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000000;:SOUR1:VOLT 0.000000;:SOUR1:VOLT:RANG 1000.000000;:SOUR1:VOLT:RLIM:STAT OFF;
         self.disable_output()
         self._safe_write_and_log(
-            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT:RLIM:STAT OFF;"
+            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT 0;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT:RLIM:STAT OFF;"
             )
-        self._set_source_voltage(0.0)  # set voltage to 0
         self._resume_continuous_measurement_event.set()  # resume continuous measurement if it was paused
         time.sleep(0.5)
         self._pause_continuous_measurement_event.clear()
@@ -324,9 +338,11 @@ class KeysightEM:
         voltages = self.generate_sweep_voltages_with_zero(self.settings.get().voltage_start, self.settings.get().voltage_stop, self.settings.get().voltage_step)
 
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
+
+        prev_range = self._set_source_voltage_with_range(0, None) # set initial voltage to 0 and range to 1000 V
+
         self.enable_output()
 
-        prev_range = None
         for v in voltages:
             if self._voltage_sweep_cancel_event.is_set():
                 logger.info("Voltage sweep cancelled.")
@@ -335,21 +351,7 @@ class KeysightEM:
 
             logger.info("Setting source voltage to %s V", v)
 
-            # decide range
-            if v >= 0:
-                v_range = 1000
-            else:
-                v_range = -1000
-
-            # Only change range if it’s different from previous one
-            if v_range != prev_range:
-                logger.info("Switching voltage range to %s V, disabling output temporarily.", v_range)
-                self.disable_output()
-                self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
-                self.enable_output()
-                prev_range = v_range
-
-            self._set_source_voltage(v)
+            prev_range = self._set_source_voltage_with_range(v, prev_range)
 
             time.sleep(self.settings.get().voltage_settle_time)
 
@@ -358,7 +360,7 @@ class KeysightEM:
         """ Turn off the source voltage for the Keysight EM. """
         logger.info("Turning off source voltage for %s", self.device_name.value)
         self._voltage_sweep_cancel_event.set()  # cancel any ongoing voltage sweep
-        self._set_source_voltage(0.0)  # set voltage to 0
+        self._set_source_voltage_with_range(0, 1000)
         self.disable_output()
 
     def enable_input(self):
