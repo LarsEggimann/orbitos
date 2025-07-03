@@ -260,6 +260,42 @@ class KeysightEM:
             self._safe_write_and_log(
                 f"{aperture_command}:SENS1:CURR:RANG {self.settings.get().current_range};RANG:AUTO {self.settings.get().current_range_auto}"
             )
+    
+    def generate_sweep_voltages_with_zero(self, start: float, stop: float, step: float) -> list[float]:
+        if step == 0:
+            raise ValueError("Step must not be zero")
+
+        if (stop - start) * step <= 0:
+            raise ValueError("Step direction does not lead toward stop")
+
+        voltages = [start]
+
+        # Generate voltages list
+        while (step > 0 and voltages[-1] + step < stop) or (step < 0 and voltages[-1] + step > stop):
+            voltages.append(voltages[-1] + step)
+
+        if voltages[-1] != stop:
+            voltages.append(stop)
+
+        # Check if zero is already in the list
+        if 0 in voltages:
+            return voltages
+
+        # Check if we cross zero (in either direction)
+        for i in range(len(voltages) - 1):
+            v1, v2 = voltages[i], voltages[i + 1]
+            if (v1 < 0 and v2 > 0) or (v1 > 0 and v2 < 0):
+                voltages.insert(i + 1, 0.0)
+                break
+
+        return voltages
+
+    def _set_source_voltage(self, voltage: float):
+        logger.info("Setting source voltage to %s V", voltage)
+        self._safe_write_and_log(f":SOUR1:VOLT {voltage};")
+        set_value = self._em_query("SOUR1:VOLT?")
+        logger.info("Source voltage set to: %s V", set_value)
+        self.state.update(source_voltage_status=f'{float(set_value)} V (requested: {voltage} V)')
 
     def do_source_voltage_sweep(self):
         """ Do the source voltage sweep for the Keysight EM. """
@@ -277,41 +313,20 @@ class KeysightEM:
         # command as sent by old labview code: :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000000;:SOUR1:VOLT 0.000000;:SOUR1:VOLT:RANG 1000.000000;:SOUR1:VOLT:RLIM:STAT OFF;
         self.disable_output()
         self._safe_write_and_log(
-            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:VOLT:RANG 1000;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT 0;:SOUR1:VOLT:RLIM:STAT OFF;"
+            ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT:RLIM:STAT OFF;"
             )
+        self._set_source_voltage(0.0)  # set voltage to 0
         self._resume_continuous_measurement_event.set()  # resume continuous measurement if it was paused
         time.sleep(0.5)
         self._pause_continuous_measurement_event.clear()
         self._resume_continuous_measurement_event.clear()
 
-        start = self.settings.get().voltage_start
-        stop = self.settings.get().voltage_stop
-        step = self.settings.get().voltage_step
-
-        # validate the step to prevent infinite loop
-        if step == 0:
-            self.state.update(
-                error="Voltage step must not be zero. Please set a valid voltage step."
-            )
-            raise ValueError("voltage_step must not be zero")
-
-        voltages = [start]
-
-        # check direction and generate range accordingly
-        if (stop - start) * step > 0:  # Ensure we're moving in the correct direction
-            while (step > 0 and voltages[-1] + step < stop) or (step < 0 and voltages[-1] + step > stop):
-                voltages.append(voltages[-1] + step)
-
-            if voltages[-1] != stop:
-                voltages.append(stop)
-        else:
-            self.state.update(
-                error="Voltage step direction does not lead toward voltage stop. Please check your settings."
-            )
-            raise ValueError("voltage_step direction does not lead toward voltage_stop")
+        voltages = self.generate_sweep_voltages_with_zero(self.settings.get().voltage_start, self.settings.get().voltage_stop, self.settings.get().voltage_step)
 
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
         self.enable_output()
+
+        prev_range = None
         for v in voltages:
             if self._voltage_sweep_cancel_event.is_set():
                 logger.info("Voltage sweep cancelled.")
@@ -320,20 +335,21 @@ class KeysightEM:
 
             logger.info("Setting source voltage to %s V", v)
 
-            if v < 20 and v >= 0:
-                v_range = 20
-            elif v < 0:
-                v_range = -1000
-            else:
+            # decide range
+            if v >= 0:
                 v_range = 1000
+            else:
+                v_range = -1000
 
-            self._safe_write_and_log(f":SOUR1:VOLT {v};")
+            # Only change range if it’s different from previous one
+            if v_range != prev_range:
+                logger.info("Switching voltage range to %s V, disabling output temporarily.", v_range)
+                self.disable_output()
+                self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
+                self.enable_output()
+                prev_range = v_range
 
-            set_value = self._em_query("SOUR1:VOLT?")
-            logger.info(
-                "Source voltage set to: %s V)", set_value
-            )
-            self.state.update(source_voltage_status = f'Voltage set to: {float(set_value)} V (requested: {self.settings.get().voltage_stop} V)')
+            self._set_source_voltage(v)
 
             time.sleep(self.settings.get().voltage_settle_time)
 
@@ -342,20 +358,24 @@ class KeysightEM:
         """ Turn off the source voltage for the Keysight EM. """
         logger.info("Turning off source voltage for %s", self.device_name.value)
         self._voltage_sweep_cancel_event.set()  # cancel any ongoing voltage sweep
-        self._safe_write_and_log(":SOUR1:VOLT 0;")
-        self.state.update(source_voltage_status = 'Voltage set to: 0.0 V')
+        self._set_source_voltage(0.0)  # set voltage to 0
+        self.disable_output()
 
     def enable_input(self):
         self._safe_write_and_log(":INP1 ON;")
+        self.state.update(input_status="ON")
     
     def enable_output(self):
         self._safe_write_and_log(":OUTP1 ON;")
+        self.state.update(output_status="ON")
 
     def disable_input(self):
         self._safe_write_and_log(":INP1 OFF;")
+        self.state.update(input_status="OFF")
 
     def disable_output(self):
         self._safe_write_and_log(":OUTP1 OFF;")
+        self.state.update(output_status="OFF")
 
     def connect_to_keysight_em(self, ip) -> str:
         try:

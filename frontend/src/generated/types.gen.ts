@@ -232,6 +232,14 @@ export type ElectrometerState = {
      * Source Voltage Status
      */
     source_voltage_status?: string;
+    /**
+     * Output Status
+     */
+    output_status?: string;
+    /**
+     * Input Status
+     */
+    input_status?: string;
 };
 
 /**

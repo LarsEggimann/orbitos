@@ -18,6 +18,8 @@ export const ElectrometerStateDisplay = ({
     error = 'unknown',
     source_voltage_status = 'unknown',
     trigger_based_measurement_status = 'unknown',
+    output_status = 'unknown',
+    input_status = 'unknown',
   } = state || {}
 
   const statusText = replaceUnderscores(status)
@@ -87,10 +89,18 @@ export const ElectrometerStateDisplay = ({
         </Grid>
         <Grid sx={{ minWidth: 150 }}>
           <Typography variant="body1" color="text.secondary">
-            Source Voltage
+            Source Voltage - {output_status == 'ON' ? 'ON 🟢' : 'OFF 🔴'}
           </Typography>
           <Typography variant="body1" color="default">
             {replaceUnderscores(source_voltage_status)}
+          </Typography>
+        </Grid>
+          <Grid sx={{ minWidth: 150 }}>
+          <Typography variant="body1" color="text.secondary">
+            Input
+          </Typography>
+          <Typography variant="body1" color="default">
+            {input_status}
           </Typography>
         </Grid>
 

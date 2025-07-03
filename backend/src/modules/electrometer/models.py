@@ -24,6 +24,8 @@ class ElectrometerState(BaseState):
     status: ElectrometerStatus = ElectrometerStatus.UNKNOWN
     trigger_based_measurement_status: str = "unknown"
     source_voltage_status: str = "unknown"
+    output_status: str = "unknown"
+    input_status: str = "unknown"
 
 
 class ElectrometerSettings(BaseSetting, table=True):
