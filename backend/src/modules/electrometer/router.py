@@ -237,8 +237,11 @@ def start_trigger_based_measurement(
         message=f"Trigger-based measurement started for {controller.device_name}"
     )
 
+
 @router.post("/{device_id}/source-voltage/sweep", response_model=BaseResponse)
-def start_source_voltage_sweep(controller: ControllerDep, background_tasks: BackgroundTasks):
+def start_source_voltage_sweep(
+    controller: ControllerDep, background_tasks: BackgroundTasks
+):
     """
     Start a source voltage sweep on the electrometer.
     """
@@ -249,6 +252,7 @@ def start_source_voltage_sweep(controller: ControllerDep, background_tasks: Back
     return BaseResponse(
         message=f"Source voltage sweep started for {controller.device_name}"
     )
+
 
 @router.post("/{device_id}/source-voltage/off", response_model=BaseResponse)
 def turn_off_source_voltage(controller: ControllerDep):

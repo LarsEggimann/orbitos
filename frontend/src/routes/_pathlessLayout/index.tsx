@@ -20,24 +20,43 @@ function Home() {
         justifyContent: 'center',
       }}
     >
-      <Paper elevation={3} sx={{ p: 5, maxWidth: 800, width: '100%', textAlign: 'center', borderRadius: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 700 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: 5,
+          maxWidth: 800,
+          width: '100%',
+          textAlign: 'center',
+          borderRadius: 4,
+        }}
+      >
+        <Typography variant='h4' component='h1' sx={{ mb: 2, fontWeight: 700 }}>
           Welcome to ORBITOS v2!
         </Typography>
-        <Typography variant="body1" sx={{ mb: 3 }}>
-          ORBITOS v2 is faster, better looking and most importantly - more fancy than its predecessor! Crazy right?
+        <Typography variant='body1' sx={{ mb: 3 }}>
+          ORBITOS v2 is faster, better looking and most importantly - more fancy
+          than its predecessor! Crazy right?
         </Typography>
-        <Typography variant="body1" sx={{ mb: 3 }}>
-          Easily manage all kinds of devices, monitor data in real time, and streamline your scientific workflow to perform real science, wow!
+        <Typography variant='body1' sx={{ mb: 3 }}>
+          Easily manage all kinds of devices, monitor data in real time, and
+          streamline your scientific workflow to perform real science, wow!
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
-          <Typography variant="body2">Theme:</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1,
+            mb: 2,
+          }}
+        >
+          <Typography variant='body2'>Theme:</Typography>
           <ThemeToggleButton />
         </Box>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant='caption' color='text.secondary'>
           Need help? {'->'}{' '}
           <a
-            href="mailto:lars.eggimann@unibe.ch?subject=ORBITOS-v2"
+            href='mailto:lars.eggimann@unibe.ch?subject=ORBITOS-v2'
             style={{ color: 'inherit', textDecoration: 'underline' }}
           >
             Contact Lars!

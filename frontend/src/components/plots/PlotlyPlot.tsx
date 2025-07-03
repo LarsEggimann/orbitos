@@ -37,15 +37,17 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   lineColor,
   height = '600px',
 }) => {
-  const muiTheme = useTheme();
-  const isDark = muiTheme.palette.mode === 'dark';
+  const muiTheme = useTheme()
+  const isDark = muiTheme.palette.mode === 'dark'
 
-  const textColor = muiTheme.palette.text.primary;
-  const gridColor = muiTheme.palette.divider;
-  const defaultLineColor = isDark ? muiTheme.palette.primary.main : muiTheme.palette.primary.main;
-  const tooltipBgColor = muiTheme.palette.background.paper;
-  const tooltipBorderColor = muiTheme.palette.divider;
-  const bgColor = 'transparent';
+  const textColor = muiTheme.palette.text.primary
+  const gridColor = muiTheme.palette.divider
+  const defaultLineColor = isDark
+    ? muiTheme.palette.primary.main
+    : muiTheme.palette.primary.main
+  const tooltipBgColor = muiTheme.palette.background.paper
+  const tooltipBorderColor = muiTheme.palette.divider
+  const bgColor = 'transparent'
 
   const finalLineColor = lineColor || defaultLineColor
 

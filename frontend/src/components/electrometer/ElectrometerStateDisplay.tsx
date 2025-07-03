@@ -50,11 +50,11 @@ export const ElectrometerStateDisplay = ({
     <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
       <Grid container spacing={4}>
         <Grid sx={{ minWidth: 120 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Connection
           </Typography>
           <Typography
-            variant="body1"
+            variant='body1'
             color={connectionColor}
             sx={{ display: 'flex', alignItems: 'center' }}
           >
@@ -65,50 +65,52 @@ export const ElectrometerStateDisplay = ({
           </Typography>
         </Grid>
         <Grid sx={{ minWidth: 350 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Status
           </Typography>
           <Typography
-            variant="body1"
+            variant='body1'
             color={statusColor}
             sx={{ display: 'flex', alignItems: 'center' }}
           >
-            {!isIdleOrUnknown && (
-              <CircularProgress size={14} sx={{ mr: 1 }} />
-            )}
+            {!isIdleOrUnknown && <CircularProgress size={14} sx={{ mr: 1 }} />}
             {statusText}
           </Typography>
         </Grid>
         <Grid sx={{ minWidth: 250 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Trigger Meas.
           </Typography>
-          <Typography variant="body1" color="default">
+          <Typography variant='body1' color='default'>
             {replaceUnderscores(trigger_based_measurement_status)}
           </Typography>
         </Grid>
         <Grid sx={{ minWidth: 150 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Source Voltage - {output_status == 'ON' ? 'ON 🟢' : 'OFF 🔴'}
           </Typography>
-          <Typography variant="body1" color="default">
+          <Typography variant='body1' color='default'>
             {replaceUnderscores(source_voltage_status)}
           </Typography>
         </Grid>
-          <Grid sx={{ minWidth: 150 }}>
-          <Typography variant="body1" color="text.secondary">
+        <Grid sx={{ minWidth: 150 }}>
+          <Typography variant='body1' color='text.secondary'>
             Input
           </Typography>
-          <Typography variant="body1" color="default">
+          <Typography variant='body1' color='default'>
             {input_status}
           </Typography>
         </Grid>
 
         <Grid sx={{ minWidth: 150 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Error
           </Typography>
-          <Typography variant="body1" color={errorColor} sx={{ wordBreak: 'break-word' }}>
+          <Typography
+            variant='body1'
+            color={errorColor}
+            sx={{ wordBreak: 'break-word' }}
+          >
             {hasError ? errorText : 'no error reported'}
           </Typography>
         </Grid>

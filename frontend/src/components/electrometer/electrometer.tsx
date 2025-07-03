@@ -228,9 +228,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
   }, [settings?.trigger_time_interval])
 
   return (
-    <Box
-      sx={{ bgcolor: 'background.paper' }}
-    >
+    <Box sx={{ bgcolor: 'background.paper' }}>
       <Stack
         direction='row'
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
@@ -357,179 +355,185 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
 
       <ElectrometerStateDisplay state={state as ElectrometerState} />
 
-        <Box sx={{ flexGrow: 1, mb: 1, p: 2, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <ExecQueryButton
-            onClick={async () => {
-              return await ElectrometerService.electrometerStartContinuousMeasurement(
-                deviceIdPathArg,
-              )
-            }}
-          >
-            Start Continuous
-          </ExecQueryButton>
-          <ExecQueryButton
-            onClick={async () => {
-              return await ElectrometerService.electrometerStopContinuousMeasurement(
-                deviceIdPathArg,
-              )
-            }}
-          >
-            Stop Continuous
-          </ExecQueryButton>
-          <ExecQueryButton
-            onClick={async () => {
-              return await ElectrometerService.electrometerStartTriggerBasedMeasurement(
-                deviceIdPathArg,
-              )
-            }}
-          >
-            Start Trigger
-          </ExecQueryButton>
+      <Box
+        sx={{
+          flexGrow: 1,
+          mb: 1,
+          p: 2,
+          display: 'flex',
+          gap: 2,
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
+        <ExecQueryButton
+          onClick={async () => {
+            return await ElectrometerService.electrometerStartContinuousMeasurement(
+              deviceIdPathArg,
+            )
+          }}
+        >
+          Start Continuous
+        </ExecQueryButton>
+        <ExecQueryButton
+          onClick={async () => {
+            return await ElectrometerService.electrometerStopContinuousMeasurement(
+              deviceIdPathArg,
+            )
+          }}
+        >
+          Stop Continuous
+        </ExecQueryButton>
+        <ExecQueryButton
+          onClick={async () => {
+            return await ElectrometerService.electrometerStartTriggerBasedMeasurement(
+              deviceIdPathArg,
+            )
+          }}
+        >
+          Start Trigger
+        </ExecQueryButton>
+      </Box>
+
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            flexGrow: 1,
+          }}
+        >
+          <Typography variant='h6'>Current Range Settings</Typography>
+          <DirtyTextField
+            label={'Auto Current Range [ON/OFF]'}
+            onOff={true}
+            value={settings?.current_range_auto ?? ''}
+            onApply={makeSettingApplyHandler('current_range_auto')}
+          />
+          <DirtyTextField
+            label={'Manual Current Range [A]'}
+            value={settings?.current_range ?? ''}
+            onApply={makeSettingApplyHandler('current_range')}
+            disabled={settings?.current_range_auto == 'ON'}
+          />
+          <DirtyTextField
+            label={'Auto Current Range Upper Limit [A]'}
+            value={settings?.current_range_auto_upper_limit ?? ''}
+            onApply={makeSettingApplyHandler('current_range_auto_upper_limit')}
+            disabled={settings?.current_range_auto == 'OFF'}
+          />
+          <DirtyTextField
+            label={'Auto Current Range Lower Limit [A]'}
+            value={settings?.current_range_auto_lower_limit ?? ''}
+            onApply={makeSettingApplyHandler('current_range_auto_lower_limit')}
+            disabled={settings?.current_range_auto == 'OFF'}
+          />
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              flexGrow: 1,
-            }}
-          >
-            <Typography variant='h6'>Current Range Settings</Typography>
-            <DirtyTextField
-              label={'Auto Current Range [ON/OFF]'}
-              onOff={true}
-              value={settings?.current_range_auto ?? ''}
-              onApply={makeSettingApplyHandler('current_range_auto')}
-            />
-            <DirtyTextField
-              label={'Manual Current Range [A]'}
-              value={settings?.current_range ?? ''}
-              onApply={makeSettingApplyHandler('current_range')}
-              disabled={settings?.current_range_auto == 'ON'}
-            />
-            <DirtyTextField
-              label={'Auto Current Range Upper Limit [A]'}
-              value={settings?.current_range_auto_upper_limit ?? ''}
-              onApply={makeSettingApplyHandler(
-                'current_range_auto_upper_limit',
-              )}
-              disabled={settings?.current_range_auto == 'OFF'}
-            />
-            <DirtyTextField
-              label={'Auto Current Range Lower Limit [A]'}
-              value={settings?.current_range_auto_lower_limit ?? ''}
-              onApply={makeSettingApplyHandler(
-                'current_range_auto_lower_limit',
-              )}
-              disabled={settings?.current_range_auto == 'OFF'}
-            />
-          </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            flexGrow: 1,
+          }}
+        >
+          <Typography variant='h6'>Aperture Settings</Typography>
+          <DirtyTextField
+            label={'Auto Aperture [ON/OFF]'}
+            onOff={true}
+            value={settings?.aperture_auto ?? ''}
+            onApply={makeSettingApplyHandler('aperture_auto')}
+          />
+          <DirtyTextField
+            label={'Manual Aperture Integration Time [s]'}
+            value={settings?.aperture_integration_time ?? ''}
+            onApply={makeSettingApplyHandler('aperture_integration_time')}
+            disabled={settings?.aperture_auto == 'ON'}
+          />
+        </Box>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              flexGrow: 1,
-            }}
-          >
-            <Typography variant='h6'>Aperture Settings</Typography>
-            <DirtyTextField
-              label={'Auto Aperture [ON/OFF]'}
-              onOff={true}
-              value={settings?.aperture_auto ?? ''}
-              onApply={makeSettingApplyHandler('aperture_auto')}
-            />
-            <DirtyTextField
-              label={'Manual Aperture Integration Time [s]'}
-              value={settings?.aperture_integration_time ?? ''}
-              onApply={makeSettingApplyHandler('aperture_integration_time')}
-              disabled={settings?.aperture_auto == 'ON'}
-            />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            flexGrow: 1,
+          }}
+        >
+          <Typography variant='h6'>Trigger Settings</Typography>
+          <DirtyTextField
+            label={'Trigger Count [#]'}
+            value={settings?.trigger_count ?? ''}
+            onApply={makeSettingApplyHandler('trigger_count')}
+            onChange={(e) => setTriggerCount(Number(e.target.value) || 0)}
+          />
+          <DirtyTextField
+            label={'Trigger Time Interval [s]'}
+            value={settings?.trigger_time_interval ?? ''}
+            onApply={makeSettingApplyHandler('trigger_time_interval')}
+            onChange={(e) => setTriggerTime(Number(e.target.value) || 0)}
+          />
+          <Typography>
+            Total Measurement Time: {triggerCount * triggerTime} s
+          </Typography>
+          <DirtyTextField
+            label={'Trigger Delay [s]'}
+            value={settings?.trigger_delay ?? ''}
+            onApply={makeSettingApplyHandler('trigger_delay')}
+          />
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            flexGrow: 1,
+          }}
+        >
+          <Typography variant='h6'>Bias Voltage Control</Typography>
+          <DirtyTextField
+            label={'Start [V]'}
+            value={settings?.voltage_start ?? ''}
+            onApply={makeSettingApplyHandler('voltage_start')}
+          />
+          <DirtyTextField
+            label={'Stop [V]'}
+            value={settings?.voltage_stop ?? ''}
+            onApply={makeSettingApplyHandler('voltage_stop')}
+          />
+          <DirtyTextField
+            label={'Step [V]'}
+            value={settings?.voltage_step ?? ''}
+            onApply={makeSettingApplyHandler('voltage_step')}
+          />
+          <DirtyTextField
+            label={'Settle Time [s]'}
+            value={settings?.voltage_settle_time ?? ''}
+            onApply={makeSettingApplyHandler('voltage_settle_time')}
+          />
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+            <ExecQueryButton
+              onClick={async () => {
+                return await ElectrometerService.electrometerStartSourceVoltageSweep(
+                  deviceIdPathArg,
+                )
+              }}
+            >
+              Start Voltage Sweep
+            </ExecQueryButton>
+            <ExecQueryButton
+              onClick={async () => {
+                return await ElectrometerService.electrometerTurnOffSourceVoltage(
+                  deviceIdPathArg,
+                )
+              }}
+            >
+              Turn Off Voltage
+            </ExecQueryButton>
           </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              flexGrow: 1,
-            }}
-          >
-            <Typography variant='h6'>Trigger Settings</Typography>
-            <DirtyTextField
-              label={'Trigger Count [#]'}
-              value={settings?.trigger_count ?? ''}
-              onApply={makeSettingApplyHandler('trigger_count')}
-              onChange={(e) => setTriggerCount(Number(e.target.value) || 0)}
-            />
-            <DirtyTextField
-              label={'Trigger Time Interval [s]'}
-              value={settings?.trigger_time_interval ?? ''}
-              onApply={makeSettingApplyHandler('trigger_time_interval')}
-              onChange={(e) => setTriggerTime(Number(e.target.value) || 0)}
-            />
-            <Typography>
-              Total Measurement Time: {triggerCount * triggerTime} s
-            </Typography>
-            <DirtyTextField
-              label={'Trigger Delay [s]'}
-              value={settings?.trigger_delay ?? ''}
-              onApply={makeSettingApplyHandler('trigger_delay')}
-            />
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              flexGrow: 1,
-            }}
-          >
-            <Typography variant='h6'>Bias Voltage Control</Typography>
-            <DirtyTextField
-              label={'Start [V]'}
-              value={settings?.voltage_start ?? ''}
-              onApply={makeSettingApplyHandler('voltage_start')}
-            />
-            <DirtyTextField
-              label={'Stop [V]'}
-              value={settings?.voltage_stop ?? ''}
-              onApply={makeSettingApplyHandler('voltage_stop')}
-            />
-            <DirtyTextField
-              label={'Step [V]'}
-              value={settings?.voltage_step ?? ''}
-              onApply={makeSettingApplyHandler('voltage_step')}
-            />
-            <DirtyTextField
-              label={'Settle Time [s]'}
-              value={settings?.voltage_settle_time ?? ''}
-              onApply={makeSettingApplyHandler('voltage_settle_time')}
-            />
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-              <ExecQueryButton
-                onClick={async () => {
-                  return await ElectrometerService.electrometerStartSourceVoltageSweep(
-                    deviceIdPathArg,
-                  )
-                }}
-              >
-                Start Voltage Sweep
-              </ExecQueryButton>
-              <ExecQueryButton
-                onClick={async () => {
-                  return await ElectrometerService.electrometerTurnOffSourceVoltage(
-                    deviceIdPathArg,
-                  )
-                }}
-              >
-                Turn Off Voltage
-              </ExecQueryButton>
-            </Box>
-          </Box>
+        </Box>
       </Box>
     </Box>
   )

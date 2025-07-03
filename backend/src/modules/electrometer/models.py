@@ -51,6 +51,7 @@ class ElectrometerSettings(BaseSetting, table=True):
     voltage_step: float = Field(default=1)
     voltage_settle_time: float = Field(default=1)
 
+
 class ElectrometerData(SQLModel, table=True):
     __tablename__ = "electrometer_data"
     device_id: int = Field(primary_key=True, index=True)

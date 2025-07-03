@@ -25,14 +25,22 @@ import {
 } from '~/provider/SnackbarProvider'
 import Snackbar from '~/components/ui/Snackbar'
 
-
 const drawerWidth = 220
 
 const navLinks = [
   { text: 'Home', icon: <FaHome />, to: '/' },
   { text: 'Electrometer 1', icon: <MdElectricBolt />, to: '/electrometer/1' },
   { text: 'Electrometer 2', icon: <MdElectricBolt />, to: '/electrometer/2' },
-  { text: 'Electrometer 1 and 2', icon: <><MdElectricBolt /><MdElectricBolt /></>, to: '/electrometer/1/and/2' },
+  {
+    text: 'Electrometer 1 and 2',
+    icon: (
+      <>
+        <MdElectricBolt />
+        <MdElectricBolt />
+      </>
+    ),
+    to: '/electrometer/1/and/2',
+  },
 ]
 
 type LayoutProps = {
@@ -59,8 +67,8 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
     <Box sx={{ display: 'flex' }}>
       {/* Side Drawer */}
       <Drawer
-        variant="temporary"
-        anchor="left"
+        variant='temporary'
+        anchor='left'
         open={drawerOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
@@ -81,8 +89,8 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
                   '&:hover': {
                     backgroundColor: 'action.hover',
                   },
-                  py: 1.5,
-                  px: 2,
+                  'py': 1.5,
+                  'px': 2,
                 }}
               >
                 <ListItemIcon>{link.icon}</ListItemIcon>
@@ -94,12 +102,17 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
       </Drawer>
       <Box sx={{ flexGrow: 1 }}>
         {/* Top Bar */}
-        <AppBar position="fixed" elevation={0} color="default" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <AppBar
+          position='fixed'
+          elevation={0}
+          color='default'
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
           <Toolbar>
             <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
+              color='inherit'
+              aria-label='open drawer'
+              edge='start'
               onClick={handleDrawerToggle}
               sx={{ mr: 2 }}
             >
@@ -108,7 +121,7 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
             <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
               <Logo />
             </Box>
-            <Typography variant="h6" noWrap component="div">
+            <Typography variant='h6' noWrap component='div'>
               ORBITOS v2
             </Typography>
           </Toolbar>
