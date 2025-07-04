@@ -45,15 +45,20 @@ def init_module() -> None:
 
     init_db()
 
-    device_names = ElectrometerName.__members__.values()
-    count_device_id = 1
+    c1 = KeysightEM(
+        device_id=1,
+        device_name=ElectrometerName.electrometer_1,
+        ws_manager=ws_manager,
+    )
+    module_state.controllers[1] = c1
 
-    for device_name in device_names:
-        controller = KeysightEM(
-            device_id=count_device_id, device_name=device_name, ws_manager=ws_manager
-        )
-        module_state.controllers[count_device_id] = controller
-        count_device_id += 1
+    c2 = KeysightEM(
+        device_id=2,
+        device_name=ElectrometerName.electrometer_2,
+        ws_manager=ws_manager,
+    )
+    module_state.controllers[2] = c2
+
 
 
 def shutdown_module() -> None:
@@ -61,3 +66,6 @@ def shutdown_module() -> None:
     Shutdown the module.
     """
     logger.info("Shutting down electrometer module ...")
+    for controller in module_state.controllers.values():
+        controller.disconnect_from_keysight_em()
+    module_state.controllers.clear()

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { BaseWebSocketMessage } from '~/generated'
+import { useRouterState } from '@tanstack/react-router'
 
 interface UseDeviceWebSocketOptions<TState, TData, TSettings> {
   url: string
@@ -20,9 +21,12 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
   const [connected, setConnected] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const { status } = useRouterState() // status: 'pending' | 'idle' | ...
 
   useEffect(() => {
+    if (status !== 'idle') return // Only connect when router is ready
     let reconnectTimeout: NodeJS.Timeout
+    let isUnmounting = false
 
     const connectWebSocket = () => {
       const ws = new WebSocket(url)
@@ -34,9 +38,12 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
       }
 
       ws.onclose = () => {
-        console.warn('WebSocket closed. Reconnecting...')
         setConnected(false)
-        reconnectTimeout = setTimeout(connectWebSocket, 2000)
+        if (!isUnmounting) {
+          console.warn('WebSocket closed unexpectedly -> Reconnecting...')
+          reconnectTimeout = setTimeout(connectWebSocket, 2000)
+        }
+        console.log('WebSocket closed:', url)
       }
 
       ws.onerror = (err) => {
@@ -66,14 +73,14 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
         }
       }
     }
-
     connectWebSocket()
 
     return () => {
+      isUnmounting = true
       clearTimeout(reconnectTimeout)
       wsRef.current?.close()
     }
-  }, [url])
+  }, [url, status])
 
   useEffect(() => {
     let cancelled = false
