@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material'
+import { Stack } from '@mui/material'
 import { createFileRoute } from '@tanstack/react-router'
 import Electrometer from '~/components/electrometer/electrometer'
 

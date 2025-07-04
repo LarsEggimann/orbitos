@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Paper from '@mui/material/Paper'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { ThemeToggleButton } from '~/components/ui/ThemeToggleButton'
 
 export const Route = createFileRoute('/_pathlessLayout/')({

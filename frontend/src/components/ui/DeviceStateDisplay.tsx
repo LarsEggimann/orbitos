@@ -6,7 +6,7 @@ import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 
-import { BaseState } from '~/generated'
+import type { BaseState } from '~/generated'
 import { replaceUnderscores } from '~/utils/helpers'
 
 export const DeviceStateDisplay = ({

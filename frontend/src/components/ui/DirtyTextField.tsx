@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react'
-import TextField, { TextFieldProps } from '@mui/material/TextField'
+import TextField, { type TextFieldProps } from '@mui/material/TextField'
 import MenuItem from '@mui/material/MenuItem'
-import { SxProps, Theme } from '@mui/material/styles'
+import type { SxProps, Theme } from '@mui/material/styles'
 
 export type DirtyTextFieldProps = {
   /**

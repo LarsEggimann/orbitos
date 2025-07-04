@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BaseWebSocketMessage } from '~/generated'
+import type { BaseWebSocketMessage } from '~/generated'
 
 interface UseDeviceWebSocketOptions<TState, TData, TSettings> {
   url: string

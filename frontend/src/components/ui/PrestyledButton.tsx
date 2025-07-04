@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Button, { ButtonProps } from '@mui/material/Button'
+import Button, { type ButtonProps } from '@mui/material/Button'
 
 export type PrestyledButtonProps = ButtonProps
 

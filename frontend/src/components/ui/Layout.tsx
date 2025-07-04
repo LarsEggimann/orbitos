@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import {
   Box,
   Drawer,
@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import { Link } from '@tanstack/react-router'
-import { AppProvider, DashboardLayout, type Navigation } from '@toolpad/core'
 import { MdElectricBolt } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
 

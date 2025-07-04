@@ -1,6 +1,6 @@
 import * as React from 'react'
-import Snackbar, { SnackbarProps } from '@mui/material/Snackbar'
-import Alert, { AlertProps } from '@mui/material/Alert'
+import Snackbar, { type SnackbarProps } from '@mui/material/Snackbar'
+import Alert, { type AlertProps } from '@mui/material/Alert'
 
 export type ReusableSnackbarProps = {
   openState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]

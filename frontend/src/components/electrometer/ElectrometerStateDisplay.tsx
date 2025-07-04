@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 
-import { ElectrometerState } from '~/generated'
+import type { ElectrometerState } from '~/generated'
 import { replaceUnderscores } from '~/utils/helpers'
 
 export const ElectrometerStateDisplay = ({
@@ -12,7 +12,6 @@ export const ElectrometerStateDisplay = ({
   state?: ElectrometerState
 }) => {
   const {
-    device_name = 'unknown',
     status = 'unknown',
     connection_status = 'unknown',
     error = 'unknown',

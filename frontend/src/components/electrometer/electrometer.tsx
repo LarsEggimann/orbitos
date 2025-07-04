@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import type { AxiosError } from 'axios'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
@@ -16,19 +16,16 @@ import TimeSeriesChart from '~/components/plots/PlotlyPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
   Electrometer as ElectrometerService,
-  ElectrometerName,
-  BaseState,
-  ElectrometerDataResponse,
-  ElectrometerState,
-  ElectrometerSettings,
+  type ElectrometerName,
+  type ElectrometerDataResponse,
+  type ElectrometerState,
+  type ElectrometerSettings,
 } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { ElectrometerStateDisplay } from '~/components/electrometer/ElectrometerStateDisplay'
 import IpAutocomplete from '~/components/electrometer/IpAutocomplete'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
-import DirtyTextField, {
-  DirtyTextFieldHandle,
-} from '~/components/ui/DirtyTextField'
+import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { trapezoidIntegration } from '~/utils/helpers'
@@ -157,7 +154,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     )
   }, [conversionFactor, deviceName])
 
-  const field1Ref = useRef<DirtyTextFieldHandle>(null)
+  // const field1Ref = useRef<DirtyTextFieldHandle>(null)
 
   const { openSnackbar } = useSnackbarContext()
 

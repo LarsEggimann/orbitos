@@ -36,7 +36,7 @@ export default function IpAutocomplete({
   return (
     <Autocomplete
       value={internalValue}
-      onChange={(event, newValue) => {
+      onChange={(_, newValue) => {
         if (typeof newValue === 'string') {
           setInternalValue({ label: newValue })
           onChange(newValue)
