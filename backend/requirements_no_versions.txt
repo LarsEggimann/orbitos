@@ -18,3 +18,8 @@ numpy
 # electrometer
 pyvisa
 pyvisa-py
+
+# serial comm (chopperwheel, stages, the-box?)
+pyserial
+pytrinamic
+pylablib-lightweight
