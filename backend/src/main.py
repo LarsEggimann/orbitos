@@ -18,6 +18,8 @@ from src.core.logging import setup_logging
 from src.core.db import init_db
 from src.modules.electrometer import module as electrometer_module
 from src.modules.electrometer.router import router as electrometer_router
+from src.modules.chopperwheel import module as chopperwheel_module
+from src.modules.chopperwheel.router import router as chopperwheel_router
 
 logger = logging.getLogger()
 
@@ -44,6 +46,7 @@ async def get_base_state_type():
 
 
 api_router.include_router(electrometer_router)
+api_router.include_router(chopperwheel_router)
 api_router.include_router(common_types_router)
 
 
@@ -61,11 +64,13 @@ async def lifespan(fastapi_app: FastAPI):
 
     # setup modules
     electrometer_module.init_module()
+    chopperwheel_module.init_module()
 
     yield  # run the app
 
     # shutdown
     electrometer_module.shutdown_module()
+    chopperwheel_module.shutdown_module()
 
 
 app = FastAPI(
