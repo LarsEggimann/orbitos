@@ -1,4 +1,4 @@
 @echo off
 start firefox http://localhost:3000
 cd frontend
-cmd /k "npm run win:prod"
+cmd /k "npm run win:preview"
