@@ -16,7 +16,7 @@ function RouteComponent() {
       sx={{
         width: '100%',
         height: '100%',
-        gap: 1,
+        gap: 2,
       }}
     >
       <Electrometer deviceId={parseInt(deviceId1)} />
