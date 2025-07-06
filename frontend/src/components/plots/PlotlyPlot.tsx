@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import Plot from 'react-plotly.js'
-import * as Plotly from 'plotly.js-dist-min'
+import Plot from 'react-plotly.js';
 import { fromTimestampToLocalizedString } from '~/utils/helpers'
 import type { UseQueryResult } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
