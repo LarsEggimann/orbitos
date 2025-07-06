@@ -78,6 +78,14 @@ def connect_to_electrometer(
             detail=f"{controller.device_name.value} is already connected.",
         )
 
+    # check that the IP address is not already connected
+    for c in electrometer_module.module_state.controllers.values():
+        if c.ip_address and c.ip_address == ip:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Another electrometer is already connected to {ip}.",
+            )
+
     resp = controller.connect_to_keysight_em(ip)
     background_tasks.add_task(controller.init_settings)
     return BaseResponse(

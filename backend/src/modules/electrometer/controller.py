@@ -42,6 +42,7 @@ class KeysightEM:
         self.device_id = device_id
         self.device_name = device_name
         self.ws_manager = ws_manager
+        self.ip_address: str | None = None  # IP address will be set when connecting
 
         self.rm = pyvisa.ResourceManager("@py")
         self.em: TCPIPSocket
@@ -387,6 +388,7 @@ class KeysightEM:
     def connect_to_keysight_em(self, ip) -> str:
         try:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
+                self.ip_address = ip
                 self.em = self.rm.open_resource(f"TCPIP::{ip}::5025::SOCKET")  # type: ignore
 
                 # For Serial and TCP/IP socket connections enable the read Termination Character, or read's will timeout
@@ -415,12 +417,14 @@ class KeysightEM:
     def disconnect_from_keysight_em(self):
         if self.state.get().connection_status == ConnectionStatus.CONNECTED:
             try:
-                logger.info("Disconnecting from Keysight EM %s", self.device_name.value)
+                logger.info("Disconnecting from Keysight EM %s at %s", self.device_name.value, self.ip_address)
+                self.stop_continuous_measurement()
                 self.em.close()
                 self.state.update(
                     connection_status=ConnectionStatus.DISCONNECTED,
                     status=ElectrometerStatus.UNKNOWN,
                 )
+                self.ip_address = None  # clear the IP address
                 logger.info("Disconnected from Keysight EM %s", self.device_name.value)
             except pyvisa.errors.VisaIOError as e:
                 logger.error("Error while disconnecting: %s", e)
@@ -517,3 +521,12 @@ class KeysightEM:
     def _em_write(self, command: str) -> int:
         with self._em_lock:
             return self.em.write(command)
+    
+    def shutdown(self):
+        """
+        Shutdown the controller, disconnect from the device and clean up resources.
+        """
+        logger.info("Shutting down Keysight EM %s", self.device_name.value)
+        self.disconnect_from_keysight_em()
+        self.health_check_thread.join(timeout=1)
+        self.stop_continuous_measurement()

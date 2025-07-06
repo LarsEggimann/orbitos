@@ -67,5 +67,5 @@ def shutdown_module() -> None:
     """
     logger.info("Shutting down electrometer module ...")
     for controller in module_state.controllers.values():
-        controller.disconnect_from_keysight_em()
+        controller.shutdown()
     module_state.controllers.clear()
