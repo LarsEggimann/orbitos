@@ -29,12 +29,14 @@ import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { trapezoidIntegration } from '~/utils/helpers'
+import { useConfig } from '~/provider/ConfigProvider'
 
 type ElectrometerProps = {
   deviceId: number
 }
 
 const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
+  const { API_WEBSOCKET_URL } = useConfig();
   const deviceName = `electrometer_${deviceId}` as ElectrometerName
   const deviceIdPathArg = { path: { device_id: deviceId } }
 
@@ -88,12 +90,12 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     enabled: datesLoaded,
   })
 
-  var { state, settings, connected } = useDeviceWebSocket<
+  const { state, settings, connected } = useDeviceWebSocket<
     ElectrometerState,
     ElectrometerDataResponse,
     ElectrometerSettings
   >({
-    url: `${import.meta.env.VITE_ORBITOS_API_WEBSOCKET_BASE_URL}/electrometer/ws/${deviceId}`,
+    url: `${API_WEBSOCKET_URL}/electrometer/ws/${deviceId}`,
     fetchInitialState: async () =>
       (
         await ElectrometerService.electrometerGetElectrometerState(

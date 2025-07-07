@@ -1,0 +1,4 @@
+{
+  "API_BASE_URL": "http://localhost:8000",
+  "API_WEBSOCKET_URL": "ws://localhost:8000/orbitos-api/v1"
+}

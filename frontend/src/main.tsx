@@ -6,11 +6,8 @@ import { NotFound } from './components/NotFound'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { ThemeProvider } from '~/provider/ThemeProvider'
+import { ConfigProvider, useConfig } from '~/provider/ConfigProvider'
 import { client } from '~/generated/client.gen'
-
-client.setConfig({
-  baseURL: import.meta.env.VITE_ORBITOS_API_BASE_URL,
-})
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -36,18 +33,31 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient()
 
+function AppProviders({ children }: { readonly children: React.ReactNode }) {
+  const { API_BASE_URL } = useConfig();
+  // Set the client baseURL dynamically
+  client.setConfig({ baseURL: API_BASE_URL });
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        {children}
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
+
 // Render the app
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+      <ConfigProvider>
+        <AppProviders>
           {/* Provide the router to the app */}
           <RouterProvider router={router} />
-        </ThemeProvider>
-      </QueryClientProvider>
+        </AppProviders>
+      </ConfigProvider>
     </StrictMode>,
   )
 }
