@@ -531,6 +531,7 @@ class KeysightEM:
         Shutdown the controller, disconnect from the device and clean up resources.
         """
         logger.info("Shutting down Keysight EM %s", self.device_name.value)
-        self.disconnect_from_keysight_em()
         self.health_check_thread.join(timeout=1)
-        self.stop_continuous_measurement()
+        if self.state.get().connection_status == ConnectionStatus.CONNECTED:
+            self.stop_continuous_measurement()
+            self.disconnect_from_keysight_em()
