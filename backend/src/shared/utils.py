@@ -8,6 +8,6 @@ async def run_blocking(func, *args):
 
 def run_async_in_background(coroutine: Coroutine[Any, Any, Any]) -> None:
     try:
-        asyncio.get_running_loop().create_task(coroutine)
+        _ = asyncio.create_task(coroutine)
     except RuntimeError:
         asyncio.run(coroutine)

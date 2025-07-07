@@ -13,7 +13,7 @@ from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.chopperwheel.module import ControllerDep
 from src.modules.chopperwheel.db import SessionDep
 from src.modules.chopperwheel.module import ws_manager
-from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData
+from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData, COMPort
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +55,20 @@ def assert_no_errors(controller: ControllerDep):
             detail=f"{controller.device_name} has pending error, reset the error.",
         )
 
+@router.get("/com-ports", response_model=list[COMPort])
+def get_available_com_ports(controller: ControllerDep):
+    """
+    Get the available COM ports for the chopper wheel.
+    """
+    try:
+        com_ports = controller.get_available_com_ports()
+    except Exception as e:
+        logger.error("Failed to get COM ports: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve available COM ports.",
+        ) from e
+    return com_ports
 
 @router.post("/connect/{com_port}", response_model=BaseResponse)
 def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
@@ -66,9 +80,17 @@ def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_name} is already connected.",
         )
-
-    controller.connect(com_port)
-    ds = controller.init_motor_settings()
+    
+    try:
+        controller.connect(com_port)
+        ds = controller.init_motor_settings()
+    except Exception as e:
+        logger.error("Failed to connect to %s at %s: %s", controller.device_name, com_port, e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to connect to {controller.device_name} at {com_port}.",
+        ) from e
+    
     return BaseResponse(
         message=f"Connected to {controller.device_name} at {com_port}, Drive Settings: {ds}"
     )
@@ -123,7 +145,7 @@ async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInput
 
     session_hr = session.exec(statement).all()
 
-    time, velocity, angular_position, _ = (
+    time, velocity, angular_position = (
         zip(*session_hr) if session_hr else ([], [], [])
     )
 

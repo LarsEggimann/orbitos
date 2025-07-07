@@ -52,3 +52,8 @@ class CWSettingsSet(SQLModel):
     max_current: Optional[float] = None
     standby_current: Optional[float] = None
     boost_current: Optional[float] = None
+
+
+class COMPort(BaseModel):
+    port: str
+    description: str

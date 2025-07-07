@@ -1,7 +1,9 @@
 import logging
 import time
 import threading
+import serial.tools.list_ports
 
+from sqlmodel import Session
 from pytrinamic.connections import ConnectionManager  # type: ignore
 from pytrinamic.modules import TMCM1021  # type: ignore
 
@@ -9,7 +11,9 @@ from src.shared.websocket_manager import WebSocketManager
 from src.shared.settings_manager import SettingsManager
 from src.shared.state_manager import StateManager
 from src.modules.chopperwheel.models import (
+    COMPort,
     CWSettings,
+    CWData,
     CWDataResponse,
     CWState,
     CWStatus,
@@ -57,8 +61,11 @@ class CWController:
             256  # the enum above is only from 0 to 8, we need the value in the name
         )
         steps_per_rotation = 200  # according to TMCM1021 documentation
-
         self.microsteps_per_rotation = microstep_resolution * steps_per_rotation
+
+        self._acquire_data_thread: threading.Thread | None = None
+        self._acquire_data_event: threading.Event = threading.Event()
+        self._acquire_data_start_stop_delay = 0.1  # seconds
 
     def get_motor(self) -> TMCM1021._MotorTypeA:
         with self._lock:
@@ -125,16 +132,81 @@ class CWController:
         )
         logger.info("Chopper wheel disconnected")
 
+    def _acquire_data(self) -> None:
+        """
+        Acquire data from the chopper wheel in a separate thread.
+        This method runs in a loop until the event is set.
+        """
+        logger.info("Starting data acquisition thread for chopper wheel")
+        while self._acquire_data_event.is_set():
+
+            velocity = self.get_actual_velocity()
+            angular_position = self.get_angular_position()
+            timestamp = time.time()
+
+            data = CWData(
+                velocity=velocity,
+                angular_position=angular_position,
+                timestamp=timestamp,
+            )
+            with Session(engine) as session:
+                session.add(data)
+                session.commit()
+
+            self.ws_manager.broadcast_data_sync(
+                device_name=self.device_name,
+                data=CWDataResponse(
+                    device_name=self.device_name,
+                    velocity=[velocity],
+                    angular_position=[angular_position],
+                    timestamp=[timestamp],
+                )
+            )
+
+            time.sleep(0.07)
+
+    def start_acquire_data(self) -> None:
+        """
+        Start acquiring data from the chopper wheel in a separate thread.
+        """
+        if self._acquire_data_thread is not None and self._acquire_data_thread.is_alive():
+            logger.warning("Data acquisition thread is already running")
+            return
+
+        self._acquire_data_event.set()
+        self._acquire_data_thread = threading.Thread(target=self._acquire_data)
+        self._acquire_data_thread.start()
+        logger.info("Data acquisition thread started for chopper wheel")
+        time.sleep(self._acquire_data_start_stop_delay)  # wait for acquisition to start before exiting
+
+    def stop_acquire_data(self) -> None:
+        """
+        Stop acquiring data from the chopper wheel.
+        """
+        if self._acquire_data_thread is None or not self._acquire_data_thread.is_alive():
+            logger.warning("Data acquisition thread is not running")
+            return
+        
+        time.sleep(self._acquire_data_start_stop_delay)  # wait for rotation to properly finish before stopping the data acquisition
+        self._acquire_data_event.clear()
+        self._acquire_data_thread.join()
+        self._acquire_data_thread = None
+        logger.info("Data acquisition thread stopped for chopper wheel")
+
     def rotate_demo(self) -> None:
         """
         Rotate the chopper wheel in a demo mode.
         """
         self.state.update(status=CWStatus.ROTATE_DEMO_RUNNING)
         logger.info("Starting demo rotation for chopper wheel")
+        self.get_motor().actual_position = 0
+        self.start_acquire_data()
         self.get_motor().rotate(self._to_microsteps(1.0))  # Rotate at 1 rps
         time.sleep(5)
         self.get_motor().stop()
+        self.stop_acquire_data()
         self.state.update(status=CWStatus.IDLE)
+
 
     def get_actual_velocity(self) -> float:
         """
@@ -144,6 +216,15 @@ class CWController:
             The actual velocity in rps.
         """
         return self._from_microsteps(self.get_motor().actual_velocity)
+
+    def get_angular_position(self) -> float:
+        """
+        Get the angular position of the chopper wheel in degrees.
+
+        Returns:
+            The angular position in degrees.
+        """
+        return self._from_microsteps(self.get_motor().actual_position) * 360
 
     def _angle_to_steps(self, angle: float) -> int:
         return int(angle * self.microsteps_per_rotation / 360)
@@ -191,3 +272,16 @@ class CWController:
         self.get_motor().linear_ramp.max_acceleration = self._to_microsteps(
             acceleration
         )
+
+    def get_available_com_ports(self) -> list[COMPort]:
+        """
+        Get the available COM ports for the chopper wheel.
+
+        Returns:
+            A list of available COM ports.
+        """
+        com_ports = serial.tools.list_ports.comports()
+        return [
+            COMPort(port=port.device, description=port.description)
+            for port in com_ports
+        ]

@@ -53,6 +53,7 @@ class WebSocketManager(Generic[T, G, H]):
                         )
 
     async def broadcast_state(self, device_name: str, state: T):
+        logger.info("Broadcasting state for device %s", device_name)
         message = BaseWebSocketMessage(
             type=WebSocketMessageType.STATE,
             device_name=device_name,
