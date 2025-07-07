@@ -79,13 +79,18 @@ class KeysightEM:
         self.health_check_thread.daemon = True
         self.health_check_thread.start()
 
+    def _check_trig_settings(self):
+        logger.info("Trigger Byp, TRAN: %s, ACQ: %s", self._em_query(":TRIG1:TRAN:BYP?"), self._em_query(":TRIG1:ACQ:BYP?"))
+        logger.info("Trigger Count, TRAN: %s, ACQ: %s", self._em_query(":TRIG1:TRAN:COUN?"), self._em_query(":TRIG1:ACQ:COUN?"))
+        logger.info("Trigger Source, TRAN: %s, ACQ: %s", self._em_query(":TRIG1:TRAN:SOUR?"), self._em_query(":TRIG1:ACQ:SOUR?"))
+        logger.info("Trigger Delay, TRAN: %s, ACQ: %s", self._em_query(":TRIG1:TRAN:DEL?"), self._em_query(":TRIG1:ACQ:DEL?"))
+        logger.info("Trigger Timer, TRAN: %s, ACQ: %s", self._em_query(":TRIG1:TRAN:TIM?"), self._em_query(":TRIG1:ACQ:TIM?"))
+
     def init_settings(self):
-        self._em_write("*RST")
+        self.reset_em()
         self._safe_write_and_log(
-            ':SENS1:FUNC "CURR",;:FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;'
+            ':FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;:SENS1:FUNC "CURR",;'
         )
-        self.set_trigger()
-        self.set_sensor()
 
     def _health_check(self):
         logger.info("Starting health check for Keysight EM %s", self.device_name.value)
@@ -121,7 +126,7 @@ class KeysightEM:
     def start_continuous_measurement(self):
         self.stop_continuous_measurement()
         logger.info("Starting continuous measurement!")
-        self._safe_write_and_log("*RST")
+        self.reset_trigger_to_default() # reset trigger to default settings, needed for continuous measurement to work properly
         self.set_sensor()
         self.enable_input()
         self._stop_continuous_measurement_event.clear()
@@ -190,7 +195,7 @@ class KeysightEM:
             )
             logger.info("Starting trigger based measurement")
             self.enable_input()
-            self.enable_output()
+            self.enable_output() # output relay needs to be enabled for INIT:ALL
             self._safe_write_and_log(":INIT:ALL (@1);")
             wait_time = int(
                 float(self.settings.get().trigger_count)
@@ -215,7 +220,6 @@ class KeysightEM:
             )
             self._fetch_trigger_based_data(start)
             self.disable_input()
-            self.disable_output()
             self.trigger_based_measurement_running = False
             self.state.update(
                 status=ElectrometerStatus.IDLE, trigger_based_measurement_status="Done"
@@ -247,6 +251,9 @@ class KeysightEM:
         self._safe_write_and_log(
             f":TRIG1:ALL:SOUR TIM;COUN {self.settings.get().trigger_count};TIM {self.settings.get().trigger_time_interval};BYP {self.settings.get().trigger_bypass};DEL {self.settings.get().trigger_delay}"
         )
+
+    def reset_trigger_to_default(self):
+        self._safe_write_and_log(":TRIG1:ALL:SOUR AINT;COUN 1;TIM 1e-4;BYP OFF;DEL 0")
 
     def set_sensor(self):
         aperture_command = f":SENS1:CHAR:APER {self.settings.get().aperture_integration_time};APER:AUTO {self.settings.get().aperture_auto};AUTO:MODE LONG;"
@@ -308,18 +315,34 @@ class KeysightEM:
                 "Switching voltage range to %s V, disabling output temporarily.",
                 v_range,
             )
+            self._pause_continuous_measurement()
             self.disable_output()
             self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
             self.enable_output()
+            self._resume_continuous_measurement()
 
         logger.info("Setting source voltage to %s V", voltage)
         self._safe_write_and_log(f":SOUR1:VOLT {voltage};")
         set_value = self._em_query("SOUR1:VOLT?")
-        logger.info("Source voltage set to: %s V", set_value)
         self.state.update(
-            source_voltage_status=f"{float(set_value)} V (requested: {voltage} V)"
+            source_voltage_status=f"{float(set_value)} V"
         )
         return v_range
+    
+    def _pause_continuous_measurement(self):
+        """Pause the continuous measurement for the Keysight EM."""
+        logger.info("Pausing continuous measurement for %s", self.device_name.value)
+        time.sleep(0.3)  # give some time to pause the measurement
+        self._pause_continuous_measurement_event.set()
+
+    def _resume_continuous_measurement(self):
+        """Resume the continuous measurement for the Keysight EM."""
+        logger.info("Resuming continuous measurement for %s", self.device_name.value)
+        self._resume_continuous_measurement_event.set()
+        time.sleep(0.3)
+        self._pause_continuous_measurement_event.clear()
+        self._resume_continuous_measurement_event.clear()
+
 
     def do_source_voltage_sweep(self):
         """Do the source voltage sweep for the Keysight EM."""
@@ -332,33 +355,31 @@ class KeysightEM:
 
         # this is terribly ugly and should be cleaned up, basically we need to pause the continuous measurement for the trigger to become idle, then we can set the source voltage stuff
         # maybe we can fix this with context managers or something similar in the future, for now it works ...
-        self._pause_continuous_measurement_event.set()  # pause any ongoing continuous measurement
-        time.sleep(0.5)  # give some time to pause the measurement
+        self._pause_continuous_measurement()
         # command as sent by old labview code: :SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT:TRIG 0.000000;:SOUR1:VOLT 0.000000;:SOUR1:VOLT:RANG 1000.000000;:SOUR1:VOLT:RLIM:STAT OFF;
         self.disable_output()
         self._safe_write_and_log(
             ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT 0;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT:RLIM:STAT OFF;"
         )
-        self._resume_continuous_measurement_event.set()  # resume continuous measurement if it was paused
-        time.sleep(0.5)
-        self._pause_continuous_measurement_event.clear()
-        self._resume_continuous_measurement_event.clear()
+        self._voltage_sweep_cancel_event.clear()  # reset the cancel event
+        prev_range = self._set_source_voltage_with_range(
+            0, None
+        )  # set initial voltage to 0 and range to 1000 V
+
+        self._resume_continuous_measurement()
+
         voltages = self.generate_sweep_voltages_with_zero(
             self.settings.get().voltage_start,
             self.settings.get().voltage_stop,
             self.settings.get().voltage_step,
         )
-        self._voltage_sweep_cancel_event.clear()  # reset the cancel event
-        prev_range = self._set_source_voltage_with_range(
-            0, None
-        )  # set initial voltage to 0 and range to 1000 V
+        
         self.enable_output()
         for v in voltages:
             if self._voltage_sweep_cancel_event.is_set():
                 logger.info("Voltage sweep cancelled.")
                 self._voltage_sweep_cancel_event.clear()
                 break
-            logger.info("Setting source voltage to %s V", v)
             prev_range = self._set_source_voltage_with_range(v, prev_range)
             time.sleep(self.settings.get().voltage_settle_time)
 
@@ -385,6 +406,9 @@ class KeysightEM:
         self._safe_write_and_log(":OUTP1 OFF;")
         self.state.update(output_status="OFF")
 
+    def reset_em(self):
+        self._em_write('*RST')
+        
     def connect_to_keysight_em(self, ip) -> str:
         try:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
@@ -442,7 +466,7 @@ class KeysightEM:
 
         for timestamp, current in zip(self.time_list, self.current_list):
             cur = float(current)
-            if cur > 1e30:  # if the current is too high, skip this measurement
+            if abs(cur) > 1e30:  # if the current is too high, skip this measurement
                 self.state.update(
                     error=f"Current value {cur} is too high, overflow! -> Adjust current limits."
                 )
