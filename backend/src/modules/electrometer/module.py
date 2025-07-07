@@ -60,7 +60,6 @@ def init_module() -> None:
     module_state.controllers[2] = c2
 
 
-
 def shutdown_module() -> None:
     """
     Shutdown the module.

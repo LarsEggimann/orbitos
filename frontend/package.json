@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.74.0",
+    "@types/material-ui": "^0.21.18",
     "@types/node": "^24.0.3",
     "@types/plotly.js-dist-min": "^2.3.4",
     "@types/react": "^19.1.8",

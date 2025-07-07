@@ -1,6 +1,5 @@
-import os
 from typing import Annotated
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session
 from fastapi import Depends
 
 from src.core.db import get_session

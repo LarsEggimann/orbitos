@@ -13,7 +13,7 @@ from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.chopperwheel.module import ControllerDep
 from src.modules.chopperwheel.db import SessionDep
 from src.modules.chopperwheel.module import ws_manager
-from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWSettings, CWState, CWData, CWSettingsSet
+from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +57,7 @@ def assert_no_errors(controller: ControllerDep):
 
 
 @router.post("/connect/{com_port}", response_model=BaseResponse)
-def connect_to_chopper_wheel(
-    com_port: str, controller: ControllerDep
-):
+def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
     """
     Connect to the chopper wheel.
     """
@@ -75,15 +73,21 @@ def connect_to_chopper_wheel(
         message=f"Connected to {controller.device_name} at {com_port}, Drive Settings: {ds}"
     )
 
+
 @router.post("/rotate-demo", response_model=BaseResponse)
-def rotate_demo_chopper_wheel(controller: ControllerDep, background_tasks: BackgroundTasks):
+def rotate_demo_chopper_wheel(
+    controller: ControllerDep, background_tasks: BackgroundTasks
+):
     """
     Rotate the chopper wheel in a demo mode.
     """
     assert_connected(controller)
     assert_idle(controller)
     background_tasks.add_task(controller.rotate_demo)
-    return BaseResponse(message=f"Chopper wheel {controller.device_name} is rotating in demo mode.")
+    return BaseResponse(
+        message=f"Chopper wheel {controller.device_name} is rotating in demo mode."
+    )
+
 
 @router.post("/disconnect", response_model=BaseResponse)
 def disconnect_chopper_wheel(controller: ControllerDep):
@@ -95,29 +99,22 @@ def disconnect_chopper_wheel(controller: ControllerDep):
     controller.disconnect()
     return BaseResponse(message=f"Disconnected from {controller.device_name}.")
 
+
 @router.get("/data", response_model=CWDataResponse)
-async def get_chopper_wheel_data(
-    session: SessionDep, time_frame: TimeFrameInputDep
-):
+async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInputDep):
     """
     Get the velocity and position data from the chopper wheel for a specified time frame.
     """
-    statement = select(
-        CWData.timestamp, CWData.velocity, CWData.angular_position
-    )
+    statement = select(CWData.timestamp, CWData.velocity, CWData.angular_position)
 
     log_string = "Fetching data from chopper wheel "
 
     if time_frame.start:
         log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
-        statement = statement.where(
-            CWData.timestamp >= time_frame.start.timestamp()
-        )
+        statement = statement.where(CWData.timestamp >= time_frame.start.timestamp())
     if time_frame.end:
         log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
-        statement = statement.where(
-            CWData.timestamp <= time_frame.end.timestamp()
-        )
+        statement = statement.where(CWData.timestamp <= time_frame.end.timestamp())
 
     logger.info(log_string)
 
@@ -126,14 +123,17 @@ async def get_chopper_wheel_data(
 
     session_hr = session.exec(statement).all()
 
-    time, velocity, angular_position, _ = zip(*session_hr) if session_hr else ([], [], [])
+    time, velocity, angular_position, _ = (
+        zip(*session_hr) if session_hr else ([], [], [])
+    )
 
     return CWDataResponse(
-        device_name='chopper_wheel',
+        device_name="chopper_wheel",
         timestamp=list(time),
         velocity=list(velocity),
-        angular_position=list(angular_position)
+        angular_position=list(angular_position),
     )
+
 
 @router.websocket("/ws")
 async def chopper_wheel_ws(websocket: WebSocket, controller: ControllerDep):

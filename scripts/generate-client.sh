@@ -10,4 +10,5 @@ cd ..
 mv openapi.json frontend/
 cd frontend
 npm run generate-client
+rm openapi.json
 # npx biome format --write ./app/client

@@ -50,6 +50,28 @@ export type BaseWebSocketMessage = {
 };
 
 /**
+ * CWDataResponse
+ */
+export type CwDataResponse = {
+    /**
+     * Device Name
+     */
+    device_name?: string;
+    /**
+     * Timestamp
+     */
+    timestamp: Array<number>;
+    /**
+     * Velocity
+     */
+    velocity: Array<number>;
+    /**
+     * Angular Position
+     */
+    angular_position: Array<number>;
+};
+
+/**
  * ConnectionStatus
  */
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'health check failed';
@@ -668,6 +690,102 @@ export type ElectrometerTurnOffSourceVoltageResponses = {
 };
 
 export type ElectrometerTurnOffSourceVoltageResponse = ElectrometerTurnOffSourceVoltageResponses[keyof ElectrometerTurnOffSourceVoltageResponses];
+
+export type ChopperwheelConnectToChopperWheelData = {
+    body?: never;
+    path: {
+        /**
+         * Com Port
+         */
+        com_port: string;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/chopperwheel/connect/{com_port}';
+};
+
+export type ChopperwheelConnectToChopperWheelErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChopperwheelConnectToChopperWheelError = ChopperwheelConnectToChopperWheelErrors[keyof ChopperwheelConnectToChopperWheelErrors];
+
+export type ChopperwheelConnectToChopperWheelResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ChopperwheelConnectToChopperWheelResponse = ChopperwheelConnectToChopperWheelResponses[keyof ChopperwheelConnectToChopperWheelResponses];
+
+export type ChopperwheelRotateDemoChopperWheelData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/chopperwheel/rotate-demo';
+};
+
+export type ChopperwheelRotateDemoChopperWheelResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ChopperwheelRotateDemoChopperWheelResponse = ChopperwheelRotateDemoChopperWheelResponses[keyof ChopperwheelRotateDemoChopperWheelResponses];
+
+export type ChopperwheelDisconnectChopperWheelData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/chopperwheel/disconnect';
+};
+
+export type ChopperwheelDisconnectChopperWheelResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ChopperwheelDisconnectChopperWheelResponse = ChopperwheelDisconnectChopperWheelResponses[keyof ChopperwheelDisconnectChopperWheelResponses];
+
+export type ChopperwheelGetChopperWheelDataData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Start
+         */
+        start?: string | null;
+        /**
+         * End
+         */
+        end?: string | null;
+    };
+    url: '/orbitos-api/v1/chopperwheel/data';
+};
+
+export type ChopperwheelGetChopperWheelDataErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChopperwheelGetChopperWheelDataError = ChopperwheelGetChopperWheelDataErrors[keyof ChopperwheelGetChopperWheelDataErrors];
+
+export type ChopperwheelGetChopperWheelDataResponses = {
+    /**
+     * Successful Response
+     */
+    200: CwDataResponse;
+};
+
+export type ChopperwheelGetChopperWheelDataResponse = ChopperwheelGetChopperWheelDataResponses[keyof ChopperwheelGetChopperWheelDataResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;

@@ -12,19 +12,25 @@ class CWStatus(str, Enum):
     ROTATING = "rotating"
     ROTATE_DEMO_RUNNING = "rotate_demo_running"
 
+
 class CWState(BaseState):
     status: CWStatus = CWStatus.UNKNOWN
+
 
 class CWSettings(BaseSetting, table=True):
     __tablename__ = "chopper_wheel_settings"
 
     max_velocity: float = Field(default=2.0, description="Maximum velocity in rps")
-    max_acceleration: float = Field(default=1.0, description="Maximum acceleration in rps^2")
+    max_acceleration: float = Field(
+        default=1.0, description="Maximum acceleration in rps^2"
+    )
 
     max_current: int = Field(default=150, le=255, description="Maximum current [0-255]")
-    standby_current: int = Field(default=0, le=255, description="Standby current [0-255]")
+    standby_current: int = Field(
+        default=0, le=255, description="Standby current [0-255]"
+    )
     boost_current: int = Field(default=0, le=255, description="Boost current [0-255]")
-    
+
 
 class CWData(SQLModel, table=True):
     __tablename__ = "chopper_wheel_data"
@@ -34,7 +40,7 @@ class CWData(SQLModel, table=True):
 
 
 class CWDataResponse(BaseModel):
-    device_name: str = 'chopper_wheel'
+    device_name: str = "chopper_wheel"
     timestamp: list[float]
     velocity: list[float]
     angular_position: list[float]

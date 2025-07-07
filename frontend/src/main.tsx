@@ -3,10 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { DefaultCatchBoundary } from './components/DefaultCatchBoundary'
 import { NotFound } from './components/NotFound'
-import {
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { ThemeProvider } from '~/provider/ThemeProvider'
 import { client } from '~/generated/client.gen'
@@ -14,7 +11,6 @@ import { client } from '~/generated/client.gen'
 client.setConfig({
   baseURL: import.meta.env.VITE_ORBITOS_API_BASE_URL,
 })
-
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -55,4 +51,3 @@ if (rootElement && !rootElement.innerHTML) {
     </StrictMode>,
   )
 }
-

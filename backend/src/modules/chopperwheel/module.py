@@ -31,9 +31,7 @@ def get_controller() -> CWController:
 
 ControllerDep = Annotated[CWController, Depends(get_controller)]
 
-ws_manager = WebSocketManager[
-    CWState, CWDataResponse, CWSettings
-]()
+ws_manager = WebSocketManager[CWState, CWDataResponse, CWSettings]()
 
 
 def init_module() -> None:
@@ -43,9 +41,9 @@ def init_module() -> None:
     logger.info("Initializing chopper wheel module ...")
 
     # init_db()
-    
+
     module_state.controller = CWController(
-        device_name='chopper_wheel', ws_manager=ws_manager
+        device_name="chopper_wheel", ws_manager=ws_manager
     )
 
 

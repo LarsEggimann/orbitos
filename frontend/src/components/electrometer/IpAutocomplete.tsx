@@ -2,7 +2,6 @@ import * as React from 'react'
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 
-
 const filter = createFilterOptions<IpOptionType>()
 
 export interface IpOptionType {

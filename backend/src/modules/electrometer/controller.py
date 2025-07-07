@@ -417,7 +417,11 @@ class KeysightEM:
     def disconnect_from_keysight_em(self):
         if self.state.get().connection_status == ConnectionStatus.CONNECTED:
             try:
-                logger.info("Disconnecting from Keysight EM %s at %s", self.device_name.value, self.ip_address)
+                logger.info(
+                    "Disconnecting from Keysight EM %s at %s",
+                    self.device_name.value,
+                    self.ip_address,
+                )
                 self.stop_continuous_measurement()
                 self.em.close()
                 self.state.update(
@@ -521,7 +525,7 @@ class KeysightEM:
     def _em_write(self, command: str) -> int:
         with self._em_lock:
             return self.em.write(command)
-    
+
     def shutdown(self):
         """
         Shutdown the controller, disconnect from the device and clean up resources.
