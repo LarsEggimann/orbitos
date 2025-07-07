@@ -119,15 +119,22 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
       })
     },
   })
-
+  
   // IP Dropdown State
   const ipOptions = [{ label: '192.168.113.72' }, { label: '192.168.113.73' }]
-  // Default IP logic: 72 for electrometer 1, 73 for electrometer 2
-  let defaultIp = ipOptions[0].label
-  if (deviceId === 2) {
-    defaultIp = ipOptions[1].label
-  }
-  const [ip, setIp] = useState(defaultIp)
+
+  const [ip, setIp] = useState("")
+  useEffect(() => {
+    // Default IP logic: 72 for electrometer 1, 73 for electrometer 2
+    let defaultIp = ipOptions[0].label
+    if (deviceId === 2) {
+      defaultIp = ipOptions[1].label
+    }
+    // Set default IP based on deviceId when component mounts
+    setIp(defaultIp)
+
+  }, [deviceId])
+
 
   const integratedCharge = useMemo(() => {
     if (!data?.current || !data?.timestamp) return null
