@@ -75,6 +75,8 @@ class CWController:
         steps_per_rotation = 200  # according to TMCM1021 documentation
         self.microsteps_per_rotation = microstep_resolution * steps_per_rotation
 
+        self._direction_modifier: int = -1 # direction modifier for the motor
+
         self._acquire_data_thread: threading.Thread | None = None
         self._acquire_data_event: threading.Event = threading.Event()
 
@@ -151,8 +153,9 @@ class CWController:
         while self._acquire_data_event.is_set():
 
             try:
-                velocity = self._get_actual_velocity()
-                angular_position = self._get_angular_position()
+                with self._lock:  # grab the lock and keep it for both values to be retrieved
+                    velocity = self._get_actual_velocity()
+                    angular_position = self._get_angular_position()
                 timestamp = time.time()
                 test.append(timestamp)
 
@@ -212,13 +215,13 @@ class CWController:
             logger.warning("Data acquisition thread is not running")
             return
         
-        time.sleep(1.5)  # wait for rotation to properly finish before stopping the data acquisition
+        time.sleep(0.5)  # wait for rotation to properly finish before stopping the data acquisition
         self._acquire_data_event.clear()
         self._acquire_data_thread.join()
         self._acquire_data_thread = None
         logger.info("Data acquisition thread stopped for chopper wheel")
 
-    def rotate_demo(self) -> None:
+    def rotation_demo(self) -> None:
         """
         Rotate the chopper wheel in a demo mode.
         """
@@ -240,6 +243,66 @@ class CWController:
             self._stop_acquire_data()
             self.state.update(status=CWStatus.IDLE)
 
+    def rotation_flash_beam(self) -> None:
+        """
+        Perform the flash beam pattern rotation with the chopper wheel.
+        """
+        if not self._home_position():
+            logger.error("Not at home. Cannot perform flash beam.")
+            self.state.update(error="Not at home. Cannot perform flash beam.")
+            return
+
+        self.state.update(status=CWStatus.PERFORMING_FLASH_BEAM)
+        logger.info("Performing flash beam with chopper wheel")
+        try:
+            self._set_angular_position(0)  # reset position to home
+            self._start_acquire_data()
+            time.sleep(self.settings.get().flash_beam_delay)
+
+            ang = self.settings.get().angle_home_sens_to_beam_pipe
+
+            print("move by")
+            self._motor_move_by(360 + ang)
+            
+            print("wait for target position reached")
+            self._wait_for_target_position_reached()
+
+            time.sleep(0.3) # let the wheel stabilize a bit
+
+            print("move by negative angle")
+            self._motor_move_by(-ang)
+
+            print("wait for target position reached")
+            self._wait_for_target_position_reached()
+
+            time.sleep(0.3)  # let the wheel stabilize a bit
+
+            if not self._home_position():
+                logger.error("Caution! Wheel has not reached home position after flash!")
+                self.state.update(error="Caution! Wheel has not reached home position after flash!")
+            else:
+                logger.info("Flash beam operation completed successfully")
+                self._motor_stop()
+                self._set_angular_position(0)  # reset position to home
+
+            
+        except Exception as e:
+            logger.error("Error during flash beam operation: %s", e)
+            self.state.update(error=str(e))
+        finally:
+            self._stop_acquire_data()
+            self.state.update(status=CWStatus.IDLE)
+
+    @synchronized()
+    def _home_position(self) -> bool:
+        """
+        Check if the home position is reached.
+
+        Returns:
+            True if the home position is reached, False otherwise.
+        """
+        return self.get_module().get_digital_input(1) == 0
+
     @synchronized()
     def _get_actual_velocity(self) -> float:
         """
@@ -248,7 +311,7 @@ class CWController:
         Returns:
             The actual velocity in rps.
         """
-        return self._from_microsteps(self.get_motor().actual_velocity)
+        return self._from_microsteps(self._direction_modifier * self.get_motor().actual_velocity)
 
     @synchronized()
     def _get_angular_position(self) -> float:
@@ -258,7 +321,7 @@ class CWController:
         Returns:
             The angular position in degrees.
         """
-        return self._steps_to_angle(self.get_motor().actual_position)
+        return self._steps_to_angle(self._direction_modifier * self.get_motor().actual_position)
 
     @synchronized()
     def set_max_velocity(self, velocity: float) -> None:
@@ -269,6 +332,8 @@ class CWController:
             velocity: The maximum velocity of the motor in rps.
         """
         self.get_motor().linear_ramp.max_velocity = self._to_microsteps(velocity)
+        if self.settings.get().max_velocity != velocity:
+            self.settings.update(max_velocity=velocity)
 
     @synchronized()
     def set_max_acceleration(self, acceleration: float) -> None:
@@ -281,16 +346,51 @@ class CWController:
         self.get_motor().linear_ramp.max_acceleration = self._to_microsteps(
             acceleration
         )
+        if self.settings.get().max_acceleration != acceleration:
+            self.settings.update(max_acceleration=acceleration)
 
     @synchronized()
-    def set_angular_position(self, position: float) -> None:
+    def _set_angular_position(self, position: float) -> None:
         """
         Sets the angular position of the motor.
 
         Args:
             position: The angular position in degrees.
         """
-        self.get_motor().actual_position = self._angle_to_steps(position)
+        self.get_motor().actual_position = self._angle_to_steps(self._direction_modifier * position)
+
+    @synchronized()
+    def set_max_current(self, current: int) -> None:
+        """
+        Sets the maximum current of the motor.
+
+        Args:
+            current: The maximum current in [0-255].
+        """
+        self.get_motor().drive_settings.max_current = current
+        self.settings.update(max_current=current)
+
+    @synchronized()
+    def set_standby_current(self, current: int) -> None:
+        """
+        Sets the standby current of the motor.
+
+        Args:
+            current: The standby current in [0-255].
+        """
+        self.get_motor().drive_settings.standby_current = current
+        self.settings.update(standby_current=current)
+
+    @synchronized()
+    def set_boost_current(self, current: int) -> None:
+        """
+        Sets the boost current of the motor.
+
+        Args:
+            current: The boost current in [0-255].
+        """
+        self.get_motor().drive_settings.boost_current = current
+        self.settings.update(boost_current=current)
 
     @synchronized()
     def _motor_rotate(self, velocity: float) -> None:
@@ -300,7 +400,7 @@ class CWController:
         Args:
             velocity: The velocity in rps.
         """
-        self.get_motor().rotate(self._to_microsteps(velocity))
+        self.get_motor().rotate(self._direction_modifier * self._to_microsteps(velocity))
 
     @synchronized()
     def _motor_move_to(self, angle: float, velocity: float | None = None) -> None:
@@ -312,7 +412,7 @@ class CWController:
             velocity: The velocity in rps. If None, the maximum velocity is used.
         """
         v = self._to_microsteps(velocity) if velocity is not None else None
-        self.get_motor().move_to(self._angle_to_steps(angle), v)
+        self.get_motor().move_to(self._direction_modifier * self._angle_to_steps(angle), v)
 
     @synchronized()
     def _motor_move_by(self, angle: float, velocity: float | None = None) -> None:
@@ -324,7 +424,7 @@ class CWController:
             velocity: The velocity in rps. If None, the maximum velocity is used.
         """
         v = self._to_microsteps(velocity) if velocity is not None else None
-        self.get_motor().move_by(self._angle_to_steps(angle), v)
+        self.get_motor().move_by(self._direction_modifier * self._angle_to_steps(angle), v)
 
     @synchronized()
     def _motor_stop(self) -> None:
@@ -332,6 +432,24 @@ class CWController:
         Stop the chopper wheel.
         """
         self.get_motor().stop()
+
+    @synchronized()
+    def _motor_get_position_reached(self) -> bool:
+        """
+        Check if the target position is reached.
+
+        Returns:
+            True if the target position is reached, False otherwise.
+        """
+        return self.get_motor().get_position_reached()
+
+    def _wait_for_target_position_reached(self) -> None:
+        """
+        Wait for the target position to be reached.
+        This method blocks until the target position is reached.
+        """
+        while not self._motor_get_position_reached():
+            time.sleep(0.1)
 
     def get_available_com_ports(self) -> list[COMPort]:
         """

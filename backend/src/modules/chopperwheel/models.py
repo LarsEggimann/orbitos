@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
+from typing import Literal
 
 from src.shared.models import BaseState, BaseSetting
 
@@ -11,6 +12,7 @@ class CWStatus(str, Enum):
     IDLE = "idle"
     ROTATING = "rotating"
     ROTATE_DEMO_RUNNING = "rotate_demo_running"
+    PERFORMING_FLASH_BEAM = "performing_flash_beam"
 
 
 class CWState(BaseState):
@@ -30,6 +32,16 @@ class CWSettings(BaseSetting, table=True):
         default=0, le=255, description="Standby current [0-255]"
     )
     boost_current: int = Field(default=0, le=255, description="Boost current [0-255]")
+
+    flash_beam_delay: float = Field(
+        default=0.1,
+        description="Delay in seconds before performing flash beam operation",
+    )
+
+    angle_home_sens_to_beam_pipe: Literal[140] = Field(
+        default=140,
+        description="Angle in degrees from home sensor position of the wheel to the start of beam pipe.",
+    )
 
 
 class CWData(SQLModel, table=True):

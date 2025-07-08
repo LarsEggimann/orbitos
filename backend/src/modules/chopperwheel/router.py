@@ -105,9 +105,25 @@ def rotate_demo_chopper_wheel(
     """
     assert_connected(controller)
     assert_idle(controller)
-    background_tasks.add_task(controller.rotate_demo)
+    background_tasks.add_task(controller.rotation_demo)
     return BaseResponse(
         message=f"Chopper wheel {controller.device_name} is rotating in demo mode."
+    )
+
+@router.post("/flash-beam", response_model=BaseResponse)
+def flash_beam_chopper_wheel(
+    controller: ControllerDep, background_tasks: BackgroundTasks
+):
+    """
+    Perform a flash beam operation with the chopper wheel.
+    """
+    assert_connected(controller)
+    assert_idle(controller)
+    assert_no_errors(controller)
+    
+    background_tasks.add_task(controller.rotation_flash_beam)
+    return BaseResponse(
+        message=f"Chopper wheel {controller.device_name} is performing flash beam operation."
     )
 
 
