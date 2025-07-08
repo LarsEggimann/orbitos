@@ -106,8 +106,8 @@ class CWController:
             self.settings.get().boost_current
         )
         self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
-        self._set_max_velocity(self.settings.get().max_velocity)
-        self._set_max_acceleration(self.settings.get().max_acceleration)
+        self.set_max_velocity(self.settings.get().max_velocity)
+        self.set_max_acceleration(self.settings.get().max_acceleration)
         logger.info(
             "Chopper wheel initialized with settings: %s",
             self.get_motor().drive_settings,
@@ -141,7 +141,7 @@ class CWController:
         )
         logger.info("Chopper wheel disconnected")
 
-    def _acquire_data(self) -> None:
+    def __acquire_data(self) -> None:
         """
         Acquire data from the chopper wheel in a separate thread.
         This method runs in a loop until the event is set.
@@ -190,7 +190,7 @@ class CWController:
         avg_time_between /= len(test) - 1
         logger.info(f"Average time between data points: {avg_time_between} seconds")
 
-    def start_acquire_data(self) -> None:
+    def _start_acquire_data(self) -> None:
         """
         Start acquiring data from the chopper wheel in a separate thread.
         """
@@ -199,12 +199,12 @@ class CWController:
             return
 
         self._acquire_data_event.set()
-        self._acquire_data_thread = threading.Thread(target=self._acquire_data)
+        self._acquire_data_thread = threading.Thread(target=self.__acquire_data)
         self._acquire_data_thread.start()
         logger.info("Data acquisition thread started for chopper wheel")
         # time.sleep(self._acquire_data_start_stop_delay)  # wait for acquisition to start before exiting
 
-    def stop_acquire_data(self) -> None:
+    def _stop_acquire_data(self) -> None:
         """
         Stop acquiring data from the chopper wheel.
         """
@@ -225,7 +225,7 @@ class CWController:
         self.state.update(status=CWStatus.ROTATE_DEMO_RUNNING)
         logger.info("Starting demo rotation for chopper wheel")
         try:
-            self.start_acquire_data()
+            self._start_acquire_data()
             time.sleep(0.1)  # wait for acquisition to start
             self._motor_rotate(1.0)  # Rotate at 1 rps
             
@@ -237,9 +237,8 @@ class CWController:
             logger.error("Error during demo rotation: %s", e)
             self.state.update(error=str(e))
         finally:
-            self.stop_acquire_data()
+            self._stop_acquire_data()
             self.state.update(status=CWStatus.IDLE)
-
 
     @synchronized()
     def _get_actual_velocity(self) -> float:
@@ -261,38 +260,8 @@ class CWController:
         """
         return self._steps_to_angle(self.get_motor().actual_position)
 
-    def _angle_to_steps(self, angle: float) -> int:
-        return int(angle * self.microsteps_per_rotation / 360)
-
-    def _steps_to_angle(self, steps: int) -> float:
-        return steps * 360 / self.microsteps_per_rotation
-
-    def _to_microsteps(self, value: float) -> int:
-        """
-        Converts a value in rps to microsteps.
-
-        Args:
-            value: The value in rps.
-
-        Returns:
-            The value in microsteps.
-        """
-        return int(value * self.microsteps_per_rotation)
-
-    def _from_microsteps(self, value: int) -> float:
-        """
-        Converts a value in microsteps to rps.
-
-        Args:
-            value: The value in microsteps.
-
-        Returns:
-            The value in rps.
-        """
-        return value / self.microsteps_per_rotation
-
     @synchronized()
-    def _set_max_velocity(self, velocity: float) -> None:
+    def set_max_velocity(self, velocity: float) -> None:
         """
         Sets the maximum velocity of the motor.
 
@@ -302,7 +271,7 @@ class CWController:
         self.get_motor().linear_ramp.max_velocity = self._to_microsteps(velocity)
 
     @synchronized()
-    def _set_max_acceleration(self, acceleration: float) -> None:
+    def set_max_acceleration(self, acceleration: float) -> None:
         """
         Sets the maximum acceleration of the motor.
 
@@ -314,7 +283,7 @@ class CWController:
         )
 
     @synchronized()
-    def _set_angular_position(self, position: float) -> None:
+    def set_angular_position(self, position: float) -> None:
         """
         Sets the angular position of the motor.
 
@@ -376,3 +345,33 @@ class CWController:
             COMPort(port=port.device, description=port.description)
             for port in com_ports
         ]
+
+    def _angle_to_steps(self, angle: float) -> int:
+        return int(angle * self.microsteps_per_rotation / 360)
+
+    def _steps_to_angle(self, steps: int) -> float:
+        return steps * 360 / self.microsteps_per_rotation
+
+    def _to_microsteps(self, value: float) -> int:
+        """
+        Converts a value in rps to microsteps.
+
+        Args:
+            value: The value in rps.
+
+        Returns:
+            The value in microsteps.
+        """
+        return int(value * self.microsteps_per_rotation)
+
+    def _from_microsteps(self, value: int) -> float:
+        """
+        Converts a value in microsteps to rps.
+
+        Args:
+            value: The value in microsteps.
+
+        Returns:
+            The value in rps.
+        """
+        return value / self.microsteps_per_rotation
