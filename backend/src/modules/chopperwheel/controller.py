@@ -23,6 +23,18 @@ from src.core.db import engine
 
 logger = logging.getLogger()
 
+# decorator to synchronize access to methods to serial interface and motor
+# methods annotated with this decorator will acquire a lock before executing and keep it until the method returns
+# this ensures that only one thread can access the serial interface and motor at a time AND more importantly
+# waits for the connection to respond before releasing the lock
+def synchronized(lock_attr="_lock"):
+    def decorator(method):
+        def wrapper(self, *args, **kwargs):
+            lock = getattr(self, lock_attr)
+            with lock:
+                return method(self, *args, **kwargs)
+        return wrapper
+    return decorator
 
 class CWController:
     def __init__(
@@ -52,7 +64,7 @@ class CWController:
         self._serial_interface: ConnectionManager | None = None
         self._module: TMCM1021 | None = None
         self._motor: TMCM1021._MotorTypeA | None = None
-        self._lock = threading.Lock()
+        self._lock = threading.RLock() # allow same thread to acquire the lock multiple times, used in synchronized() decorator
 
         self.microstep_resolution = (
             TMCM1021._MotorTypeA.ENUM.MicrostepResolution256Microsteps
@@ -65,28 +77,25 @@ class CWController:
 
         self._acquire_data_thread: threading.Thread | None = None
         self._acquire_data_event: threading.Event = threading.Event()
-        self._acquire_data_start_stop_delay = 0.1  # seconds
 
     def get_motor(self) -> TMCM1021._MotorTypeA:
-        with self._lock:
-            if self._motor is None:
-                raise ValueError("Motor not initialized. Call connect() first.")
-            return self._motor
+        if self._motor is None:
+            raise ValueError("Motor not initialized. Call connect() first.")
+        return self._motor
 
     def get_module(self) -> TMCM1021:
-        with self._lock:
-            if self._module is None:
-                raise ValueError("Module not initialized. Call connect() first.")
-            return self._module
+        if self._module is None:
+            raise ValueError("Module not initialized. Call connect() first.")
+        return self._module
 
     def get_serial_interface(self) -> ConnectionManager:
-        with self._lock:
-            if self._serial_interface is None:
-                raise ValueError(
-                    "Serial interface not initialized. Call connect() first."
-                )
-            return self._serial_interface
+        if self._serial_interface is None:
+            raise ValueError(
+                "Serial interface not initialized. Call connect() first."
+            )
+        return self._serial_interface
 
+    @synchronized()
     def init_motor_settings(self):
         logger.info("Initializing motor settings for chopper wheel")
         self.get_motor().drive_settings.max_current = self.settings.get().max_current
@@ -105,28 +114,28 @@ class CWController:
         )
         return self.get_motor().drive_settings
 
+    @synchronized()
     def connect(self, com_port) -> None:
         interface_args = f"--interface serial_tmcl --port {com_port} --data-rate 9600"
-        with self._lock:
-            self._serial_interface = ConnectionManager(interface_args).connect()
-            self._module = TMCM1021(self._serial_interface)
-            self._motor = self._module.motors[0]
-        self.get_motor().stop()
-        self.get_motor().actual_position = 0
+        self._serial_interface = ConnectionManager(interface_args).connect()
+        self._module = TMCM1021(self._serial_interface)
+        self._motor = self._module.motors[0]
+        self._motor.stop()
+        self._motor.actual_position = 0
         self.state.update(
             connection_status=ConnectionStatus.CONNECTED, status=CWStatus.IDLE
         )
 
+    @synchronized()
     def disconnect(self) -> None:
         """
         Disconnect the chopper wheel.
         """
-        with self._lock:
-            if self._serial_interface is not None:
-                self._serial_interface.close()
-                self._serial_interface = None
-            self._module = None
-            self._motor = None
+        if self._serial_interface is not None:
+            self._serial_interface.disconnect()
+            self._serial_interface = None
+        self._module = None
+        self._motor = None
         self.state.update(
             connection_status=ConnectionStatus.DISCONNECTED, status=CWStatus.UNKNOWN
         )
@@ -138,32 +147,48 @@ class CWController:
         This method runs in a loop until the event is set.
         """
         logger.info("Starting data acquisition thread for chopper wheel")
+        test = []
         while self._acquire_data_event.is_set():
 
-            velocity = self.get_actual_velocity()
-            angular_position = self.get_angular_position()
-            timestamp = time.time()
+            try:
+                velocity = self._get_actual_velocity()
+                angular_position = self._get_angular_position()
+                timestamp = time.time()
+                test.append(timestamp)
 
-            data = CWData(
-                velocity=velocity,
-                angular_position=angular_position,
-                timestamp=timestamp,
-            )
-            with Session(engine) as session:
-                session.add(data)
-                session.commit()
-
-            self.ws_manager.broadcast_data_sync(
-                device_name=self.device_name,
-                data=CWDataResponse(
-                    device_name=self.device_name,
-                    velocity=[velocity],
-                    angular_position=[angular_position],
-                    timestamp=[timestamp],
+                data = CWData(
+                    velocity=velocity,
+                    angular_position=angular_position,
+                    timestamp=timestamp,
                 )
-            )
+                print(f"Acquired data: {data}")
+                with Session(engine) as session:
+                    session.add(data)
+                    session.commit()
 
-            time.sleep(0.07)
+                self.ws_manager.broadcast_data_sync(
+                    device_name=self.device_name,
+                    data=CWDataResponse(
+                        device_name=self.device_name,
+                        velocity=[velocity],
+                        angular_position=[angular_position],
+                        timestamp=[timestamp],
+                    )
+                )
+            except Exception as e:
+                logger.error("Error acquiring data from chopper wheel: %s", e)
+                if not self._acquire_data_event.is_set():
+                    logger.info("Data acquisition event cleared, stopping thread")
+                    break
+            finally:
+                time.sleep(1e-5)  # 100 ms sleep time
+
+        logger.info(f"Data acquisition thread for chopper wheel stopped. Collected {len(test)} data points.")
+        avg_time_between = 0.0
+        for i in range(1, len(test)):
+            avg_time_between += test[i] - test[i - 1]
+        avg_time_between /= len(test) - 1
+        logger.info(f"Average time between data points: {avg_time_between} seconds")
 
     def start_acquire_data(self) -> None:
         """
@@ -177,7 +202,7 @@ class CWController:
         self._acquire_data_thread = threading.Thread(target=self._acquire_data)
         self._acquire_data_thread.start()
         logger.info("Data acquisition thread started for chopper wheel")
-        time.sleep(self._acquire_data_start_stop_delay)  # wait for acquisition to start before exiting
+        # time.sleep(self._acquire_data_start_stop_delay)  # wait for acquisition to start before exiting
 
     def stop_acquire_data(self) -> None:
         """
@@ -187,7 +212,7 @@ class CWController:
             logger.warning("Data acquisition thread is not running")
             return
         
-        time.sleep(self._acquire_data_start_stop_delay)  # wait for rotation to properly finish before stopping the data acquisition
+        time.sleep(1.5)  # wait for rotation to properly finish before stopping the data acquisition
         self._acquire_data_event.clear()
         self._acquire_data_thread.join()
         self._acquire_data_thread = None
@@ -199,16 +224,25 @@ class CWController:
         """
         self.state.update(status=CWStatus.ROTATE_DEMO_RUNNING)
         logger.info("Starting demo rotation for chopper wheel")
-        self.get_motor().actual_position = 0
-        self.start_acquire_data()
-        self.get_motor().rotate(self._to_microsteps(1.0))  # Rotate at 1 rps
-        time.sleep(5)
-        self.get_motor().stop()
-        self.stop_acquire_data()
-        self.state.update(status=CWStatus.IDLE)
+        try:
+            self.start_acquire_data()
+            time.sleep(0.1)  # wait for acquisition to start
+            self._motor_rotate(1.0)  # Rotate at 1 rps
+            
+            time.sleep(5)
+
+            self._motor_stop()
+
+        except Exception as e:
+            logger.error("Error during demo rotation: %s", e)
+            self.state.update(error=str(e))
+        finally:
+            self.stop_acquire_data()
+            self.state.update(status=CWStatus.IDLE)
 
 
-    def get_actual_velocity(self) -> float:
+    @synchronized()
+    def _get_actual_velocity(self) -> float:
         """
         Get the actual velocity of the chopper wheel in rps.
 
@@ -217,17 +251,21 @@ class CWController:
         """
         return self._from_microsteps(self.get_motor().actual_velocity)
 
-    def get_angular_position(self) -> float:
+    @synchronized()
+    def _get_angular_position(self) -> float:
         """
         Get the angular position of the chopper wheel in degrees.
 
         Returns:
             The angular position in degrees.
         """
-        return self._from_microsteps(self.get_motor().actual_position) * 360
+        return self._steps_to_angle(self.get_motor().actual_position)
 
     def _angle_to_steps(self, angle: float) -> int:
         return int(angle * self.microsteps_per_rotation / 360)
+
+    def _steps_to_angle(self, steps: int) -> float:
+        return steps * 360 / self.microsteps_per_rotation
 
     def _to_microsteps(self, value: float) -> int:
         """
@@ -253,6 +291,7 @@ class CWController:
         """
         return value / self.microsteps_per_rotation
 
+    @synchronized()
     def _set_max_velocity(self, velocity: float) -> None:
         """
         Sets the maximum velocity of the motor.
@@ -262,6 +301,7 @@ class CWController:
         """
         self.get_motor().linear_ramp.max_velocity = self._to_microsteps(velocity)
 
+    @synchronized()
     def _set_max_acceleration(self, acceleration: float) -> None:
         """
         Sets the maximum acceleration of the motor.
@@ -272,6 +312,57 @@ class CWController:
         self.get_motor().linear_ramp.max_acceleration = self._to_microsteps(
             acceleration
         )
+
+    @synchronized()
+    def _set_angular_position(self, position: float) -> None:
+        """
+        Sets the angular position of the motor.
+
+        Args:
+            position: The angular position in degrees.
+        """
+        self.get_motor().actual_position = self._angle_to_steps(position)
+
+    @synchronized()
+    def _motor_rotate(self, velocity: float) -> None:
+        """
+        Rotate the chopper wheel at a specified velocity.
+
+        Args:
+            velocity: The velocity in rps.
+        """
+        self.get_motor().rotate(self._to_microsteps(velocity))
+
+    @synchronized()
+    def _motor_move_to(self, angle: float, velocity: float | None = None) -> None:
+        """
+        Move the chopper wheel to a specified angle.
+
+        Args:
+            angle: The angle in degrees.
+            velocity: The velocity in rps. If None, the maximum velocity is used.
+        """
+        v = self._to_microsteps(velocity) if velocity is not None else None
+        self.get_motor().move_to(self._angle_to_steps(angle), v)
+
+    @synchronized()
+    def _motor_move_by(self, angle: float, velocity: float | None = None) -> None:
+        """
+        Move the chopper wheel by a specified angle.
+
+        Args:
+            angle: The angle in degrees.
+            velocity: The velocity in rps. If None, the maximum velocity is used.
+        """
+        v = self._to_microsteps(velocity) if velocity is not None else None
+        self.get_motor().move_by(self._angle_to_steps(angle), v)
+
+    @synchronized()
+    def _motor_stop(self) -> None:
+        """
+        Stop the chopper wheel.
+        """
+        self.get_motor().stop()
 
     def get_available_com_ports(self) -> list[COMPort]:
         """
