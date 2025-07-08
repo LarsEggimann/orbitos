@@ -13,6 +13,10 @@ class CWStatus(str, Enum):
     ROTATING = "rotating"
     ROTATE_DEMO_RUNNING = "rotate_demo_running"
     PERFORMING_FLASH_BEAM = "performing_flash_beam"
+    FINDING_HOME = "finding_home"
+
+class AngleHomeSensToBeamPipe(int, Enum):
+    SMALL_WHEEL_V1 = 140
 
 
 class CWState(BaseState):
@@ -38,8 +42,8 @@ class CWSettings(BaseSetting, table=True):
         description="Delay in seconds before performing flash beam operation",
     )
 
-    angle_home_sens_to_beam_pipe: Literal[140] = Field(
-        default=140,
+    angle_home_sens_to_beam_pipe: AngleHomeSensToBeamPipe = Field(
+        default=AngleHomeSensToBeamPipe.SMALL_WHEEL_V1,
         description="Angle in degrees from home sensor position of the wheel to the start of beam pipe.",
     )
 

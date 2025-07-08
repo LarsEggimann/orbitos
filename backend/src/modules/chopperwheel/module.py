@@ -52,3 +52,5 @@ def shutdown_module() -> None:
     Shutdown the module.
     """
     logger.info("Shutting down chopper wheel module ...")
+    if module_state.controller:
+        module_state.controller.shutdown()

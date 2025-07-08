@@ -108,8 +108,8 @@ class CWController:
             self.settings.get().boost_current
         )
         self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
-        self.set_max_velocity(self.settings.get().max_velocity)
-        self.set_max_acceleration(self.settings.get().max_acceleration)
+        self._set_max_velocity(self.settings.get().max_velocity)
+        self._set_max_acceleration(self.settings.get().max_acceleration)
         logger.info(
             "Chopper wheel initialized with settings: %s",
             self.get_motor().drive_settings,
@@ -221,6 +221,61 @@ class CWController:
         self._acquire_data_thread = None
         logger.info("Data acquisition thread stopped for chopper wheel")
 
+    def find_home(self) -> None:
+        """
+        Find the home position of the chopper wheel.
+        This method will rotate the wheel until it finds the home position.
+        """
+        logger.info("Finding home position for chopper wheel")
+        self.state.update(status=CWStatus.FINDING_HOME)
+        try:
+            homing_speed = 0.05 # rps, adjust as needed
+            homing_accel = 5   # rps^2, adjust as needed
+            homing_current = 150 # [0-255], adjust as needed
+
+            self._set_max_velocity(homing_speed)
+            self._set_max_acceleration(homing_accel)
+            self._set_max_current(homing_current)
+
+            self._start_acquire_data()
+
+            self._motor_rotate(homing_speed)
+
+            time.sleep(0.2) # ensure motor has moved a bit
+
+            timeout = 60 # seconds, adjust as needed
+            start_time = time.time()
+
+            home = False
+            
+            while not home:
+                if self._home_position():
+                    self._motor_stop()
+                    home = True
+                time.sleep(0.01)
+
+                if time.time() - start_time > timeout:
+                    logger.error("Timeout while waiting for home position")
+                    break
+            
+            if self._home_position():
+                logger.info("Home position found")
+                self._set_angular_position(0)
+            else:
+                logger.error("Home position not found after rotation")
+                self.state.update(error="Home position not found after rotation")
+
+        except Exception as e:
+            logger.error("Error during find home rotation: %s", e)
+            self.state.update(error=str(e))
+        finally:
+            self._stop_acquire_data()
+            self._set_max_acceleration(self.settings.get().max_acceleration) # reset to setting value
+            self._set_max_velocity(self.settings.get().max_velocity) # reset to setting value
+            self._set_max_current(self.settings.get().max_current)
+            self.state.update(status=CWStatus.IDLE)            
+
+
     def rotation_demo(self) -> None:
         """
         Rotate the chopper wheel in a demo mode.
@@ -324,7 +379,7 @@ class CWController:
         return self._steps_to_angle(self._direction_modifier * self.get_motor().actual_position)
 
     @synchronized()
-    def set_max_velocity(self, velocity: float) -> None:
+    def _set_max_velocity(self, velocity: float) -> None:
         """
         Sets the maximum velocity of the motor.
 
@@ -332,11 +387,20 @@ class CWController:
             velocity: The maximum velocity of the motor in rps.
         """
         self.get_motor().linear_ramp.max_velocity = self._to_microsteps(velocity)
-        if self.settings.get().max_velocity != velocity:
-            self.settings.update(max_velocity=velocity)
+
+    def set_max_velocity(self, velocity: float) -> None:
+        """
+        Sets the maximum velocity of the motor and updates the settings.
+
+        Args:
+            velocity: The maximum velocity of the motor in rps.
+        """
+        self._set_max_velocity(velocity)
+        self.settings.update(max_velocity=velocity)
+
 
     @synchronized()
-    def set_max_acceleration(self, acceleration: float) -> None:
+    def _set_max_acceleration(self, acceleration: float) -> None:
         """
         Sets the maximum acceleration of the motor.
 
@@ -346,8 +410,16 @@ class CWController:
         self.get_motor().linear_ramp.max_acceleration = self._to_microsteps(
             acceleration
         )
-        if self.settings.get().max_acceleration != acceleration:
-            self.settings.update(max_acceleration=acceleration)
+
+    def set_max_acceleration(self, acceleration: float) -> None:
+        """
+        Sets the maximum acceleration of the motor and updates the settings.
+
+        Args:
+            acceleration: The maximum acceleration of the motor in rps^2.
+        """
+        self._set_max_acceleration(acceleration)
+        self.settings.update(max_acceleration=acceleration)
 
     @synchronized()
     def _set_angular_position(self, position: float) -> None:
@@ -360,7 +432,7 @@ class CWController:
         self.get_motor().actual_position = self._angle_to_steps(self._direction_modifier * position)
 
     @synchronized()
-    def set_max_current(self, current: int) -> None:
+    def _set_max_current(self, current: int) -> None:
         """
         Sets the maximum current of the motor.
 
@@ -368,10 +440,19 @@ class CWController:
             current: The maximum current in [0-255].
         """
         self.get_motor().drive_settings.max_current = current
+    
+    def set_max_current(self, current: int) -> None:
+        """
+        Sets the maximum current of the motor and updates the settings.
+
+        Args:
+            current: The maximum current in [0-255].
+        """
+        self._set_max_current(current)
         self.settings.update(max_current=current)
 
     @synchronized()
-    def set_standby_current(self, current: int) -> None:
+    def _set_standby_current(self, current: int) -> None:
         """
         Sets the standby current of the motor.
 
@@ -379,10 +460,19 @@ class CWController:
             current: The standby current in [0-255].
         """
         self.get_motor().drive_settings.standby_current = current
+    
+    def set_standby_current(self, current: int) -> None:
+        """
+        Sets the standby current of the motor and updates the settings.
+
+        Args:
+            current: The standby current in [0-255].
+        """
+        self._set_standby_current(current)
         self.settings.update(standby_current=current)
 
     @synchronized()
-    def set_boost_current(self, current: int) -> None:
+    def _set_boost_current(self, current: int) -> None:
         """
         Sets the boost current of the motor.
 
@@ -390,6 +480,15 @@ class CWController:
             current: The boost current in [0-255].
         """
         self.get_motor().drive_settings.boost_current = current
+
+    def set_boost_current(self, current: int) -> None:
+        """
+        Sets the boost current of the motor and updates the settings.
+
+        Args:
+            current: The boost current in [0-255].
+        """
+        self._set_boost_current(current)
         self.settings.update(boost_current=current)
 
     @synchronized()
@@ -493,3 +592,12 @@ class CWController:
             The value in rps.
         """
         return value / self.microsteps_per_rotation
+    
+    def shutdown(self) -> None:
+        """
+        Shutdown the chopper wheel controller.
+        This method should be called when the application is shutting down.
+        """
+        logger.info("Shutting down chopper wheel controller")
+        self._stop_acquire_data()
+        self.disconnect()

@@ -95,6 +95,16 @@ def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
         message=f"Connected to {controller.device_name} at {com_port}, Drive Settings: {ds}"
     )
 
+@router.post("/find-home", response_model=BaseResponse)
+def find_home_chopper_wheel(controller: ControllerDep, background_tasks: BackgroundTasks):
+    """
+    Find the home position of the chopper wheel.
+    """
+    assert_connected(controller)
+    assert_idle(controller)
+    background_tasks.add_task(controller.find_home)
+    return BaseResponse(message=f"Finding home for {controller.device_name} ...")
+
 
 @router.post("/rotate-demo", response_model=BaseResponse)
 def rotate_demo_chopper_wheel(
