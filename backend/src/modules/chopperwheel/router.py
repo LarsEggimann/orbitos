@@ -13,7 +13,7 @@ from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.chopperwheel.module import ControllerDep
 from src.modules.chopperwheel.db import SessionDep
 from src.modules.chopperwheel.module import ws_manager
-from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData, COMPort
+from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData, COMPort, CWSettings, CWSettingsSet, CWState
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
     
     try:
         controller.connect(com_port)
-        ds = controller.init_motor_settings()
+        ds = controller._set_motor_settings()
     except Exception as e:
         logger.error("Failed to connect to %s at %s: %s", controller.device_name, com_port, e)
         raise HTTPException(
@@ -182,6 +182,47 @@ async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInput
         angular_position=list(angular_position),
     )
 
+@router.get("/state" , response_model=CWState)
+def get_chopper_wheel_state(controller: ControllerDep):
+    """
+    Get the current state of the chopper wheel.
+    """
+    return controller.state.get()
+
+@router.post("/state/reset-error", response_model=BaseResponse)
+def reset_chopper_wheel_error(controller: ControllerDep):
+    """
+    Reset the error state of the chopper wheel.
+    """
+    controller.state.update(error=None)
+    return BaseResponse(message=f"Error state reset for {controller.device_name}.")
+
+@router.get("/settings", response_model=CWSettings)
+def get_chopper_wheel_settings(controller: ControllerDep):
+    """
+    Get the current settings of the chopper wheel.
+    """
+    return controller.settings.get()
+
+@router.post("/settings", response_model=BaseResponse)
+def set_chopper_wheel_settings(
+    settings: CWSettingsSet, controller: ControllerDep
+):
+    """
+    Set the settings of the chopper wheel.
+    """
+    assert_connected(controller)
+    assert_idle(controller)
+    assert_no_errors(controller)
+
+    controller.update_settings(settings)
+    changed_fields = (
+        controller.settings.get_changed_fields_compared_to_settings_before_change()
+    )
+    return BaseResponse(
+        message=f"Settings updated for {controller.device_name}. Changed fields: {changed_fields}"
+    )
+    
 
 @router.websocket("/ws")
 async def chopper_wheel_ws(websocket: WebSocket, controller: ControllerDep):

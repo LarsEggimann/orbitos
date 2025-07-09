@@ -67,6 +67,8 @@ class CWSettingsSet(SQLModel):
     max_current: Optional[float] = None
     standby_current: Optional[float] = None
     boost_current: Optional[float] = None
+    flash_beam_delay: Optional[float] = None
+    angle_home_sens_to_beam_pipe: Optional[AngleHomeSensToBeamPipe] = None
 
 
 class COMPort(BaseModel):

@@ -13,6 +13,7 @@ from src.shared.state_manager import StateManager
 from src.modules.chopperwheel.models import (
     COMPort,
     CWSettings,
+    CWSettingsSet,
     CWData,
     CWDataResponse,
     CWState,
@@ -98,22 +99,23 @@ class CWController:
         return self._serial_interface
 
     @synchronized()
-    def init_motor_settings(self):
+    def _set_motor_settings(self):
         logger.info("Initializing motor settings for chopper wheel")
-        self.get_motor().drive_settings.max_current = self.settings.get().max_current
-        self.get_motor().drive_settings.standby_current = (
-            self.settings.get().standby_current
-        )
-        self.get_motor().drive_settings.boost_current = (
-            self.settings.get().boost_current
-        )
-        self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
-        self._set_max_velocity(self.settings.get().max_velocity)
-        self._set_max_acceleration(self.settings.get().max_acceleration)
-        logger.info(
-            "Chopper wheel initialized with settings: %s",
-            self.get_motor().drive_settings,
-        )
+        try:
+            self._set_max_current(self.settings.get().max_current)
+            self._set_standby_current(self.settings.get().standby_current)
+            self._set_boost_current(self.settings.get().boost_current)
+            self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
+            self._set_max_velocity(self.settings.get().max_velocity)
+            self._set_max_acceleration(self.settings.get().max_acceleration)
+            logger.info(
+                "Chopper wheel settings: %s",
+                self.get_motor().drive_settings,
+            )
+        except Exception as e:
+            logger.error("Error setting motor settings: %s", e)
+            self.state.update(error=str(e))
+
         return self.get_motor().drive_settings
 
     @synchronized()
@@ -143,7 +145,7 @@ class CWController:
         )
         logger.info("Chopper wheel disconnected")
 
-    def __acquire_data(self) -> None:
+    def __acquire_data(self, sleep_time: float | None = None) -> None:
         """
         Acquire data from the chopper wheel in a separate thread.
         This method runs in a loop until the event is set.
@@ -164,7 +166,7 @@ class CWController:
                     angular_position=angular_position,
                     timestamp=timestamp,
                 )
-                # print(f"Acquired data: {data}")
+                print(f"Acquired data: {data}")
                 with Session(engine) as session:
                     session.add(data)
                     session.commit()
@@ -184,7 +186,10 @@ class CWController:
                     logger.info("Data acquisition event cleared, stopping thread")
                     break
             finally:
-                time.sleep(1e-5)  # 100 ms sleep time
+                if sleep_time:
+                    time.sleep(sleep_time)
+                else:
+                    time.sleep(1e-4)  # 100 ms sleep time
 
         logger.info(f"Data acquisition thread for chopper wheel stopped. Collected {len(test)} data points.")
         avg_time_between = 0.0
@@ -193,7 +198,7 @@ class CWController:
         avg_time_between /= len(test) - 1
         logger.info(f"Average time between data points: {avg_time_between} seconds")
 
-    def _start_acquire_data(self) -> None:
+    def _start_acquire_data(self, sleep_time: float | None = None) -> None:
         """
         Start acquiring data from the chopper wheel in a separate thread.
         """
@@ -202,7 +207,7 @@ class CWController:
             return
 
         self._acquire_data_event.set()
-        self._acquire_data_thread = threading.Thread(target=self.__acquire_data)
+        self._acquire_data_thread = threading.Thread(target=self.__acquire_data, args=(sleep_time,))
         self._acquire_data_thread.start()
         logger.info("Data acquisition thread started for chopper wheel")
         # time.sleep(self._acquire_data_start_stop_delay)  # wait for acquisition to start before exiting
@@ -237,7 +242,7 @@ class CWController:
             self._set_max_acceleration(homing_accel)
             self._set_max_current(homing_current)
 
-            self._start_acquire_data()
+            self._start_acquire_data(sleep_time=0.5) # set bigger sleep time, no need to acquire data too often during homing
 
             self._motor_rotate(homing_speed)
 
@@ -348,6 +353,28 @@ class CWController:
             self._stop_acquire_data()
             self.state.update(status=CWStatus.IDLE)
 
+    def update_settings(self, set_settings: CWSettingsSet):
+        logger.info("Updating chopper wheel settings: %s", set_settings)
+
+        self.settings.update(**set_settings.model_dump(exclude_unset=True))
+        current_settings = self.settings.get()
+
+        # apply the settings to the motor
+        self._set_motor_settings()
+
+        if self.state.get().error is not None:
+            self.settings.undo_last_update()
+            raise ValueError(
+                f"Error while updating settings for chopper wheel {self.device_name}: {self.state.get().error}"
+            )
+        # return the changed settings
+        logger.info(
+            "Settings updated for chopper wheel %s: %s",
+            self.device_name,
+            current_settings.model_dump(exclude_unset=True),
+        )
+        return self.settings
+
     @synchronized()
     def _home_position(self) -> bool:
         """
@@ -388,17 +415,6 @@ class CWController:
         """
         self.get_motor().linear_ramp.max_velocity = self._to_microsteps(velocity)
 
-    def set_max_velocity(self, velocity: float) -> None:
-        """
-        Sets the maximum velocity of the motor and updates the settings.
-
-        Args:
-            velocity: The maximum velocity of the motor in rps.
-        """
-        self._set_max_velocity(velocity)
-        self.settings.update(max_velocity=velocity)
-
-
     @synchronized()
     def _set_max_acceleration(self, acceleration: float) -> None:
         """
@@ -410,16 +426,6 @@ class CWController:
         self.get_motor().linear_ramp.max_acceleration = self._to_microsteps(
             acceleration
         )
-
-    def set_max_acceleration(self, acceleration: float) -> None:
-        """
-        Sets the maximum acceleration of the motor and updates the settings.
-
-        Args:
-            acceleration: The maximum acceleration of the motor in rps^2.
-        """
-        self._set_max_acceleration(acceleration)
-        self.settings.update(max_acceleration=acceleration)
 
     @synchronized()
     def _set_angular_position(self, position: float) -> None:
@@ -440,16 +446,6 @@ class CWController:
             current: The maximum current in [0-255].
         """
         self.get_motor().drive_settings.max_current = current
-    
-    def set_max_current(self, current: int) -> None:
-        """
-        Sets the maximum current of the motor and updates the settings.
-
-        Args:
-            current: The maximum current in [0-255].
-        """
-        self._set_max_current(current)
-        self.settings.update(max_current=current)
 
     @synchronized()
     def _set_standby_current(self, current: int) -> None:
@@ -460,16 +456,6 @@ class CWController:
             current: The standby current in [0-255].
         """
         self.get_motor().drive_settings.standby_current = current
-    
-    def set_standby_current(self, current: int) -> None:
-        """
-        Sets the standby current of the motor and updates the settings.
-
-        Args:
-            current: The standby current in [0-255].
-        """
-        self._set_standby_current(current)
-        self.settings.update(standby_current=current)
 
     @synchronized()
     def _set_boost_current(self, current: int) -> None:
@@ -480,16 +466,6 @@ class CWController:
             current: The boost current in [0-255].
         """
         self.get_motor().drive_settings.boost_current = current
-
-    def set_boost_current(self, current: int) -> None:
-        """
-        Sets the boost current of the motor and updates the settings.
-
-        Args:
-            current: The boost current in [0-255].
-        """
-        self._set_boost_current(current)
-        self.settings.update(boost_current=current)
 
     @synchronized()
     def _motor_rotate(self, velocity: float) -> None:
