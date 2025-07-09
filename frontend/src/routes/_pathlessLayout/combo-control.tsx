@@ -20,7 +20,7 @@ import {
 import { useExecQueryHelper } from '~/utils/ExecQueryHelper'
 import Divider from '@mui/material/Divider'
 
-export const Route = createFileRoute('/_pathlessLayout/combo-view')({
+export const Route = createFileRoute('/_pathlessLayout/combo-control')({
   component: RouteComponent,
 })
 
@@ -73,7 +73,7 @@ function RouteComponent() {
     } else if (chopperwheelSelected) {
       return 'Flash Beam'
     } else if (electrometerSelected) {
-      return `Start Trigger Measurement (${selectedDevices.filter(d => d.startsWith('electrometer')).length} devices)`
+      return `Start Trigger Measurement (${selectedDevices.filter(d => d.startsWith(`electrometer`)).length} devices)`
     }
     return 'Execute Actions'
   }
@@ -117,7 +117,7 @@ function RouteComponent() {
         sx={{ alignItems: 'center', justifyContent: 'space-between'}}
       >
         <Typography variant='h5'>
-          Combo View
+          Combo Control
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

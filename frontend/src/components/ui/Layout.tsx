@@ -14,9 +14,9 @@ import {
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import { Link } from '@tanstack/react-router'
-import { MdElectricBolt } from 'react-icons/md'
+import { MdElectricBolt, MdLineAxis } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
-import { LuShipWheel } from 'react-icons/lu'
+import { LuShipWheel, LuAxis3D } from 'react-icons/lu'
 import { TbArrowMergeBoth } from "react-icons/tb";
 
 import Logo from '~/components/ui/Logo'
@@ -39,7 +39,9 @@ const navLinks = [
     to: '/electrometer/1/and/2',
   },
   { text: 'Chopper Wheel', icon: <LuShipWheel />, to: '/chopperwheel' },
-  { text: 'Combo View', icon: <TbArrowMergeBoth />, to: '/combo-view' },
+  { text: 'Stages', icon: <LuAxis3D />, to: '/stages' },
+  { text: 'Combo Control', icon: <TbArrowMergeBoth />, to: '/combo-control' },
+  { text: 'Combo Data View', icon: <MdLineAxis />, to: '/combo-data-view' },
 ]
 
 type LayoutProps = {

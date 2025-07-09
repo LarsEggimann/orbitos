@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexRouteImport } from './routes/_pathlessLayout/index'
-import { Route as PathlessLayoutComboViewRouteImport } from './routes/_pathlessLayout/combo-view'
+import { Route as PathlessLayoutStagesRouteImport } from './routes/_pathlessLayout/stages'
+import { Route as PathlessLayoutComboDataViewRouteImport } from './routes/_pathlessLayout/combo-data-view'
+import { Route as PathlessLayoutComboControlRouteImport } from './routes/_pathlessLayout/combo-control'
 import { Route as PathlessLayoutChopperwheelRouteImport } from './routes/_pathlessLayout/chopperwheel'
 import { Route as PathlessLayoutElectrometerDeviceIdRouteImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 import { Route as PathlessLayoutElectrometerDeviceId1AndDeviceId2RouteImport } from './routes/_pathlessLayout/electrometer.$deviceId1.and.$deviceId2'
@@ -25,11 +27,23 @@ const PathlessLayoutIndexRoute = PathlessLayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PathlessLayoutRoute,
 } as any)
-const PathlessLayoutComboViewRoute = PathlessLayoutComboViewRouteImport.update({
-  id: '/combo-view',
-  path: '/combo-view',
+const PathlessLayoutStagesRoute = PathlessLayoutStagesRouteImport.update({
+  id: '/stages',
+  path: '/stages',
   getParentRoute: () => PathlessLayoutRoute,
 } as any)
+const PathlessLayoutComboDataViewRoute =
+  PathlessLayoutComboDataViewRouteImport.update({
+    id: '/combo-data-view',
+    path: '/combo-data-view',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
+const PathlessLayoutComboControlRoute =
+  PathlessLayoutComboControlRouteImport.update({
+    id: '/combo-control',
+    path: '/combo-control',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
 const PathlessLayoutChopperwheelRoute =
   PathlessLayoutChopperwheelRouteImport.update({
     id: '/chopperwheel',
@@ -51,14 +65,18 @@ const PathlessLayoutElectrometerDeviceId1AndDeviceId2Route =
 
 export interface FileRoutesByFullPath {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
-  '/combo-view': typeof PathlessLayoutComboViewRoute
+  '/combo-control': typeof PathlessLayoutComboControlRoute
+  '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesByTo {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
-  '/combo-view': typeof PathlessLayoutComboViewRoute
+  '/combo-control': typeof PathlessLayoutComboControlRoute
+  '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -67,7 +85,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
   '/_pathlessLayout/chopperwheel': typeof PathlessLayoutChopperwheelRoute
-  '/_pathlessLayout/combo-view': typeof PathlessLayoutComboViewRoute
+  '/_pathlessLayout/combo-control': typeof PathlessLayoutComboControlRoute
+  '/_pathlessLayout/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/_pathlessLayout/stages': typeof PathlessLayoutStagesRoute
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -76,14 +96,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/chopperwheel'
-    | '/combo-view'
+    | '/combo-control'
+    | '/combo-data-view'
+    | '/stages'
     | '/'
     | '/electrometer/$deviceId'
     | '/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/chopperwheel'
-    | '/combo-view'
+    | '/combo-control'
+    | '/combo-data-view'
+    | '/stages'
     | '/'
     | '/electrometer/$deviceId'
     | '/electrometer/$deviceId1/and/$deviceId2'
@@ -91,7 +115,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_pathlessLayout'
     | '/_pathlessLayout/chopperwheel'
-    | '/_pathlessLayout/combo-view'
+    | '/_pathlessLayout/combo-control'
+    | '/_pathlessLayout/combo-data-view'
+    | '/_pathlessLayout/stages'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
     | '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
@@ -117,11 +143,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutIndexRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
-    '/_pathlessLayout/combo-view': {
-      id: '/_pathlessLayout/combo-view'
-      path: '/combo-view'
-      fullPath: '/combo-view'
-      preLoaderRoute: typeof PathlessLayoutComboViewRouteImport
+    '/_pathlessLayout/stages': {
+      id: '/_pathlessLayout/stages'
+      path: '/stages'
+      fullPath: '/stages'
+      preLoaderRoute: typeof PathlessLayoutStagesRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/combo-data-view': {
+      id: '/_pathlessLayout/combo-data-view'
+      path: '/combo-data-view'
+      fullPath: '/combo-data-view'
+      preLoaderRoute: typeof PathlessLayoutComboDataViewRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/combo-control': {
+      id: '/_pathlessLayout/combo-control'
+      path: '/combo-control'
+      fullPath: '/combo-control'
+      preLoaderRoute: typeof PathlessLayoutComboControlRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
     '/_pathlessLayout/chopperwheel': {
@@ -150,7 +190,9 @@ declare module '@tanstack/react-router' {
 
 interface PathlessLayoutRouteChildren {
   PathlessLayoutChopperwheelRoute: typeof PathlessLayoutChopperwheelRoute
-  PathlessLayoutComboViewRoute: typeof PathlessLayoutComboViewRoute
+  PathlessLayoutComboControlRoute: typeof PathlessLayoutComboControlRoute
+  PathlessLayoutComboDataViewRoute: typeof PathlessLayoutComboDataViewRoute
+  PathlessLayoutStagesRoute: typeof PathlessLayoutStagesRoute
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -158,7 +200,9 @@ interface PathlessLayoutRouteChildren {
 
 const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutChopperwheelRoute: PathlessLayoutChopperwheelRoute,
-  PathlessLayoutComboViewRoute: PathlessLayoutComboViewRoute,
+  PathlessLayoutComboControlRoute: PathlessLayoutComboControlRoute,
+  PathlessLayoutComboDataViewRoute: PathlessLayoutComboDataViewRoute,
+  PathlessLayoutStagesRoute: PathlessLayoutStagesRoute,
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,
