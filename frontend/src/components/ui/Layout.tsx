@@ -129,6 +129,7 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
         <Box
           sx={{
             p: 1,
+            m: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'left',

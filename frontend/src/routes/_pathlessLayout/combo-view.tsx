@@ -8,7 +8,6 @@ import Chip from '@mui/material/Chip'
 import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
 import Select from '@mui/material/Select'
-import OutlinedInput from '@mui/material/OutlinedInput'
 import type { SelectChangeEvent } from '@mui/material/Select'
 
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
@@ -115,52 +114,52 @@ function RouteComponent() {
     <Box sx={{ bgcolor: 'background.paper' }}>
       <Stack
         direction='row'
-        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+        sx={{ alignItems: 'center', justifyContent: 'space-between'}}
       >
+        <Typography variant='h5'>
+          Combo View
+        </Typography>
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant='h5'>
-            Combo View
-          </Typography>
-        </Box>
+          <FormControl sx={{ minWidth: 300 }}>
+            <InputLabel id='input-label'>Select Devices for Actions</InputLabel>
+            <Select
+              multiple
+              size='small'
+              value={selectedDevices}
+              onChange={handleDevicesChange}
+              label="Select Devices for Actions"
+              labelId='input-label'
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip
+                      key={value}
+                      label={deviceOptions.find(opt => opt.value === value)?.label || value}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+            >
+              {deviceOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
 
-        <FormControl sx={{ minWidth: 300 }}>
-          <InputLabel>Select Devices for Actions</InputLabel>
-          <Select
-            multiple
-            size='small'
-            value={selectedDevices}
-            onChange={handleDevicesChange}
-            input={<OutlinedInput label="Select Devices for Actions" />}
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {selected.map((value) => (
-                  <Chip
-                    key={value}
-                    label={deviceOptions.find(opt => opt.value === value)?.label || value}
-                    size="small"
-                  />
-                ))}
-              </Box>
-            )}
+          <ExecQueryButton
+            onClick={executeActions}
+            color={selectedDevices.includes('chopperwheel') ? 'primary' : 'secondary'}
+            sx={{ minWidth: 200 }}
+            disabled={selectedDevices.length === 0}
           >
-            {deviceOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-
-        <ExecQueryButton
-          onClick={executeActions}
-          color={selectedDevices.includes('chopperwheel') ? 'primary' : 'secondary'}
-          sx={{ minWidth: 200 }}
-          disabled={selectedDevices.length === 0}
-        >
-          {getActionButtonText()}
-        </ExecQueryButton>
+            {getActionButtonText()}
+          </ExecQueryButton>
+        </Box>
 
       </Stack>
       <Divider sx={{ m: 1 }} />
