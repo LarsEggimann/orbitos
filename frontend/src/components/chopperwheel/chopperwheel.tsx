@@ -436,9 +436,9 @@ const Chopperwheel: React.FC = () => {
             <br />
             Suggested Angles:
             <ul>
-              <li>New Wheel (v2) with new mount: 275°</li>
-              <li>Small Wheel (v1) with new mount: 140°</li>
-              <li>Small Wheel (v1) with old mount: 290°</li>
+              <li>275° - New Wheel (v2) with new mount</li>
+              <li>140° - Small Wheel (v1) with new mount</li>
+              <li>290° - Small Wheel (v1) with old mount</li>
             </ul>
           </Typography>
         </Box>
