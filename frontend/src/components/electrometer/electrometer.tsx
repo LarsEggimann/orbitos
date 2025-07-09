@@ -51,21 +51,25 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     if (savedStart) {
       setStartDate(new Date(savedStart))
     } else {
-      // Default to 24 hours ago if no start date is saved
-      setStartDate(new Date(Date.now() - 24 * 60 * 60 * 1000)) // 24 hours ago
+      // Default to 12 hours ago if no start date is saved
+      setStartDate(new Date(Date.now() - 12 * 60 * 60 * 1000)) // 12 hours ago
     }
     if (savedEnd) setEndDate(new Date(savedEnd))
     setDatesLoaded(true)
   }, [deviceName])
 
   useEffect(() => {
-    if (startDate)
-      localStorage.setItem(`${deviceName}_startDate`, startDate.toISOString())
-    if (endDate) {
-      localStorage.setItem(`${deviceName}_endDate`, endDate.toISOString())
-    } else {
-      // if endDate is null, clear it from localStorage, this allows to reset the end date
-      localStorage.removeItem(`${deviceName}_endDate`)
+    try {
+      if (startDate)
+        localStorage.setItem(`${deviceName}_startDate`, startDate.toISOString())
+      if (endDate) {
+        localStorage.setItem(`${deviceName}_endDate`, endDate.toISOString())
+      } else {
+        // if endDate is null, clear it from localStorage, this allows to reset the end date
+        localStorage.removeItem(`${deviceName}_endDate`)
+      }
+    } catch (error) {
+      console.error('Error saving date range to localStorage:', error)
     }
   }, [startDate, endDate, deviceName])
 
@@ -86,7 +90,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
       setData(response.data)
       return response.data
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     enabled: datesLoaded,
   })
 
@@ -179,12 +183,12 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
       if (status != 200) {
         let msg = 'An error occurred while changing setting'
 
-        if (result.request && result.request.statusText) {
+        if (result.request?.statusText) {
           msg = result.request.statusText
         }
 
         // look for result.error and then result.error.detail
-        if (result.error && result.error.detail) {
+        if (result.error?.detail) {
           msg = msg + ': ' + result.error.detail
         }
 
@@ -192,7 +196,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         throw new Error('Error setting settings: ' + msg)
       } else {
         let msg = 'Settings updated successfully'
-        if (result.data && result.data.message) {
+        if (result.data?.message) {
           msg = result.data.message
         }
 
