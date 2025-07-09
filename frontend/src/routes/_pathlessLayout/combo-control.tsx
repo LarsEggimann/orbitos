@@ -13,7 +13,7 @@ import {
   Electrometer as ElectrometerService,
 } from '~/generated'
 import { useExecQueryHelper } from '~/utils/ExecQueryHelper'
-import DeviceMultiSelect, { type DeviceType, defaultDeviceOptions } from '~/components/ui/DeviceMultiSelect'
+import DeviceMultiSelect, { type DeviceType } from '~/components/ui/DeviceMultiSelect'
 
 export const Route = createFileRoute('/_pathlessLayout/combo-control')({
   component: RouteComponent,
