@@ -1,3 +1,4 @@
+import ComboDataView from '@/components/combo-data-view/combo-data-view'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_pathlessLayout/combo-data-view')({
@@ -5,5 +6,5 @@ export const Route = createFileRoute('/_pathlessLayout/combo-data-view')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_pathlessLayout/combo-data-view"!</div>
+  return  <ComboDataView />
 }

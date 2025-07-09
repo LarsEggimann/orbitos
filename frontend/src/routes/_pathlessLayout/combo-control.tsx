@@ -1,14 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Stack from '@mui/material/Stack'
-import MenuItem from '@mui/material/MenuItem'
-import Chip from '@mui/material/Chip'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import Select from '@mui/material/Select'
-import type { SelectChangeEvent } from '@mui/material/Select'
+import Divider from '@mui/material/Divider'
 
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import Chopperwheel from '~/components/chopperwheel/chopperwheel'
@@ -18,35 +13,30 @@ import {
   Electrometer as ElectrometerService,
 } from '~/generated'
 import { useExecQueryHelper } from '~/utils/ExecQueryHelper'
-import Divider from '@mui/material/Divider'
+import DeviceMultiSelect, { type DeviceType, defaultDeviceOptions } from '~/components/ui/DeviceMultiSelect'
 
 export const Route = createFileRoute('/_pathlessLayout/combo-control')({
   component: RouteComponent,
 })
 
-type DeviceType = 'chopperwheel' | 'electrometer_1' | 'electrometer_2'
-
-interface DeviceOption {
-  value: DeviceType
-  label: string
-}
-
-const deviceOptions: DeviceOption[] = [
-  { value: 'chopperwheel', label: 'Chopperwheel' },
-  { value: 'electrometer_1', label: 'Electrometer 1' },
-  { value: 'electrometer_2', label: 'Electrometer 2' },
-]
-
 function RouteComponent() {
-  const [selectedDevices, setSelectedDevices] = useState<DeviceType[]>([])
+  const [selectedDevices, setSelectedDevices] = useState<DeviceType[]>(() => {
+    const saved = localStorage.getItem('combo_control_selected_devices')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed
+      } catch {}
+    }
+    return []
+  })
 
+  useEffect(() => {
+    localStorage.setItem('combo_control_selected_devices', JSON.stringify(selectedDevices))
+  }, [selectedDevices])
+  
   const { executeQuery } = useExecQueryHelper()
-
-  const handleDevicesChange = (event: SelectChangeEvent<typeof selectedDevices>) => {
-    const value = event.target.value
-    setSelectedDevices(typeof value === 'string' ? value.split(',') as DeviceType[] : value)
-  }
-
+  
   const executeActions = async () => {
     const promises = selectedDevices.map(async (device) => {
       if (device === 'chopperwheel') {
@@ -73,7 +63,9 @@ function RouteComponent() {
     } else if (chopperwheelSelected) {
       return 'Flash Beam'
     } else if (electrometerSelected) {
-      return `Start Trigger Measurement (${selectedDevices.filter(d => d.startsWith(`electrometer`)).length} devices)`
+      // Avoid nested template literals
+      const count = selectedDevices.filter(d => d.startsWith('electrometer')).length
+      return `Start Trigger Measurement (${count} devices)`
     }
     return 'Execute Actions'
   }
@@ -121,35 +113,12 @@ function RouteComponent() {
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FormControl sx={{ minWidth: 300 }}>
-            <InputLabel id='input-label'>Select Devices for Actions</InputLabel>
-            <Select
-              multiple
-              size='small'
-              value={selectedDevices}
-              onChange={handleDevicesChange}
-              label="Select Devices for Actions"
-              labelId='input-label'
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip
-                      key={value}
-                      label={deviceOptions.find(opt => opt.value === value)?.label || value}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              )}
-            >
-              {deviceOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
+          <DeviceMultiSelect
+            selectedDevices={selectedDevices}
+            setSelectedDevices={setSelectedDevices}
+            label="Select Devices for Actions"
+            minWidth={300}
+          />
 
           <ExecQueryButton
             onClick={executeActions}
