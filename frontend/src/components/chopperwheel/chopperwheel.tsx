@@ -27,6 +27,7 @@ import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { useConfig } from '~/provider/ConfigProvider'
 import { MenuItem, TextField } from '@mui/material'
+import LinePlot from './CwPosVeloPlot'
 
 const Chopperwheel: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig();
@@ -315,14 +316,14 @@ const Chopperwheel: React.FC = () => {
 
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1, width: '100%' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <TimeSeriesChart
+          <LinePlot
             xData={data?.angular_position ?? []}
             yData={data?.velocity ?? []}
             dataQuery={dataQuery}
             height={500}
             xAxisLabel='Angular Position [deg]'
             yAxisLabel='Velocity [rps]'
-            hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Angular Position:</b> %{customdata[1]} deg<extra></extra>'
+            hoverTemplate='<b>Angular Position:</b> %{customdata[0]}<br><b>Velocity:</b> %{customdata[1]} deg<extra></extra>'
           />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
