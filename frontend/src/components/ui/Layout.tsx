@@ -16,6 +16,7 @@ import MenuIcon from '@mui/icons-material/Menu'
 import { Link } from '@tanstack/react-router'
 import { MdElectricBolt } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
+import { LuShipWheel } from 'react-icons/lu'
 
 import Logo from '~/components/ui/Logo'
 import {
@@ -40,6 +41,8 @@ const navLinks = [
     ),
     to: '/electrometer/1/and/2',
   },
+  { text: 'Chopper Wheel', icon: <LuShipWheel />, to: '/chopperwheel' },
+  
 ]
 
 type LayoutProps = {
