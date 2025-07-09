@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
-from typing import Literal
 
 from src.shared.models import BaseState, BaseSetting
 

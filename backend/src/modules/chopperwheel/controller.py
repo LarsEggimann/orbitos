@@ -164,7 +164,7 @@ class CWController:
                     angular_position=angular_position,
                     timestamp=timestamp,
                 )
-                print(f"Acquired data: {data}")
+                # print(f"Acquired data: {data}")
                 with Session(engine) as session:
                     session.add(data)
                     session.commit()
