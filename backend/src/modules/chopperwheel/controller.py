@@ -136,7 +136,7 @@ class CWController:
         Disconnect the chopper wheel.
         """
         if self._serial_interface is not None:
-            self._serial_interface.disconnect()
+            self._serial_interface.close()
             self._serial_interface = None
         self._module = None
         self._motor = None

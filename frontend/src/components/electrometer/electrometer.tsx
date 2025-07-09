@@ -123,7 +123,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
       })
     },
   })
-  
+
   // IP Dropdown State
   const ipOptions = [{ label: '192.168.113.72' }, { label: '192.168.113.73' }]
 
@@ -241,7 +241,15 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         direction='row'
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Typography variant='h5'>Electrometer {deviceId}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant='h5'>Electrometer {deviceId} - </Typography>
+          <Typography
+            variant='subtitle1'
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            {state?.connection_status == 'connected' ? '🟢' : '🔴'}
+          </Typography>
+        </Box>
         <Typography variant='subtitle1'>
           Live State via WebSocket {connected ? '🟢' : '🔴'}
         </Typography>
@@ -262,6 +270,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
               path: { device_id: deviceId, ip: ip },
             })
           }}
+          disabled={state?.connection_status == 'connected'}
         >
           Connect
         </ExecQueryButton>
@@ -271,6 +280,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
               deviceIdPathArg,
             )
           }}
+          disabled={state?.connection_status == 'disconnected'}
           color='warning'
         >
           Disconnect

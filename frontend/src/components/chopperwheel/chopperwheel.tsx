@@ -18,6 +18,7 @@ import {
   type CwDataResponse,
   type CwState,
   type CwSettings,
+  type ComPort,
 } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { CwStateDisplay } from '~/components/chopperwheel/CwStateDisplay'
@@ -26,6 +27,7 @@ import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { useConfig } from '~/provider/ConfigProvider'
+import { MenuItem, TextField } from '@mui/material'
 
 const Chopperwheel: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig();
@@ -167,13 +169,37 @@ const Chopperwheel: React.FC = () => {
     }
   }
 
+  const [comPort, setComPort] = useState<string>('') // Default COM port, can be changed later
+
+  const {
+    data: comPortsData,
+    isLoading: comPortsLoading,
+  } = useQuery({
+    queryKey: ['chopperwheel-com-ports'],
+    queryFn: async () => {
+      const response = await ChopperwheelService.chopperwheelGetAvailableComPorts();
+      return response.data;
+    },
+    refetchOnWindowFocus: true,
+  });
+
   return (
     <Box sx={{ bgcolor: 'background.paper' }}>
       <Stack
         direction='row'
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Typography variant='h5'>Chopperwheel</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant='h5' sx={{ mb: 0 }}>
+            Chopperwheel -
+          </Typography>
+          <Typography
+            variant='subtitle1'
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            {state?.connection_status == 'connected' ? '🟢' : '🔴'}
+          </Typography>
+        </Box>
         <Typography variant='subtitle1'>
           Live State via WebSocket {connected ? '🟢' : '🔴'}
         </Typography>
@@ -181,12 +207,38 @@ const Chopperwheel: React.FC = () => {
       <Divider sx={{ my: 2, mt: 0 }} />
 
       <Stack direction='row' sx={{ alignItems: 'center', gap: 2, my: 2 }}>
+        <TextField
+          size='small'
+          variant='outlined'
+          label='Select Serial Port'
+          select
+          value={comPort}
+          onChange={(e) => setComPort(e.target.value as string)}
+          sx={{ minWidth: 250 }}
+          disabled={comPortsLoading}
+        >
+          {comPortsData?.length === 0 && (
+            <MenuItem value='' disabled>
+              No COM ports found
+            </MenuItem>
+          )}
+          {comPortsData &&
+            comPortsData.map((port) => (
+              <MenuItem key={port.port} value={port.port}>
+                {port.port} - {port.description}
+              </MenuItem>
+            ))}
+        </TextField>
         <ExecQueryButton
           onClick={async () => {
+            if (!comPort) {
+              throw new Error('You need to select a COM port before connecting!');
+            }
             return await ChopperwheelService.chopperwheelConnectToChopperWheel({
-              path: { com_port: 'COM5' }, // TODO: make com port configurable
+              path: { com_port: comPort },
             })
           }}
+          disabled={!comPort || state?.connection_status == 'connected'}
         >
           Connect
         </ExecQueryButton>
@@ -194,6 +246,7 @@ const Chopperwheel: React.FC = () => {
           onClick={async () => {
             return await ChopperwheelService.chopperwheelDisconnectChopperWheel()
           }}
+          disabled={state?.connection_status == 'disconnected'}
           color='warning'
         >
           Disconnect
