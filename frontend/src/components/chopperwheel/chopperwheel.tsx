@@ -295,7 +295,7 @@ const Chopperwheel: React.FC = () => {
               <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
                 <Typography>
                   {typeof data?.velocity?.[data?.velocity.length - 1] === 'number'
-                    ? data?.velocity[data?.velocity.length - 1].toFixed(3)
+                    ? data?.velocity[data?.velocity.length - 1].toFixed(3) + ' rps'
                     : ''}
                 </Typography>
               </TableCell>
@@ -305,7 +305,7 @@ const Chopperwheel: React.FC = () => {
               <TableCell sx={{ border: 0, pl: 0, width: '25%' }}>
                 <Typography>
                   {typeof data?.angular_position?.[data?.angular_position.length - 1] === 'number'
-                    ? data?.angular_position[data?.angular_position.length - 1].toFixed(3)
+                    ? data?.angular_position[data?.angular_position.length - 1].toFixed(3) + ' °'
                     : ''}
                 </Typography>
               </TableCell>
@@ -427,10 +427,20 @@ const Chopperwheel: React.FC = () => {
             onApply={makeSettingApplyHandler('flash_beam_delay')}
           />
           <DirtyTextField
-            label={'Angle between home sensor and beam pipe [°]'}
+            label={'Angle (in home position) between slit and start of beam pipe [°]'}
             value={settings?.angle_home_sens_to_beam_pipe ?? ''}
             onApply={makeSettingApplyHandler('angle_home_sens_to_beam_pipe')}
           />
+          <Typography>
+            This angle is used to execute the flash rotation pattern. The wheel will rotate 360° + the angle set above, after this it will rotate back by the angle amount set above. This should place the wheel in home position again.
+            <br />
+            Suggested Angles:
+            <ul>
+              <li>New Wheel (v2) with new mount: 275°</li>
+              <li>Small Wheel (v1) with new mount: 140°</li>
+              <li>Small Wheel (v1) with old mount: 290°</li>
+            </ul>
+          </Typography>
         </Box>
 
       </Box>
