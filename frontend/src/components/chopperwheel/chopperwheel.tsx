@@ -268,16 +268,16 @@ const Chopperwheel: React.FC = () => {
 
       <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
         <Typography variant='h6'>Plot Data</Typography>
-        <Table sx={{ minWidth: 300 }}>
+        <Table sx={{ minWidth: 400, tableLayout: 'fixed' }}>
           <TableBody>
             <TableRow>
-              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '30%' }}>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '35%' }}>
                 <Typography>Number of Datapoints loaded:</Typography>
               </TableCell>
-              <TableCell sx={{ border: 0, pl: 0 }}>
+              <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
                 <Typography>{data?.velocity.length}</Typography>
               </TableCell>
-              <TableCell colSpan={2} sx={{ border: 0, pl: 0 }}>
+              <TableCell colSpan={2} sx={{ border: 0, pl: 0, width: '50%' }}>
                 <DownloadCSVButton
                   data={{
                     timestamp: data?.timestamp ?? [],
@@ -286,6 +286,28 @@ const Chopperwheel: React.FC = () => {
                   }}
                   defaultFilename={`chopperwheel_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
                 />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '35%' }}>
+                <Typography>Latest Velocity:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
+                <Typography>
+                  {typeof data?.velocity?.[data?.velocity.length - 1] === 'number'
+                    ? data?.velocity[data?.velocity.length - 1].toFixed(3)
+                    : ''}
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '25%' }}>
+                <Typography>Latest Angular Position:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0, width: '25%' }}>
+                <Typography>
+                  {typeof data?.angular_position?.[data?.angular_position.length - 1] === 'number'
+                    ? data?.angular_position[data?.angular_position.length - 1].toFixed(3)
+                    : ''}
+                </Typography>
               </TableCell>
             </TableRow>
           </TableBody>
