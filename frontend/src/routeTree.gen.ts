@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexRouteImport } from './routes/_pathlessLayout/index'
+import { Route as PathlessLayoutComboViewRouteImport } from './routes/_pathlessLayout/combo-view'
 import { Route as PathlessLayoutChopperwheelRouteImport } from './routes/_pathlessLayout/chopperwheel'
 import { Route as PathlessLayoutElectrometerDeviceIdRouteImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 import { Route as PathlessLayoutElectrometerDeviceId1AndDeviceId2RouteImport } from './routes/_pathlessLayout/electrometer.$deviceId1.and.$deviceId2'
@@ -22,6 +23,11 @@ const PathlessLayoutRoute = PathlessLayoutRouteImport.update({
 const PathlessLayoutIndexRoute = PathlessLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PathlessLayoutRoute,
+} as any)
+const PathlessLayoutComboViewRoute = PathlessLayoutComboViewRouteImport.update({
+  id: '/combo-view',
+  path: '/combo-view',
   getParentRoute: () => PathlessLayoutRoute,
 } as any)
 const PathlessLayoutChopperwheelRoute =
@@ -45,12 +51,14 @@ const PathlessLayoutElectrometerDeviceId1AndDeviceId2Route =
 
 export interface FileRoutesByFullPath {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
+  '/combo-view': typeof PathlessLayoutComboViewRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesByTo {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
+  '/combo-view': typeof PathlessLayoutComboViewRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
   '/_pathlessLayout/chopperwheel': typeof PathlessLayoutChopperwheelRoute
+  '/_pathlessLayout/combo-view': typeof PathlessLayoutComboViewRoute
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -67,12 +76,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/chopperwheel'
+    | '/combo-view'
     | '/'
     | '/electrometer/$deviceId'
     | '/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/chopperwheel'
+    | '/combo-view'
     | '/'
     | '/electrometer/$deviceId'
     | '/electrometer/$deviceId1/and/$deviceId2'
@@ -80,6 +91,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_pathlessLayout'
     | '/_pathlessLayout/chopperwheel'
+    | '/_pathlessLayout/combo-view'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
     | '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
@@ -103,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PathlessLayoutIndexRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/combo-view': {
+      id: '/_pathlessLayout/combo-view'
+      path: '/combo-view'
+      fullPath: '/combo-view'
+      preLoaderRoute: typeof PathlessLayoutComboViewRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
     '/_pathlessLayout/chopperwheel': {
@@ -131,6 +150,7 @@ declare module '@tanstack/react-router' {
 
 interface PathlessLayoutRouteChildren {
   PathlessLayoutChopperwheelRoute: typeof PathlessLayoutChopperwheelRoute
+  PathlessLayoutComboViewRoute: typeof PathlessLayoutComboViewRoute
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
@@ -138,6 +158,7 @@ interface PathlessLayoutRouteChildren {
 
 const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutChopperwheelRoute: PathlessLayoutChopperwheelRoute,
+  PathlessLayoutComboViewRoute: PathlessLayoutComboViewRoute,
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,

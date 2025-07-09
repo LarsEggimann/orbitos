@@ -17,13 +17,10 @@ import { Link } from '@tanstack/react-router'
 import { MdElectricBolt } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
 import { LuShipWheel } from 'react-icons/lu'
+import { TbArrowMergeBoth } from "react-icons/tb";
 
 import Logo from '~/components/ui/Logo'
-import {
-  SnackbarProvider,
-  useSnackbarContext,
-} from '~/provider/SnackbarProvider'
-import Snackbar from '~/components/ui/Snackbar'
+import { SnackbarProvider } from '~/provider/SnackbarProvider'
 
 const drawerWidth = 220
 
@@ -42,7 +39,7 @@ const navLinks = [
     to: '/electrometer/1/and/2',
   },
   { text: 'Chopper Wheel', icon: <LuShipWheel />, to: '/chopperwheel' },
-  
+  { text: 'Combo View', icon: <TbArrowMergeBoth />, to: '/combo-view' },
 ]
 
 type LayoutProps = {
@@ -58,7 +55,6 @@ function Layout({ children }: LayoutProps) {
 }
 
 function LayoutWithSnackbar({ children }: { children: ReactNode }) {
-  const { snackbar, closeSnackbar } = useSnackbarContext()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleDrawerToggle = () => {
@@ -140,13 +136,6 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
           }}
         >
           {children}
-          <Snackbar
-            openState={[snackbar.open, closeSnackbar]}
-            alertProps={{
-              message: snackbar.msg,
-              severity: snackbar.severity,
-            }}
-          />
         </Box>
       </Box>
     </Box>
