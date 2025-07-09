@@ -80,7 +80,7 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
         <Toolbar />
         <List>
           {navLinks.map((link) => (
-            <ListItem key={link.text} disablePadding sx={{ m: 0, p: 0 }}>
+            <ListItem key={link.text} disablePadding sx={{ px: 1 }}>
               <ListItemButton
                 component={Link}
                 to={link.to}
@@ -89,10 +89,11 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
                   '&:hover': {
                     backgroundColor: 'action.hover',
                   },
-                  'py': 1.5,
-                  'px': 2,
+                  py: 1.5,
+                  px: 2,
+                  borderRadius: 5
                 }}
-              >
+                >
                 <ListItemIcon>{link.icon}</ListItemIcon>
                 <ListItemText primary={link.text} />
               </ListItemButton>
