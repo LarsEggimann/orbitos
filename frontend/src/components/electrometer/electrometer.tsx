@@ -12,7 +12,7 @@ import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
 
-import TimeSeriesChart from '~/components/plots/PlotlyPlot'
+import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
   Electrometer as ElectrometerService,

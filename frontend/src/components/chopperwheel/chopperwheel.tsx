@@ -11,14 +11,13 @@ import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 
-import TimeSeriesChart from '~/components/plots/PlotlyPlot'
+import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
   Chopperwheel as ChopperwheelService,
   type CwDataResponse,
   type CwState,
   type CwSettings,
-  type ComPort,
 } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { CwStateDisplay } from '~/components/chopperwheel/CwStateDisplay'
@@ -314,15 +313,30 @@ const Chopperwheel: React.FC = () => {
         </Table>
       </Card>
 
-      <TimeSeriesChart
-        xData={data?.timestamp ?? []}
-        yData={data?.velocity ?? []}
-        dataQuery={dataQuery}
-        height={500}
-        xAxisLabel='Time'
-        yAxisLabel='Velocity [rps]'
-        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
-      />
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1, width: '100%' }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TimeSeriesChart
+            xData={data?.angular_position ?? []}
+            yData={data?.velocity ?? []}
+            dataQuery={dataQuery}
+            height={500}
+            xAxisLabel='Angular Position [deg]'
+            yAxisLabel='Velocity [rps]'
+            hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Angular Position:</b> %{customdata[1]} deg<extra></extra>'
+          />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TimeSeriesChart
+            xData={data?.timestamp ?? []}
+            yData={data?.velocity ?? []}
+            dataQuery={dataQuery}
+            height={500}
+            xAxisLabel='Time'
+            yAxisLabel='Velocity [rps]'
+            hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Velocity:</b> %{customdata[1]} rps<extra></extra>'
+          />
+        </Box>
+      </Box>
 
       <CwStateDisplay state={state as CwState} />
 
