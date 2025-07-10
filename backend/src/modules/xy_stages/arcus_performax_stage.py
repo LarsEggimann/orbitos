@@ -5,15 +5,35 @@ from pathlib import Path
 
 from pylablib.devices import Arcus  # type: ignore
 import pylablib as pll  # type: ignore
-import asyncio
+import threading
+
+from src.shared.models import ConnectionStatus
+from src.modules.xy_stages.models import PerformaxUSBDevice, StageState
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 work_dir = Path(__file__).parent
 
 
-class ArcusPerformaxDMXJSAStage:
-    def __init__(self, name):
+
+# decorator to synchronize access to methods to serial interface and motor
+# methods annotated with this decorator will acquire a lock before executing and keep it until the method returns
+# this ensures that only one thread can access the serial interface and motor at a time AND more importantly
+# waits for the connection to respond before releasing the lock
+def synchronized(lock_attr="_lock"):
+    def decorator(method):
+        def wrapper(self, *args, **kwargs):
+            lock = getattr(self, lock_attr)
+            with lock:
+                return method(self, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+class ArcusPerformaxStage:
+    def __init__(self, name, direction_modifier=1):
 
         self.STEPS_PER_MM = 800
         self.STEPS_PER_FULL_ROTATION = 3200
@@ -25,93 +45,96 @@ class ArcusPerformaxDMXJSAStage:
 
         self.dev: Arcus.PerformaxDMXJSAStage = None  # type: ignore
 
-        self.position = None
-        self.status = None
-        self.enabled = None
-        self.axis_speed = None
-        self.device_number = None
-        self.current_limit_errors = None
-        self.axis_status = None
-        self.moving = None
-
-        self.connected = False
+        self.state: StageState = StageState() # type: ignore
 
         self.name = name
 
-    async def update_pos_while_moving(self):
-        while self.dev.is_moving():
-            self.position = self.get_position()
-            await asyncio.sleep(0.1)
+        self._lock = threading.RLock()  # allow same thread to acquire the lock multiple times, used in synchronized() decorator
 
-    def get_axis_speed(self):
-        return self.dev.get_axis_speed() * self.STEPS_PER_SECOND_TO_MMPS
+        self.direction_modifier = direction_modifier
 
-    def set_axis_speed(self, speed_in_mm_per_s):
-        self.dev.set_axis_speed(int(speed_in_mm_per_s / self.STEPS_PER_SECOND_TO_MMPS))
-
+    @synchronized()
     def set_zero(self):
         self.dev.set_position_reference(0)
 
+    @synchronized()
     def move_by(self, dist_in_mm):
-        self.dev.move_by(int(dist_in_mm * self.STEPS_PER_MM))
-        asyncio.create_task(self.update_pos_while_moving())
+        self.dev.move_by(self.direction_modifier * int(dist_in_mm * self.STEPS_PER_MM))
 
+    @synchronized()
     def move_to(self, pos_in_mm):
-        self.dev.move_to(int(pos_in_mm * self.STEPS_PER_MM))
-        asyncio.create_task(self.update_pos_while_moving())
+        self.dev.move_to(self.direction_modifier * int(pos_in_mm * self.STEPS_PER_MM))
 
-    def get_full_status(self):
-        self.status = self.dev.get_full_status()
-        self.enabled = self.status["enabled"]
-        self.axis_speed = self.status["axis_speed"] * self.STEPS_PER_SECOND_TO_MMPS
-        self.device_number = self.status["device_number"]
-        self.current_limit_errors = self.status["current_limit_errors"]
-        # check if string is empty
-        if self.current_limit_errors:
-            match self.current_limit_errors:
-                case "+":
-                    self.current_limit_errors = "Limit in positive direction reached"
-                case "-":
-                    self.current_limit_errors = "Limit in negative direction reached"
-
-        self.set_position(self.status["position"])
-        self.axis_status = self.status["axis_status"]
-        self.moving = self.status["moving"]
-        return self.status
-
-    def set_position(self, pos_in_steps):
-        self.position = float(pos_in_steps) / float(self.STEPS_PER_MM)
-
-    def get_position(self):
-        return self.dev.get_position() / float(self.STEPS_PER_MM)
-
-    def is_healthy(self):
+    @synchronized()
+    def get_full_stage_state(self) -> StageState:
+        if self.dev is None:
+            return StageState()
         try:
-            self.get_full_status()
-            self.connected = True
-            return True
-        except Exception as e:
-            self.connected = False
-            logger.error(f"Error during health check in {self.name}: {e}")
-            return False
+            s = self.dev.get_full_status()
 
+            print(f"Full status: {s}")
+            clm = s["current_limit_errors"]
+            if clm:
+                if clm == "+":
+                    clm = "Limit in positive direction reached"
+                elif clm == "-":
+                    clm = "Limit in negative direction reached"
+                else:
+                    clm = "Unknown current limit error"
+
+            self.state = StageState(
+                position=self._to_mm(s["position"]),
+                enabled=s["enabled"],
+                axis_speed=self._to_mmps(s["axis_speed"]),
+                device_number=s["device_number"],
+                current_limit_errors=clm,
+                axis_status=s["axis_status"],
+                moving=s["moving"],
+                connection_status=ConnectionStatus.CONNECTED if self.dev.is_opened() else ConnectionStatus.DISCONNECTED,
+            )
+        except Exception as e:
+            logger.error("Error getting full status: %s", e)
+            self.state = StageState()
+            
+        return self.state
+
+    def _to_mm(self, pos_in_steps):
+        return self.direction_modifier * float(pos_in_steps) / float(self.STEPS_PER_MM)
+    
+    def _to_mmps(self, speed_in_steps):
+        return self.direction_modifier * float(speed_in_steps) * self.STEPS_PER_SECOND_TO_MMPS
+
+    @synchronized()
     def close(self):
         if self.dev is not None:
             self.dev.close()
-            self.connected = False
+            self.state = StageState()
+            self.dev = None
+        logger.info("Closed connection to Performax stage %s", self.name)
 
+    @synchronized()
     def connect(self, idx=0):
         self.dev = Arcus.PerformaxDMXJSAStage(idx)
         self.dev.open()
-        self.status = self.get_full_status()
-        self.connected = True
+        self.state = self.get_full_stage_state()
+        logger.info("Connected to Performax stage %s with index %d, state %s", self.name, idx, self.state)
 
+    @synchronized()
     def list_usb_performax_devices(self):
-        list_dev_names = {}
+        """
+        Get the available Performax USB Devices for the xy stages.
+
+        Returns:
+            A list of available Performax USB Devices.
+        """
+        ports: list[PerformaxUSBDevice] = []
         try:
             for dev in Arcus.list_usb_performax_devices():
-                # list_dev_names.append(tuple((dev[0], dev[1])))
-                list_dev_names[dev[0]] = dev[1]
+                print(f"Found USB device: {dev}")
+                new_port = PerformaxUSBDevice(
+                    index=dev[0], description=str(dev[1] + " " + dev[2])
+                )
+                ports.append(new_port)
         except Exception as e:
-            logger.error(f"Error during listing USB devices: {e}")
-        return list_dev_names
+            logger.error("Error during listing USB devices: %s", e)
+        return ports

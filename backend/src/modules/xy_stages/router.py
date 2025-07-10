@@ -1,39 +1,40 @@
 import logging
 from fastapi import (
     APIRouter,
-    BackgroundTasks,
     HTTPException,
     status,
     WebSocket,
     WebSocketDisconnect,
 )
 from sqlmodel import select, asc
+from src.modules.xy_stages.arcus_performax_stage import ArcusPerformaxStage
 from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
-from src.modules.chopperwheel.module import ControllerDep
-from src.modules.chopperwheel.db import SessionDep
-from src.modules.chopperwheel.module import ws_manager
-from src.modules.chopperwheel.models import (
-    CWStatus,
-    CWDataResponse,
-    CWData,
-    COMPort,
-    CWSettings,
-    CWSettingsSet,
-    CWState,
+from src.modules.xy_stages.module import ControllerDep
+from src.modules.xy_stages.db import SessionDep
+from src.modules.xy_stages.module import ws_manager
+from src.modules.xy_stages.models import (
+    XY,
+    XYStagesStatus,
+    XYStagesDataResponse,
+    XYStagesData,
+    PerformaxUSBDevice,
+    XYStagesSettings,
+    XYStagesSettingsSet,
+    XYStagesState,
 )
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    tags=["chopperwheel"],
-    prefix="/chopperwheel",
+    tags=["xy-stages"],
+    prefix="/xy-stages",
 )
 
 
 def assert_connected(controller: ControllerDep):
     """
-    Assert that the chopper wheel is connected.
+    Assert that stage is connected.
     """
     if controller.state.get().connection_status != ConnectionStatus.CONNECTED:
         raise HTTPException(
@@ -41,21 +42,19 @@ def assert_connected(controller: ControllerDep):
             detail=f"{controller.device_name} is not connected. Please connect first.",
         )
 
-
 def assert_idle(controller: ControllerDep):
     """
-    Assert that the chopper wheel is idle.
+    Assert that stage is idle.
     """
-    if controller.state.get().status != CWStatus.IDLE:
+    if controller.state.get().status != XYStagesStatus.IDLE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_name} is not idle. Please wait.",
         )
 
-
 def assert_no_errors(controller: ControllerDep):
     """
-    Assert that the chopper wheel has no errors.
+    Assert that the stage has no errors.
     """
     if controller.state.get().error is not None:
         raise HTTPException(
@@ -63,169 +62,137 @@ def assert_no_errors(controller: ControllerDep):
             detail=f"{controller.device_name} has pending error, reset the error.",
         )
 
-
-@router.get("/com-ports", response_model=list[COMPort])
-def get_available_com_ports(controller: ControllerDep):
+def assert_stage_idle(stage: ArcusPerformaxStage):
     """
-    Get the available COM ports for the chopper wheel.
+    Assert that the stage is idle.
+    """
+    if stage.state.moving is True:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{stage.name} is currently moving. Please wait until it is idle.",
+        )
+
+def assert_stage_connected(stage: ArcusPerformaxStage):
+    """
+    Assert that the stage is connected.
+    """
+    if stage.state.connection_status != ConnectionStatus.CONNECTED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{stage.name} is not connected. Please connect first.",
+        )
+
+@router.get("/usb-devices", response_model=list[PerformaxUSBDevice])
+def get_available_usb_devices(controller: ControllerDep):
+    """
+    Get the available Performax USB Devices for the xy stages.
     """
     try:
-        com_ports = controller.get_available_com_ports()
+        devices = controller.xy_stages[XY.X_AXIS].list_usb_performax_devices()
     except Exception as e:
         logger.error("Failed to get COM ports: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve available COM ports.",
         ) from e
-    return com_ports
+    return devices
 
 
-@router.post("/connect/{com_port}", response_model=BaseResponse)
-def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
+@router.post("/connect/{axis}/{index}", response_model=BaseResponse)
+def connect_to_stage(axis: XY, index: int, controller: ControllerDep):
     """
-    Connect to the chopper wheel.
+    Connect to the axis motor.
     """
-    if controller.state.get().connection_status == ConnectionStatus.CONNECTED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_name} is already connected.",
-        )
-
     try:
-        controller.connect(com_port)
-        ds = controller._set_motor_settings()
+        controller.connect(axis, index)
     except Exception as e:
         logger.error(
-            "Failed to connect to %s at %s: %s", controller.device_name, com_port, e
+            "Failed to connect to %s at index %s: %s", controller.device_name, index, e
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to connect to {controller.device_name} at {com_port}.",
+            detail=f"Failed to connect to {controller.device_name} at index {index}.",
         ) from e
 
     return BaseResponse(
-        message=f"Connected to {controller.device_name} at {com_port}, Drive Settings: {ds}"
+        message=f"Connected to {controller.device_name} at index {index}."
     )
 
 
-@router.post("/find-home", response_model=BaseResponse)
-def find_home_chopper_wheel(
-    controller: ControllerDep, background_tasks: BackgroundTasks
-):
-    """
-    Find the home position of the chopper wheel.
-    """
-    assert_connected(controller)
-    assert_idle(controller)
-    background_tasks.add_task(controller.find_home)
-    return BaseResponse(message=f"Finding home for {controller.device_name} ...")
 
-
-@router.post("/rotate-demo", response_model=BaseResponse)
-def rotate_demo_chopper_wheel(
-    controller: ControllerDep, background_tasks: BackgroundTasks
-):
+@router.post("/disconnect/{axis}", response_model=BaseResponse)
+def disconnect_stage(axis: XY, controller: ControllerDep):
     """
-    Rotate the chopper wheel in a demo mode.
+    Disconnect stage at given axis.
     """
     assert_connected(controller)
     assert_idle(controller)
-    background_tasks.add_task(controller.rotation_demo)
-    return BaseResponse(
-        message=f"Chopper wheel {controller.device_name} is rotating in demo mode."
-    )
+    controller.disconnect(axis)
+    return BaseResponse(message=f"Disconnected from {controller.device_name} at {axis}.")
 
 
-@router.post("/flash-beam", response_model=BaseResponse)
-def flash_beam_chopper_wheel(
-    controller: ControllerDep, background_tasks: BackgroundTasks
-):
+@router.get("/data", response_model=XYStagesDataResponse)
+async def get_stages_data(session: SessionDep, time_frame: TimeFrameInputDep):
     """
-    Perform a flash beam operation with the chopper wheel.
+    Get the position data of the xy stages for a specified time frame.
     """
-    assert_connected(controller)
-    assert_idle(controller)
-    assert_no_errors(controller)
+    statement = select(XYStagesData.timestamp, XYStagesData.x_position, XYStagesData.y_position)
 
-    background_tasks.add_task(controller.rotation_flash_beam)
-    return BaseResponse(
-        message=f"Chopper wheel {controller.device_name} is performing flash beam operation."
-    )
-
-
-@router.post("/disconnect", response_model=BaseResponse)
-def disconnect_chopper_wheel(controller: ControllerDep):
-    """
-    Disconnect the chopper wheel.
-    """
-    assert_connected(controller)
-    assert_idle(controller)
-    controller.disconnect()
-    return BaseResponse(message=f"Disconnected from {controller.device_name}.")
-
-
-@router.get("/data", response_model=CWDataResponse)
-async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInputDep):
-    """
-    Get the velocity and position data from the chopper wheel for a specified time frame.
-    """
-    statement = select(CWData.timestamp, CWData.velocity, CWData.angular_position)
-
-    log_string = "Fetching data from chopper wheel "
+    log_string = "Fetching data from xy stages "
 
     if time_frame.start:
         log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
-        statement = statement.where(CWData.timestamp >= time_frame.start.timestamp())
+        statement = statement.where(XYStagesData.timestamp >= time_frame.start.timestamp())
     if time_frame.end:
         log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
-        statement = statement.where(CWData.timestamp <= time_frame.end.timestamp())
+        statement = statement.where(XYStagesData.timestamp <= time_frame.end.timestamp())
 
     logger.info(log_string)
 
     # sort by timestamp ascending
-    statement = statement.order_by(asc(CWData.timestamp))
+    statement = statement.order_by(asc(XYStagesData.timestamp))
 
     session_hr = session.exec(statement).all()
 
-    time, velocity, angular_position = zip(*session_hr) if session_hr else ([], [], [])
+    time, x, y = zip(*session_hr) if session_hr else ([], [], [])
 
-    return CWDataResponse(
-        device_name="chopper_wheel",
+    return XYStagesDataResponse(
+        device_name="xy_stages",
         timestamp=list(time),
-        velocity=list(velocity),
-        angular_position=list(angular_position),
+        x_position=list(x),
+        y_position=list(y),
     )
 
 
-@router.get("/state", response_model=CWState)
-def get_chopper_wheel_state(controller: ControllerDep):
+@router.get("/state", response_model=XYStagesState)
+def get_stages_state(controller: ControllerDep):
     """
-    Get the current state of the chopper wheel.
+    Get the current state of the xy stages.
     """
     return controller.state.get()
 
 
 @router.post("/state/reset-error", response_model=BaseResponse)
-def reset_chopper_wheel_error(controller: ControllerDep):
+def reset_stages_error(controller: ControllerDep):
     """
-    Reset the error state of the chopper wheel.
+    Reset the error state of the xy stages.
     """
     controller.state.update(error=None)
     return BaseResponse(message=f"Error state reset for {controller.device_name}.")
 
 
-@router.get("/settings", response_model=CWSettings)
-def get_chopper_wheel_settings(controller: ControllerDep):
+@router.get("/settings", response_model=XYStagesSettings)
+def get_stages_settings(controller: ControllerDep):
     """
-    Get the current settings of the chopper wheel.
+    Get the current settings of the xy stages.
     """
     return controller.settings.get()
 
 
 @router.post("/settings", response_model=BaseResponse)
-def set_chopper_wheel_settings(settings: CWSettingsSet, controller: ControllerDep):
+def set_stages_settings(settings: XYStagesSettingsSet, controller: ControllerDep):
     """
-    Set the settings of the chopper wheel.
+    Set the settings of the xy stages.
     """
     assert_connected(controller)
     assert_idle(controller)
@@ -239,9 +206,54 @@ def set_chopper_wheel_settings(settings: CWSettingsSet, controller: ControllerDe
         message=f"Settings updated for {controller.device_name}. Changed fields: {changed_fields}"
     )
 
+@router.post('/{axis}/move-to/{position}', response_model=BaseResponse)
+def move_axis_to_position(axis: XY, position: float, controller: ControllerDep):
+    """
+    Move the specified axis to a given position in mm.
+    """
+    assert_no_errors(controller)
+
+    stage = controller.xy_stages[axis]
+
+    assert_stage_idle(stage)
+    assert_stage_connected(stage)
+
+    try:
+        controller.move_to(axis, position)
+    except Exception as e:
+        logger.error("Failed to move %s to position %s: %s", axis.value, position, e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to move {axis.value} to position {position} mm.",
+        ) from e
+
+    return BaseResponse(message=f"Moved {axis.value} to position {position} mm.")
+
+@router.post('/{axis}/move-by/{position}', response_model=BaseResponse)
+def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep):
+    """
+    Move the specified axis by a amount in mm.
+    """
+    assert_no_errors(controller)
+
+    stage = controller.xy_stages[axis]
+
+    assert_stage_idle(stage)
+    assert_stage_connected(stage)
+
+    try:
+        controller.move_by(axis, mm)
+    except Exception as e:
+        logger.error("Failed to move %s to position %s: %s", axis.value, mm, e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to move {axis.value} to position {mm} mm.",
+        ) from e
+
+    return BaseResponse(message=f"Moved {axis.value} to position {mm} mm.")
 
 @router.websocket("/ws")
-async def chopper_wheel_ws(websocket: WebSocket, controller: ControllerDep):
+async def xy_stages_ws(websocket: WebSocket, controller: ControllerDep):
     device_name = controller.device_name
     await ws_manager.connect(device_name, websocket)
     try:

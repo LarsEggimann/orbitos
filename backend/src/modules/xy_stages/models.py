@@ -3,71 +3,59 @@ from typing import Optional
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
-from src.shared.models import BaseState, BaseSetting
+from src.shared.models import BaseState, BaseSetting, ConnectionStatus
 
+class XY(str, Enum):
+    X_AXIS = "x-axis"
+    Y_AXIS = "y-axis"
 
-class CWStatus(str, Enum):
+class XYStagesStatus(str, Enum):
     UNKNOWN = "unknown"
     IDLE = "idle"
-    ROTATING = "rotating"
-    ROTATE_DEMO_RUNNING = "rotate_demo_running"
-    PERFORMING_FLASH_BEAM = "performing_flash_beam"
-    FINDING_HOME = "finding_home"
+    MOVING = "moving"
+
+class StageState(BaseModel):
+    position: Optional[float] = None
+    enabled: Optional[bool] = None
+    axis_speed: Optional[float] = None
+    device_number: Optional[str] = None
+    current_limit_errors: Optional[str] = None
+    axis_status: Optional[list] = None
+    moving: Optional[bool] = None
+    connection_status: ConnectionStatus = ConnectionStatus.DISCONNECTED
+
+class XYStagesState(BaseState):
+    status: XYStagesStatus = XYStagesStatus.UNKNOWN
+    x_state: StageState = StageState()
+    y_state: StageState = StageState()
 
 
-class CWState(BaseState):
-    status: CWStatus = CWStatus.UNKNOWN
+class XYStagesSettings(BaseSetting, table=True):
+    __tablename__ = "xy_stages_settings"
+
+    x_direction_modifier: Optional[int] = Field(default=1, nullable=True)
+    y_direction_modifier: Optional[int] = Field(default=1, nullable=True)
 
 
-class CWSettings(BaseSetting, table=True):
-    __tablename__ = "chopper_wheel_settings"
-
-    max_velocity: float = Field(default=2.0, description="Maximum velocity in rps")
-    max_acceleration: float = Field(
-        default=1.0, description="Maximum acceleration in rps^2"
-    )
-
-    max_current: int = Field(default=150, le=255, description="Maximum current [0-255]")
-    standby_current: int = Field(
-        default=0, le=255, description="Standby current [0-255]"
-    )
-    boost_current: int = Field(default=0, le=255, description="Boost current [0-255]")
-
-    flash_beam_delay: float = Field(
-        default=0.1,
-        description="Delay in seconds before performing flash beam operation",
-    )
-
-    angle_home_sens_to_beam_pipe: float = Field(
-        default=275,
-        description="Angle in degrees from home sensor position of the wheel to the start of beam pipe.",
-    )
-
-
-class CWData(SQLModel, table=True):
-    __tablename__ = "chopper_wheel_data"
+class XYStagesData(SQLModel, table=True):
+    __tablename__ = "xy_stages_data"
     timestamp: float = Field(primary_key=True, index=True)
-    velocity: float = Field(default=None, nullable=True)
-    angular_position: float = Field(default=None, nullable=True)
+    x_position: float | None = Field(default=None, nullable=True)
+    y_position: float | None = Field(default=None, nullable=True)
 
 
-class CWDataResponse(BaseModel):
-    device_name: str = "chopper_wheel"
+class XYStagesDataResponse(BaseModel):
+    device_name: str = "xy_stages"
     timestamp: list[float]
-    velocity: list[float]
-    angular_position: list[float]
+    x_position: list[float | None]
+    y_position: list[float | None]
 
 
-class CWSettingsSet(SQLModel):
-    max_velocity: Optional[float] = None
-    max_acceleration: Optional[float] = None
-    max_current: Optional[float] = None
-    standby_current: Optional[float] = None
-    boost_current: Optional[float] = None
-    flash_beam_delay: Optional[float] = None
-    angle_home_sens_to_beam_pipe: Optional[float] = None
+class XYStagesSettingsSet(SQLModel):
+    x_direction_modifier: Optional[int] = Field(default=None, nullable=True)
+    y_direction_modifier: Optional[int] = Field(default=None, nullable=True)
 
 
-class COMPort(BaseModel):
-    port: str
+class PerformaxUSBDevice(BaseModel):
+    index: int
     description: str

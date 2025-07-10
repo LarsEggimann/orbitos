@@ -3,6 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from src.core.config import config
 
 from src.modules.chopperwheel.models import CWSettings, CWData
+from src.modules.xy_stages.models import XYStagesSettings, XYStagesData
 
 
 connect_args = {"check_same_thread": False}
@@ -19,5 +20,7 @@ def init_db() -> None:
     tables = [
         SQLModel.metadata.tables[CWSettings.__tablename__],
         SQLModel.metadata.tables[CWData.__tablename__],
+        SQLModel.metadata.tables[XYStagesSettings.__tablename__],
+        SQLModel.metadata.tables[XYStagesData.__tablename__],
     ]
     SQLModel.metadata.create_all(engine, tables=tables)

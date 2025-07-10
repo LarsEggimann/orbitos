@@ -3,47 +3,47 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.shared.websocket_manager import WebSocketManager
-from src.modules.chopperwheel.controller import CWController
-from src.modules.chopperwheel.models import (
-    CWSettings,
-    CWDataResponse,
-    CWState,
+from src.modules.xy_stages.controller import XYStagesController
+from src.modules.xy_stages.models import (
+    XYStagesSettings,
+    XYStagesDataResponse,
+    XYStagesState,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class ModuleState:
-    controller: CWController | None = None
+    controller: XYStagesController | None = None
 
 
 module_state = ModuleState()
 
 
-def get_controller() -> CWController:
+def get_controller() -> XYStagesController:
     """
-    Get the chopper wheel controller.
+    Get the xy stages controller.
     """
     if module_state.controller is None:
-        raise ValueError("Controller for chopper wheel not found")
+        raise ValueError("Controller for xy stages not found")
     return module_state.controller
 
 
-ControllerDep = Annotated[CWController, Depends(get_controller)]
+ControllerDep = Annotated[XYStagesController, Depends(get_controller)]
 
-ws_manager = WebSocketManager[CWState, CWDataResponse, CWSettings]()
+ws_manager = WebSocketManager[XYStagesState, XYStagesDataResponse, XYStagesSettings]()
 
 
 def init_module() -> None:
     """
     Initialize the module.
     """
-    logger.info("Initializing chopper wheel module ...")
+    logger.info("Initializing xy stages module ...")
 
     # init_db()
 
-    module_state.controller = CWController(
-        device_name="chopper_wheel", ws_manager=ws_manager
+    module_state.controller = XYStagesController(
+        device_name="xy_stages", ws_manager=ws_manager
     )
 
 
@@ -51,6 +51,6 @@ def shutdown_module() -> None:
     """
     Shutdown the module.
     """
-    logger.info("Shutting down chopper wheel module ...")
+    logger.info("Shutting down xy stages module ...")
     if module_state.controller:
         module_state.controller.shutdown()
