@@ -438,7 +438,7 @@ export class XyStages {
     public static xyStagesMoveAxisByMm<ThrowOnError extends boolean = false>(options: Options<XyStagesMoveAxisByMmData, ThrowOnError>) {
         return (options.client ?? _heyApiClient).post<XyStagesMoveAxisByMmResponses, XyStagesMoveAxisByMmErrors, ThrowOnError>({
             responseType: 'json',
-            url: '/orbitos-api/v1/xy-stages/{axis}/move-by/{position}',
+            url: '/orbitos-api/v1/xy-stages/{axis}/move-by/{mm}',
             ...options
         });
     }

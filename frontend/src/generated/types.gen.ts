@@ -1371,14 +1371,13 @@ export type XyStagesMoveAxisByMmData = {
     body?: never;
     path: {
         axis: Xy;
-    };
-    query: {
         /**
          * Mm
          */
         mm: number;
     };
-    url: '/orbitos-api/v1/xy-stages/{axis}/move-by/{position}';
+    query?: never;
+    url: '/orbitos-api/v1/xy-stages/{axis}/move-by/{mm}';
 };
 
 export type XyStagesMoveAxisByMmErrors = {

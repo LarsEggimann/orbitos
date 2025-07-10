@@ -229,7 +229,7 @@ def move_axis_to_position(axis: XY, position: float, controller: ControllerDep):
 
     return BaseResponse(message=f"Moved {axis.value} to position {position} mm.")
 
-@router.post('/{axis}/move-by/{position}', response_model=BaseResponse)
+@router.post('/{axis}/move-by/{mm}', response_model=BaseResponse)
 def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep):
     """
     Move the specified axis by a amount in mm.
