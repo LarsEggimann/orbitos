@@ -25,10 +25,10 @@ import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { useConfig } from '~/provider/ConfigProvider'
-import { MenuItem, TextField } from '@mui/material'
 import MultiTimeSeriesPlot from '../plots/MultiTimeSeriesPlot'
 import { XyStagesStateDisplay } from './XYStagesStateDisplay'
 import { UsbDeviceSelect } from './UsbDeviceSelect'
+import { AxisControl } from './AxisControl'
 
 const XyStages: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig()
@@ -311,46 +311,23 @@ const XyStages: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          gap: 1,
+          gap: 2,
           width: '100%',
+          my: 2,
         }}
       >
-        <Box sx={{ flex: 1 }}>
-          <ExecQueryButton
-            onClick={async () => {
-              return await XyStagesService.xyStagesMoveAxisByMm({
-                path: { axis: 'x-axis', mm: xInput },
-              })
-            }}
-          >
-            x - move by
-          </ExecQueryButton>
-          <ExecQueryButton
-            onClick={async () => {
-              return await XyStagesService.xyStagesMoveAxisToPosition({
-                path: { axis: 'x-axis', position: xInput },
-              })
-            }}
-          >
-            x - move to
-          </ExecQueryButton>
-          <TextField
-            variant='outlined'
-            size='small'
-            value={xInput}
-            onChange={(e) => {
-              const value = e.target.value
-              if (value === '' || !isNaN(Number(value))) {
-                setXInput(Number(value))
-              }
-            }}
-            type={'number'}
-          />
-
-        </Box>
-        <Box sx={{ flex: 1 }}>
-
-        </Box>
+        <AxisControl
+          axis='x-axis'
+          value={xInput}
+          onChange={setXInput}
+          connectionStatus={state?.x_state?.connection_status}
+        />
+        <AxisControl
+          axis='y-axis'
+          value={yInput}
+          onChange={setYInput}
+          connectionStatus={state?.y_state?.connection_status}
+        />
       </Box>
 
       <XyStagesStateDisplay state={state as XyStagesState} />
