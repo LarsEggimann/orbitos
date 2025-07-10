@@ -6,5 +6,5 @@ export const Route = createFileRoute('/_pathlessLayout/combo-data-view')({
 })
 
 function RouteComponent() {
-  return  <ComboDataView />
+  return <ComboDataView />
 }

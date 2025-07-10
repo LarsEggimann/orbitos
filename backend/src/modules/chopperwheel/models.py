@@ -14,6 +14,7 @@ class CWStatus(str, Enum):
     PERFORMING_FLASH_BEAM = "performing_flash_beam"
     FINDING_HOME = "finding_home"
 
+
 class CWState(BaseState):
     status: CWStatus = CWStatus.UNKNOWN
 

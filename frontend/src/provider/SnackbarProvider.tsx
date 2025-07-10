@@ -4,7 +4,11 @@ import React, {
   useCallback,
   useContext,
 } from 'react'
-import { SnackbarProvider as NotistackProvider, useSnackbar, type VariantType } from 'notistack'
+import {
+  SnackbarProvider as NotistackProvider,
+  useSnackbar,
+  type VariantType,
+} from 'notistack'
 
 export type SnackbarSeverity = 'success' | 'error' | 'warning' | 'info'
 
@@ -52,12 +56,12 @@ function SnackbarContextProvider({ children }: PropsWithChildren<any>) {
 export function SnackbarProvider({ children }: PropsWithChildren<any>) {
   return React.createElement(
     NotistackProvider,
-    { 
+    {
       maxSnack: 5,
       anchorOrigin: { vertical: 'top', horizontal: 'right' },
       autoHideDuration: 4000,
     },
-    React.createElement(SnackbarContextProvider, null, children)
+    React.createElement(SnackbarContextProvider, null, children),
   )
 }
 

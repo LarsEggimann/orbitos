@@ -13,7 +13,9 @@ import {
   Electrometer as ElectrometerService,
 } from '~/generated'
 import { useExecQueryHelper } from '~/utils/ExecQueryHelper'
-import DeviceMultiSelect, { type DeviceType } from '~/components/ui/DeviceMultiSelect'
+import DeviceMultiSelect, {
+  type DeviceType,
+} from '~/components/ui/DeviceMultiSelect'
 
 export const Route = createFileRoute('/_pathlessLayout/combo-control')({
   component: RouteComponent,
@@ -32,23 +34,32 @@ function RouteComponent() {
   })
 
   useEffect(() => {
-    localStorage.setItem('combo_control_selected_devices', JSON.stringify(selectedDevices))
+    localStorage.setItem(
+      'combo_control_selected_devices',
+      JSON.stringify(selectedDevices),
+    )
   }, [selectedDevices])
-  
+
   const { executeQuery } = useExecQueryHelper()
-  
+
   const executeActions = async () => {
     const promises = selectedDevices.map(async (device) => {
       if (device === 'chopperwheel') {
-        return await executeQuery(ChopperwheelService.chopperwheelFlashBeamChopperWheel)
+        return await executeQuery(
+          ChopperwheelService.chopperwheelFlashBeamChopperWheel,
+        )
       } else if (device === 'electrometer_1') {
-        return await executeQuery(() => ElectrometerService.electrometerStartTriggerBasedMeasurement({
-          path: { device_id: 1 },
-        }))
+        return await executeQuery(() =>
+          ElectrometerService.electrometerStartTriggerBasedMeasurement({
+            path: { device_id: 1 },
+          }),
+        )
       } else if (device === 'electrometer_2') {
-        return await executeQuery(() => ElectrometerService.electrometerStartTriggerBasedMeasurement({
-          path: { device_id: 2 },
-        }))
+        return await executeQuery(() =>
+          ElectrometerService.electrometerStartTriggerBasedMeasurement({
+            path: { device_id: 2 },
+          }),
+        )
       }
     })
     await Promise.all(promises)
@@ -56,7 +67,9 @@ function RouteComponent() {
 
   const getActionButtonText = () => {
     const chopperwheelSelected = selectedDevices.includes('chopperwheel')
-    const electrometerSelected = selectedDevices.some(d => d.startsWith('electrometer'))
+    const electrometerSelected = selectedDevices.some((d) =>
+      d.startsWith('electrometer'),
+    )
 
     if (chopperwheelSelected && electrometerSelected) {
       return `Execute Flash Action (${selectedDevices.length} devices)`
@@ -64,7 +77,9 @@ function RouteComponent() {
       return 'Flash Beam'
     } else if (electrometerSelected) {
       // Avoid nested template literals
-      const count = selectedDevices.filter(d => d.startsWith('electrometer')).length
+      const count = selectedDevices.filter((d) =>
+        d.startsWith('electrometer'),
+      ).length
       return `Start Trigger Measurement (${count} devices)`
     }
     return 'Execute Actions'
@@ -74,7 +89,7 @@ function RouteComponent() {
     if (selectedDevices.length === 0) {
       return (
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant='h6' color='text.secondary'>
             No devices selected. Please select devices above.
           </Typography>
         </Box>
@@ -82,7 +97,13 @@ function RouteComponent() {
     }
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', lg: 'row' },
+          gap: 3,
+        }}
+      >
         {selectedDevices.map((device) => (
           <Box
             key={device}
@@ -106,30 +127,29 @@ function RouteComponent() {
     <Box sx={{ bgcolor: 'background.paper' }}>
       <Stack
         direction='row'
-        sx={{ alignItems: 'center', justifyContent: 'space-between'}}
+        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Typography variant='h5'>
-          Combo Control
-        </Typography>
+        <Typography variant='h5'>Combo Control</Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DeviceMultiSelect
             selectedDevices={selectedDevices}
             setSelectedDevices={setSelectedDevices}
-            label="Select Devices for Actions"
+            label='Select Devices for Actions'
             minWidth={300}
           />
 
           <ExecQueryButton
             onClick={executeActions}
-            color={selectedDevices.includes('chopperwheel') ? 'primary' : 'secondary'}
+            color={
+              selectedDevices.includes('chopperwheel') ? 'primary' : 'secondary'
+            }
             sx={{ minWidth: 200 }}
             disabled={selectedDevices.length === 0}
           >
             {getActionButtonText()}
           </ExecQueryButton>
         </Box>
-
       </Stack>
       <Divider sx={{ m: 1 }} />
 

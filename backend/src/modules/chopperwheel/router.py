@@ -13,7 +13,15 @@ from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.chopperwheel.module import ControllerDep
 from src.modules.chopperwheel.db import SessionDep
 from src.modules.chopperwheel.module import ws_manager
-from src.modules.chopperwheel.models import CWStatus, CWDataResponse, CWData, COMPort, CWSettings, CWSettingsSet, CWState
+from src.modules.chopperwheel.models import (
+    CWStatus,
+    CWDataResponse,
+    CWData,
+    COMPort,
+    CWSettings,
+    CWSettingsSet,
+    CWState,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +63,7 @@ def assert_no_errors(controller: ControllerDep):
             detail=f"{controller.device_name} has pending error, reset the error.",
         )
 
+
 @router.get("/com-ports", response_model=list[COMPort])
 def get_available_com_ports(controller: ControllerDep):
     """
@@ -70,6 +79,7 @@ def get_available_com_ports(controller: ControllerDep):
         ) from e
     return com_ports
 
+
 @router.post("/connect/{com_port}", response_model=BaseResponse)
 def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
     """
@@ -80,23 +90,28 @@ def connect_to_chopper_wheel(com_port: str, controller: ControllerDep):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{controller.device_name} is already connected.",
         )
-    
+
     try:
         controller.connect(com_port)
         ds = controller._set_motor_settings()
     except Exception as e:
-        logger.error("Failed to connect to %s at %s: %s", controller.device_name, com_port, e)
+        logger.error(
+            "Failed to connect to %s at %s: %s", controller.device_name, com_port, e
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to connect to {controller.device_name} at {com_port}.",
         ) from e
-    
+
     return BaseResponse(
         message=f"Connected to {controller.device_name} at {com_port}, Drive Settings: {ds}"
     )
 
+
 @router.post("/find-home", response_model=BaseResponse)
-def find_home_chopper_wheel(controller: ControllerDep, background_tasks: BackgroundTasks):
+def find_home_chopper_wheel(
+    controller: ControllerDep, background_tasks: BackgroundTasks
+):
     """
     Find the home position of the chopper wheel.
     """
@@ -120,6 +135,7 @@ def rotate_demo_chopper_wheel(
         message=f"Chopper wheel {controller.device_name} is rotating in demo mode."
     )
 
+
 @router.post("/flash-beam", response_model=BaseResponse)
 def flash_beam_chopper_wheel(
     controller: ControllerDep, background_tasks: BackgroundTasks
@@ -130,7 +146,7 @@ def flash_beam_chopper_wheel(
     assert_connected(controller)
     assert_idle(controller)
     assert_no_errors(controller)
-    
+
     background_tasks.add_task(controller.rotation_flash_beam)
     return BaseResponse(
         message=f"Chopper wheel {controller.device_name} is performing flash beam operation."
@@ -171,9 +187,7 @@ async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInput
 
     session_hr = session.exec(statement).all()
 
-    time, velocity, angular_position = (
-        zip(*session_hr) if session_hr else ([], [], [])
-    )
+    time, velocity, angular_position = zip(*session_hr) if session_hr else ([], [], [])
 
     return CWDataResponse(
         device_name="chopper_wheel",
@@ -182,12 +196,14 @@ async def get_chopper_wheel_data(session: SessionDep, time_frame: TimeFrameInput
         angular_position=list(angular_position),
     )
 
-@router.get("/state" , response_model=CWState)
+
+@router.get("/state", response_model=CWState)
 def get_chopper_wheel_state(controller: ControllerDep):
     """
     Get the current state of the chopper wheel.
     """
     return controller.state.get()
+
 
 @router.post("/state/reset-error", response_model=BaseResponse)
 def reset_chopper_wheel_error(controller: ControllerDep):
@@ -197,6 +213,7 @@ def reset_chopper_wheel_error(controller: ControllerDep):
     controller.state.update(error=None)
     return BaseResponse(message=f"Error state reset for {controller.device_name}.")
 
+
 @router.get("/settings", response_model=CWSettings)
 def get_chopper_wheel_settings(controller: ControllerDep):
     """
@@ -204,10 +221,9 @@ def get_chopper_wheel_settings(controller: ControllerDep):
     """
     return controller.settings.get()
 
+
 @router.post("/settings", response_model=BaseResponse)
-def set_chopper_wheel_settings(
-    settings: CWSettingsSet, controller: ControllerDep
-):
+def set_chopper_wheel_settings(settings: CWSettingsSet, controller: ControllerDep):
     """
     Set the settings of the chopper wheel.
     """
@@ -222,7 +238,7 @@ def set_chopper_wheel_settings(
     return BaseResponse(
         message=f"Settings updated for {controller.device_name}. Changed fields: {changed_fields}"
     )
-    
+
 
 @router.websocket("/ws")
 async def chopper_wheel_ws(websocket: WebSocket, controller: ControllerDep):

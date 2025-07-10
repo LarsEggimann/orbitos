@@ -14,7 +14,7 @@ const ExecQueryButton: React.FC<ReusableButtonProps> = ({
   ...rest
 }) => {
   const [loading, setLoading] = React.useState(false)
-  
+
   const { executeQuery } = useExecQueryHelper()
 
   const handleClick = async () => {

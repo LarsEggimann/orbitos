@@ -87,7 +87,7 @@ def connect_to_electrometer(
             )
 
     resp = controller.connect_to_keysight_em(ip)
-    background_tasks.add_task(controller.init_settings)
+    background_tasks.add_task(controller._init_settings)
     return BaseResponse(
         message=f"Connected to {controller.device_name.value} at {ip}, IDN: {resp}"
     )

@@ -51,11 +51,13 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
       series.map((s) => {
         // If all x values are numbers, treat as timestamps
         if (s.x.length > 0 && typeof s.x[0] === 'number') {
-          const localizedX = (s.x as number[]).map((val) => fromTimestampToLocalizedString(val))
+          const localizedX = (s.x as number[]).map((val) =>
+            fromTimestampToLocalizedString(val),
+          )
           return { ...s, x: localizedX }
         }
         return s
-      })
+      }),
     )
   }, [series])
 
@@ -170,7 +172,7 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
 
   // Compute a combined loading state if multiple queries are provided
   const isLoading = Array.isArray(dataQueries)
-    ? dataQueries.some(q => q?.isLoading || q?.isFetching)
+    ? dataQueries.some((q) => q?.isLoading || q?.isFetching)
     : false
 
   return (

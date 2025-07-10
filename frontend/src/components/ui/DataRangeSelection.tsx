@@ -77,24 +77,22 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
             value={startDate ? dayjs(startDate) : null}
             onChange={(newValue: dayjs.Dayjs | null) => {
               // check if the time difference between newValue and endDate is more than 24 hours, or if endDate is null, or if start and end are the same
-          if (
-            newValue &&
-            (
-              (endDate &&
-                Math.abs(endDate.getTime() - newValue.toDate().getTime()) >=
-                  24 * 60 * 60 * 1000
-              ) ||
-              !endDate ||
-              (endDate && endDate.getTime() === newValue.toDate().getTime())
-            )
-          ) {
-            // if so, set endDate to 24 hours after newValue
-            const newEndDate: Date = new Date(
-              newValue.toDate().getTime() + 24 * 60 * 60 * 1000,
-            )
-            setEndDate(newEndDate)
-          }
-          setStartDate(newValue ? newValue.toDate() : null)
+              if (
+                newValue &&
+                ((endDate &&
+                  Math.abs(endDate.getTime() - newValue.toDate().getTime()) >=
+                    24 * 60 * 60 * 1000) ||
+                  !endDate ||
+                  (endDate &&
+                    endDate.getTime() === newValue.toDate().getTime()))
+              ) {
+                // if so, set endDate to 24 hours after newValue
+                const newEndDate: Date = new Date(
+                  newValue.toDate().getTime() + 24 * 60 * 60 * 1000,
+                )
+                setEndDate(newEndDate)
+              }
+              setStartDate(newValue ? newValue.toDate() : null)
             }}
             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
             {...rest}

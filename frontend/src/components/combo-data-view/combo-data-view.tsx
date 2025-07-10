@@ -56,28 +56,33 @@ const ComboDataView: React.FC = () => {
       try {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed)) return parsed
-      } catch { }
+      } catch {}
     }
     return []
   })
 
   useEffect(() => {
-    localStorage.setItem('combo_data_view_selected_devices', JSON.stringify(selectedDevices))
+    localStorage.setItem(
+      'combo_data_view_selected_devices',
+      JSON.stringify(selectedDevices),
+    )
   }, [selectedDevices])
-
 
   const getQueryArgs = () => ({
     query: {
       start: startDate?.toISOString(),
       end: endDate?.toISOString(),
-    }
+    },
   })
 
   const [cwData, setCwData] = useState<CwDataResponse | undefined>(undefined)
   const cwQuery = useQuery({
     queryKey: ['cwData', startDate, endDate],
     queryFn: async () => {
-      const response = await ChopperwheelService.chopperwheelGetChopperWheelData(getQueryArgs())
+      const response =
+        await ChopperwheelService.chopperwheelGetChopperWheelData(
+          getQueryArgs(),
+        )
       setCwData(response.data)
       return response.data
     },
@@ -85,7 +90,9 @@ const ComboDataView: React.FC = () => {
     enabled: datesLoaded && selectedDevices.includes('chopperwheel'),
   })
 
-  const [em1Data, setEm1Data] = useState<ElectrometerDataResponse | undefined>(undefined)
+  const [em1Data, setEm1Data] = useState<ElectrometerDataResponse | undefined>(
+    undefined,
+  )
   const em1Query = useQuery({
     queryKey: ['em1Data', startDate, endDate],
     queryFn: async () => {
@@ -100,7 +107,9 @@ const ComboDataView: React.FC = () => {
     enabled: datesLoaded && selectedDevices.includes('electrometer_1'),
   })
 
-  const [em2Data, setEm2Data] = useState<ElectrometerDataResponse | undefined>(undefined)
+  const [em2Data, setEm2Data] = useState<ElectrometerDataResponse | undefined>(
+    undefined,
+  )
   const em2Query = useQuery({
     queryKey: ['em2Data', startDate, endDate],
     queryFn: async () => {
@@ -115,30 +124,46 @@ const ComboDataView: React.FC = () => {
     enabled: datesLoaded && selectedDevices.includes('electrometer_2'),
   })
 
-
   // Build the series array based on selected devices and update when selectedDevices, cwData, em1Data, em2Data, startDate, or endDate changes
   const [series, setSeries] = useState<any[]>([])
   useEffect(() => {
     const newSeries = []
     if (selectedDevices.includes('chopperwheel')) {
       newSeries.push(
-        { label: 'CW Angular Position', x: cwData?.timestamp || [], y: cwData?.angular_position || [], yLabel: 'Angular Position [°]' },
-        { label: 'CW Velocity', x: cwData?.timestamp || [], y: cwData?.velocity || [], yLabel: 'Velocity [rps]' }
+        {
+          label: 'CW Angular Position',
+          x: cwData?.timestamp || [],
+          y: cwData?.angular_position || [],
+          yLabel: 'Angular Position [°]',
+        },
+        {
+          label: 'CW Velocity',
+          x: cwData?.timestamp || [],
+          y: cwData?.velocity || [],
+          yLabel: 'Velocity [rps]',
+        },
       )
     }
     if (selectedDevices.includes('electrometer_1')) {
-      newSeries.push(
-        { label: 'EM1 Current', x: em1Data?.timestamp || [], y: em1Data?.current || [], yLabel: 'Current [A]', lineColor: '#ff0000' }
-      )
+      newSeries.push({
+        label: 'EM1 Current',
+        x: em1Data?.timestamp || [],
+        y: em1Data?.current || [],
+        yLabel: 'Current [A]',
+        lineColor: '#ff0000',
+      })
     }
     if (selectedDevices.includes('electrometer_2')) {
-      newSeries.push(
-        { label: 'EM2 Current', x: em2Data?.timestamp || [], y: em2Data?.current || [], yLabel: 'Current [A]', lineColor: '#00ff00' }
-      )
+      newSeries.push({
+        label: 'EM2 Current',
+        x: em2Data?.timestamp || [],
+        y: em2Data?.current || [],
+        yLabel: 'Current [A]',
+        lineColor: '#00ff00',
+      })
     }
     setSeries(newSeries)
   }, [selectedDevices, cwData, em1Data, em2Data, startDate, endDate])
-
 
   return (
     <Box sx={{ bgcolor: 'background.paper' }}>
@@ -153,12 +178,10 @@ const ComboDataView: React.FC = () => {
           <DeviceMultiSelect
             selectedDevices={selectedDevices}
             setSelectedDevices={setSelectedDevices}
-            label="Select Devices for Actions"
+            label='Select Devices for Actions'
             minWidth={300}
           />
-
         </Box>
-
       </Stack>
       <Divider sx={{ m: 1 }} />
 
@@ -171,7 +194,6 @@ const ComboDataView: React.FC = () => {
         series={series}
         dataQueries={[cwQuery, em1Query, em2Query]}
       />
-
     </Box>
   )
 }

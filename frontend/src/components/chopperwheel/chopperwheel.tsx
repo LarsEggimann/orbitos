@@ -30,7 +30,7 @@ import { MenuItem, TextField } from '@mui/material'
 import LinePlot from './CwPosVeloPlot'
 
 const Chopperwheel: React.FC = () => {
-  const { API_WEBSOCKET_URL } = useConfig();
+  const { API_WEBSOCKET_URL } = useConfig()
   const deviceName = 'chopperwheel'
 
   const [startDate, setStartDate] = React.useState(null as Date | null)
@@ -66,19 +66,18 @@ const Chopperwheel: React.FC = () => {
     }
   }, [startDate, endDate, deviceName])
 
-  const [data, setData] = useState<CwDataResponse | undefined>(
-    undefined,
-  )
+  const [data, setData] = useState<CwDataResponse | undefined>(undefined)
 
   const dataQuery = useQuery({
     queryKey: [deviceName, startDate, endDate],
     queryFn: async () => {
-      const response = await ChopperwheelService.chopperwheelGetChopperWheelData({
-        query: {
-          start: startDate?.toISOString(),
-          end: endDate?.toISOString(),
-        },
-      })
+      const response =
+        await ChopperwheelService.chopperwheelGetChopperWheelData({
+          query: {
+            start: startDate?.toISOString(),
+            end: endDate?.toISOString(),
+          },
+        })
       setData(response.data)
       return response.data
     },
@@ -93,13 +92,9 @@ const Chopperwheel: React.FC = () => {
   >({
     url: `${API_WEBSOCKET_URL}/chopperwheel/ws`,
     fetchInitialState: async () =>
-      (
-        await ChopperwheelService.chopperwheelGetChopperWheelState()
-      ).data!,
+      (await ChopperwheelService.chopperwheelGetChopperWheelState()).data!,
     fetchInitialSettings: async () =>
-      (
-        await ChopperwheelService.chopperwheelGetChopperWheelSettings()
-      ).data!,
+      (await ChopperwheelService.chopperwheelGetChopperWheelSettings()).data!,
     dataAppendFunction: (newData) => {
       setData((prevData) => {
         if (!prevData) return newData
@@ -107,12 +102,13 @@ const Chopperwheel: React.FC = () => {
           device_name: prevData.device_name,
           timestamp: prevData.timestamp.concat(newData.timestamp),
           velocity: prevData.velocity.concat(newData.velocity),
-          angular_position: prevData.angular_position.concat(newData.angular_position),
+          angular_position: prevData.angular_position.concat(
+            newData.angular_position,
+          ),
         }
       })
     },
   })
-
 
   const { openSnackbar } = useSnackbarContext()
 
@@ -171,17 +167,15 @@ const Chopperwheel: React.FC = () => {
 
   const [comPort, setComPort] = useState<string>('') // Default COM port, can be changed later
 
-  const {
-    data: comPortsData,
-    isLoading: comPortsLoading,
-  } = useQuery({
+  const { data: comPortsData, isLoading: comPortsLoading } = useQuery({
     queryKey: ['chopperwheel-com-ports'],
     queryFn: async () => {
-      const response = await ChopperwheelService.chopperwheelGetAvailableComPorts();
-      return response.data;
+      const response =
+        await ChopperwheelService.chopperwheelGetAvailableComPorts()
+      return response.data
     },
     refetchOnWindowFocus: true,
-  });
+  })
 
   return (
     <Box sx={{ bgcolor: 'background.paper' }}>
@@ -232,7 +226,9 @@ const Chopperwheel: React.FC = () => {
         <ExecQueryButton
           onClick={async () => {
             if (!comPort) {
-              throw new Error('You need to select a COM port before connecting!');
+              throw new Error(
+                'You need to select a COM port before connecting!',
+              )
             }
             return await ChopperwheelService.chopperwheelConnectToChopperWheel({
               path: { com_port: comPort },
@@ -294,8 +290,10 @@ const Chopperwheel: React.FC = () => {
               </TableCell>
               <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
                 <Typography>
-                  {typeof data?.velocity?.[data?.velocity.length - 1] === 'number'
-                    ? data?.velocity[data?.velocity.length - 1].toFixed(3) + ' rps'
+                  {typeof data?.velocity?.[data?.velocity.length - 1] ===
+                  'number'
+                    ? data?.velocity[data?.velocity.length - 1].toFixed(3) +
+                      ' rps'
                     : ''}
                 </Typography>
               </TableCell>
@@ -304,8 +302,12 @@ const Chopperwheel: React.FC = () => {
               </TableCell>
               <TableCell sx={{ border: 0, pl: 0, width: '25%' }}>
                 <Typography>
-                  {typeof data?.angular_position?.[data?.angular_position.length - 1] === 'number'
-                    ? data?.angular_position[data?.angular_position.length - 1].toFixed(3) + ' °'
+                  {typeof data?.angular_position?.[
+                    data?.angular_position.length - 1
+                  ] === 'number'
+                    ? data?.angular_position[
+                        data?.angular_position.length - 1
+                      ].toFixed(3) + ' °'
                     : ''}
                 </Typography>
               </TableCell>
@@ -314,7 +316,14 @@ const Chopperwheel: React.FC = () => {
         </Table>
       </Card>
 
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1, width: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 1,
+          width: '100%',
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <LinePlot
             xData={data?.angular_position ?? []}
@@ -427,12 +436,17 @@ const Chopperwheel: React.FC = () => {
             onApply={makeSettingApplyHandler('flash_beam_delay')}
           />
           <DirtyTextField
-            label={'Angle (in home position) between slit and start of beam pipe [°]'}
+            label={
+              'Angle (in home position) between slit and start of beam pipe [°]'
+            }
             value={settings?.angle_home_sens_to_beam_pipe ?? ''}
             onApply={makeSettingApplyHandler('angle_home_sens_to_beam_pipe')}
           />
           <Typography>
-            This angle is used to execute the flash rotation pattern. The wheel will rotate 360° + the angle set above, after this it will rotate back by the angle amount set above. This should place the wheel in home position again.
+            This angle is used to execute the flash rotation pattern. The wheel
+            will rotate 360° + the angle set above, after this it will rotate
+            back by the angle amount set above. This should place the wheel in
+            home position again.
             <br />
             Suggested Angles:
             <ul>
@@ -442,7 +456,6 @@ const Chopperwheel: React.FC = () => {
             </ul>
           </Typography>
         </Box>
-
       </Box>
     </Box>
   )

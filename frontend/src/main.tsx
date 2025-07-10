@@ -34,16 +34,14 @@ declare module '@tanstack/react-router' {
 const queryClient = new QueryClient()
 
 function AppProviders({ children }: { readonly children: React.ReactNode }) {
-  const { API_BASE_URL } = useConfig();
+  const { API_BASE_URL } = useConfig()
   // Set the client baseURL dynamically
-  client.setConfig({ baseURL: API_BASE_URL });
+  client.setConfig({ baseURL: API_BASE_URL })
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        {children}
-      </ThemeProvider>
+      <ThemeProvider>{children}</ThemeProvider>
     </QueryClientProvider>
-  );
+  )
 }
 
 // Render the app

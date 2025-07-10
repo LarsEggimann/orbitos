@@ -17,7 +17,7 @@ import { Link } from '@tanstack/react-router'
 import { MdElectricBolt, MdLineAxis } from 'react-icons/md'
 import { FaHome } from 'react-icons/fa'
 import { LuShipWheel, LuAxis3D } from 'react-icons/lu'
-import { TbArrowMergeBoth } from "react-icons/tb";
+import { TbArrowMergeBoth } from 'react-icons/tb'
 
 import Logo from '~/components/ui/Logo'
 import { SnackbarProvider } from '~/provider/SnackbarProvider'
@@ -89,11 +89,11 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
                   '&:hover': {
                     backgroundColor: 'action.hover',
                   },
-                  py: 1.5,
-                  px: 2,
-                  borderRadius: 5
+                  'py': 1.5,
+                  'px': 2,
+                  'borderRadius': 5,
                 }}
-                >
+              >
                 <ListItemIcon>{link.icon}</ListItemIcon>
                 <ListItemText primary={link.text} />
               </ListItemButton>

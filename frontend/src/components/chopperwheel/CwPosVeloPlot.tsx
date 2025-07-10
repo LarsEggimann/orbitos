@@ -56,19 +56,16 @@ const CwPosVeloPlot: React.FC<CwPosVeloPlotProps> = ({
     if (x.length == currentLength + 1) {
       // compute only map the single new value (most common when we update via websocket)
       const newX = x.slice(currentLength) // new x values as strings with timezone information
-      const newTuples = newX.map((x_i, i) => [x_i, y[currentLength + i]] as [number, number])
+      const newTuples = newX.map(
+        (x_i, i) => [x_i, y[currentLength + i]] as [number, number],
+      )
 
       setCustomData((prev) => prev.concat(newTuples))
     } else {
       // if there is not exactly one new value, we map the full x array new
-      setCustomData(
-        x.map(
-          (x_i, i) => [x_i, y[i]] as [number, number],
-        ),
-      )
+      setCustomData(x.map((x_i, i) => [x_i, y[i]] as [number, number]))
     }
   }, [x, y])
-
 
   const getPlotData = (xVals: number[], yVals: number[]): Plotly.Data[] => {
     return [
