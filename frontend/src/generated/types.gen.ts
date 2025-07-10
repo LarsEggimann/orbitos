@@ -1398,6 +1398,33 @@ export type XyStagesMoveAxisByMmResponses = {
 
 export type XyStagesMoveAxisByMmResponse = XyStagesMoveAxisByMmResponses[keyof XyStagesMoveAxisByMmResponses];
 
+export type XyStagesSetAxisCurrentPositionToZeroData = {
+    body?: never;
+    path: {
+        axis: Xy;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/xy-stages/{axis}/set-current-position-to-zero';
+};
+
+export type XyStagesSetAxisCurrentPositionToZeroErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XyStagesSetAxisCurrentPositionToZeroError = XyStagesSetAxisCurrentPositionToZeroErrors[keyof XyStagesSetAxisCurrentPositionToZeroErrors];
+
+export type XyStagesSetAxisCurrentPositionToZeroResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type XyStagesSetAxisCurrentPositionToZeroResponse = XyStagesSetAxisCurrentPositionToZeroResponses[keyof XyStagesSetAxisCurrentPositionToZeroResponses];
+
 export type TypesGetWebsocketTypeData = {
     body?: never;
     path?: never;

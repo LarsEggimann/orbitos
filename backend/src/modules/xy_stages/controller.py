@@ -221,7 +221,6 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].set_zero()
-        self._wait_for_movement(axis)
         self._stop_acquire_data()
         self.state.update(status=XYStagesStatus.IDLE)
 
