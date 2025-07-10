@@ -14,24 +14,24 @@ import TableCell from '@mui/material/TableCell'
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
-  Chopperwheel as ChopperwheelService,
-  type CwDataResponse,
-  type CwState,
-  type CwSettings,
+  XyStages as XyStagesService,
+  type XyStagesDataResponse,
+  type XyStagesState,
+  type XyStagesSettings,
 } from '~/generated'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
-import { CwStateDisplay } from '~/components/chopperwheel/CwStateDisplay'
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
 import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { useConfig } from '~/provider/ConfigProvider'
 import { MenuItem, TextField } from '@mui/material'
-import CwPosVeloPlot from './CwPosVeloPlot'
+import MultiTimeSeriesPlot from '../plots/MultiTimeSeriesPlot'
+import { XyStagesStateDisplay } from './XYStagesStateDisplay'
 
-const Chopperwheel: React.FC = () => {
+const XyStages: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig()
-  const deviceName = 'chopperwheel'
+  const deviceName = 'xy-stages'
 
   const [startDate, setStartDate] = React.useState(null as Date | null)
   const [endDate, setEndDate] = React.useState(null as Date | null)
@@ -66,13 +66,13 @@ const Chopperwheel: React.FC = () => {
     }
   }, [startDate, endDate, deviceName])
 
-  const [data, setData] = useState<CwDataResponse | undefined>(undefined)
+  const [data, setData] = useState<XyStagesDataResponse | undefined>(undefined)
 
   const dataQuery = useQuery({
     queryKey: [deviceName, startDate, endDate],
     queryFn: async () => {
       const response =
-        await ChopperwheelService.chopperwheelGetChopperWheelData({
+        await XyStagesService.xyStagesGetStagesData({
           query: {
             start: startDate?.toISOString(),
             end: endDate?.toISOString(),
@@ -86,24 +86,24 @@ const Chopperwheel: React.FC = () => {
   })
 
   const { state, settings, connected } = useDeviceWebSocket<
-    CwState,
-    CwDataResponse,
-    CwSettings
+    XyStagesState,
+    XyStagesDataResponse,
+    XyStagesSettings
   >({
-    url: `${API_WEBSOCKET_URL}/chopperwheel/ws`,
+    url: `${API_WEBSOCKET_URL}/xy-stages/ws`,
     fetchInitialState: async () =>
-      (await ChopperwheelService.chopperwheelGetChopperWheelState()).data!,
+      (await XyStagesService.xyStagesGetStagesState()).data!,
     fetchInitialSettings: async () =>
-      (await ChopperwheelService.chopperwheelGetChopperWheelSettings()).data!,
+      (await XyStagesService.xyStagesGetStagesSettings()).data!,
     dataAppendFunction: (newData) => {
       setData((prevData) => {
         if (!prevData) return newData
         return {
           device_name: prevData.device_name,
           timestamp: prevData.timestamp.concat(newData.timestamp),
-          velocity: prevData.velocity.concat(newData.velocity),
-          angular_position: prevData.angular_position.concat(
-            newData.angular_position,
+          x_position: prevData.x_position.concat(newData.x_position),
+          y_position: prevData.y_position.concat(
+            newData.y_position,
           ),
         }
       })
@@ -114,7 +114,7 @@ const Chopperwheel: React.FC = () => {
 
   const setSettingsQuery = useMutation({
     mutationFn: async (settings: Record<string, any>) => {
-      return await ChopperwheelService.chopperwheelSetChopperWheelSettings({
+      return await XyStagesService.xyStagesSetStagesSettings({
         body: settings,
       })
     },
@@ -165,13 +165,15 @@ const Chopperwheel: React.FC = () => {
     }
   }
 
-  const [comPort, setComPort] = useState<string>('') // Default COM port, can be changed later
+
+  const [xIndex, setXIndex] = useState<number>(1) // Default X index
+  const [yIndex, setYIndex] = useState<number>(0) // Default Y index
 
   const { data: comPortsData, isLoading: comPortsLoading } = useQuery({
-    queryKey: ['chopperwheel-com-ports'],
+    queryKey: ['xy-stages-com-ports'],
     queryFn: async () => {
       const response =
-        await ChopperwheelService.chopperwheelGetAvailableComPorts()
+        await XyStagesService.xyStagesGetAvailableUsbDevices()
       return response.data
     },
     refetchOnWindowFocus: true,
@@ -185,7 +187,7 @@ const Chopperwheel: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant='h5' sx={{ mb: 0 }}>
-            Chopperwheel -
+            XY - Stages -
           </Typography>
           <Typography
             variant='subtitle1'
@@ -204,10 +206,10 @@ const Chopperwheel: React.FC = () => {
         <TextField
           size='small'
           variant='outlined'
-          label='Select Serial Port'
+          label='Select x-axis USB Device'
           select
-          value={comPort}
-          onChange={(e) => setComPort(e.target.value as string)}
+          value={xIndex}
+          onChange={(e) => setXIndex(Number(e.target.value))}
           sx={{ minWidth: 250 }}
           disabled={comPortsLoading}
         >
@@ -218,31 +220,33 @@ const Chopperwheel: React.FC = () => {
           )}
           {comPortsData &&
             comPortsData.map((port) => (
-              <MenuItem key={port.port} value={port.port}>
-                {port.port} - {port.description}
+              <MenuItem key={port.index} value={port.index}>
+                {port.index} - {port.description}
               </MenuItem>
             ))}
         </TextField>
         <ExecQueryButton
           onClick={async () => {
-            if (!comPort) {
+            if (!xIndex) {
               throw new Error(
                 'You need to select a COM port before connecting!',
               )
             }
-            return await ChopperwheelService.chopperwheelConnectToChopperWheel({
-              path: { com_port: comPort },
+            return await XyStagesService.xyStagesConnectToStage({
+              path: { axis: 'x-axis', index: xIndex },
             })
           }}
-          disabled={!comPort || state?.connection_status == 'connected'}
+          disabled={!xIndex || state?.x_state?.connection_status == 'connected'}
         >
           Connect
         </ExecQueryButton>
         <ExecQueryButton
           onClick={async () => {
-            return await ChopperwheelService.chopperwheelDisconnectChopperWheel()
+            return await XyStagesService.xyStagesDisconnectStage({
+              path: { axis: 'x-axis' },
+            })
           }}
-          disabled={state?.connection_status == 'disconnected'}
+          disabled={state?.x_state?.connection_status == 'disconnected'}
           color='warning'
         >
           Disconnect
@@ -250,7 +254,7 @@ const Chopperwheel: React.FC = () => {
         <Box flexGrow={1}></Box>
         <ExecQueryButton
           onClick={async () => {
-            return await ChopperwheelService.chopperwheelResetChopperWheelError()
+            return await XyStagesService.xyStagesResetStagesError()
           }}
         >
           Reset Error
@@ -271,45 +275,17 @@ const Chopperwheel: React.FC = () => {
                 <Typography>Number of Datapoints loaded:</Typography>
               </TableCell>
               <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
-                <Typography>{data?.velocity.length}</Typography>
+                <Typography>{data?.x_position.length}</Typography>
               </TableCell>
               <TableCell colSpan={2} sx={{ border: 0, pl: 0, width: '50%' }}>
                 <DownloadCSVButton
                   data={{
                     timestamp: data?.timestamp ?? [],
-                    velocity: data?.velocity ?? [],
-                    angular_position: data?.angular_position ?? [],
+                    x_position: data?.x_position ?? [],
+                    y_position: data?.y_position ?? [],
                   }}
-                  defaultFilename={`chopperwheel_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                  defaultFilename={`xy_stages_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
                 />
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '35%' }}>
-                <Typography>Latest Velocity:</Typography>
-              </TableCell>
-              <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
-                <Typography>
-                  {typeof data?.velocity?.[data?.velocity.length - 1] ===
-                  'number'
-                    ? data?.velocity[data?.velocity.length - 1].toFixed(3) +
-                      ' rps'
-                    : ''}
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '25%' }}>
-                <Typography>Latest Angular Position:</Typography>
-              </TableCell>
-              <TableCell sx={{ border: 0, pl: 0, width: '25%' }}>
-                <Typography>
-                  {typeof data?.angular_position?.[
-                    data?.angular_position.length - 1
-                  ] === 'number'
-                    ? data?.angular_position[
-                        data?.angular_position.length - 1
-                      ].toFixed(3) + ' °'
-                    : ''}
-                </Typography>
               </TableCell>
             </TableRow>
           </TableBody>
@@ -325,64 +301,40 @@ const Chopperwheel: React.FC = () => {
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <CwPosVeloPlot
-            xData={data?.angular_position ?? []}
-            yData={data?.velocity ?? []}
+          {/* <TimeSeriesChart
+            xData={data?.timestamp ?? []}
+            yData={data?.x_position ?? []}
             dataQuery={dataQuery}
             height={500}
-            xAxisLabel='Angular Position [deg]'
-            yAxisLabel='Velocity [rps]'
-            hoverTemplate='<b>Angular Position:</b> %{customdata[0]}<br><b>Velocity:</b> %{customdata[1]} deg<extra></extra>'
-          />
+            xAxisLabel='Placeholder [deg]'
+            yAxisLabel='Placeholder [rps]'
+          /> */}
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <TimeSeriesChart
-            xData={data?.timestamp ?? []}
-            yData={data?.velocity ?? []}
-            dataQuery={dataQuery}
-            height={500}
-            xAxisLabel='Time'
-            yAxisLabel='Velocity [rps]'
-            hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Velocity:</b> %{customdata[1]} rps<extra></extra>'
+          <MultiTimeSeriesPlot
+            series={
+              [
+                {
+                  label: 'X Position',
+                  x: data?.timestamp ?? [],
+                  y: data?.x_position ?? [],
+                  yLabel: 'X Position [mm]',
+                },
+                {
+                  label: 'Y Position',
+                  x: data?.timestamp ?? [],
+                  y: data?.y_position ?? [],
+                  yLabel: 'Y Position [mm]',
+                },
+              ]
+            }
+            dataQueries={[dataQuery]}
           />
         </Box>
       </Box>
 
-      <CwStateDisplay state={state as CwState} />
+      <XyStagesStateDisplay state={state as XyStagesState} />
 
-      <Box
-        sx={{
-          flexGrow: 1,
-          mb: 1,
-          p: 2,
-          display: 'flex',
-          gap: 2,
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-        }}
-      >
-        <ExecQueryButton
-          onClick={async () => {
-            return await ChopperwheelService.chopperwheelRotateDemoChopperWheel()
-          }}
-        >
-          Rotate Demo
-        </ExecQueryButton>
-        <ExecQueryButton
-          onClick={async () => {
-            return await ChopperwheelService.chopperwheelFlashBeamChopperWheel()
-          }}
-        >
-          Flash Beam
-        </ExecQueryButton>
-        <ExecQueryButton
-          onClick={async () => {
-            return await ChopperwheelService.chopperwheelFindHomeChopperWheel()
-          }}
-        >
-          Find Home
-        </ExecQueryButton>
-      </Box>
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Box
@@ -393,72 +345,25 @@ const Chopperwheel: React.FC = () => {
             flexGrow: 1,
           }}
         >
-          <Typography variant='h6'>Motor Settings</Typography>
+          <Typography variant='h6'>Direction Settings</Typography>
           <DirtyTextField
-            label={'Max Velocity [rps]'}
-            value={settings?.max_velocity ?? ''}
-            onApply={makeSettingApplyHandler('max_velocity')}
+            label={'X direction modifier [-1 or 1]'}
+            value={settings?.x_direction_modifier ?? ''}
+            onApply={makeSettingApplyHandler('x_direction_modifier')}
           />
           <DirtyTextField
-            label={'Max Acceleration [rps²]'}
-            value={settings?.max_acceleration ?? ''}
-            onApply={makeSettingApplyHandler('max_acceleration')}
-          />
-          <DirtyTextField
-            label={'Max Current [0-255]'}
-            value={settings?.max_current ?? ''}
-            onApply={makeSettingApplyHandler('max_current')}
-          />
-          <DirtyTextField
-            label={'Boost Current [0-255]'}
-            value={settings?.boost_current ?? ''}
-            onApply={makeSettingApplyHandler('boost_current')}
-          />
-          <DirtyTextField
-            label={'Standby Current [0-255]'}
-            value={settings?.standby_current ?? ''}
-            onApply={makeSettingApplyHandler('standby_current')}
-          />
-        </Box>
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            flexGrow: 1,
-          }}
-        >
-          <Typography variant='h6'>General Settings</Typography>
-          <DirtyTextField
-            label={'Time delay after flash beam request [s]'}
-            value={settings?.flash_beam_delay ?? ''}
-            onApply={makeSettingApplyHandler('flash_beam_delay')}
-          />
-          <DirtyTextField
-            label={
-              'Angle (in home position) between slit and start of beam pipe [°]'
-            }
-            value={settings?.angle_home_sens_to_beam_pipe ?? ''}
-            onApply={makeSettingApplyHandler('angle_home_sens_to_beam_pipe')}
+            label={'Y direction modifier [-1 or 1]'}
+            value={settings?.y_direction_modifier ?? ''}
+            onApply={makeSettingApplyHandler('y_direction_modifier')}
           />
           <Typography>
-            This angle is used to execute the flash rotation pattern. The wheel
-            will rotate 360° + the angle set above, after this it will rotate
-            back by the angle amount set above. This should place the wheel in
-            home position again.
-            <br />
-            Suggested Angles:
-            <ul>
-              <li>275° - New Wheel (v2) with new mount</li>
-              <li>140° - Small Wheel (v1) with new mount</li>
-              <li>290° - Small Wheel (v1) with old mount</li>
-            </ul>
+            The direction modifier is used to invert the direction of the axis position reading. This also inverts the movement control, everything is relative to the 0 and then scaled by this modifier. 
           </Typography>
         </Box>
+
       </Box>
     </Box>
   )
 }
 
-export default Chopperwheel
+export default XyStages

@@ -7,8 +7,8 @@ import { useTheme } from '@mui/material/styles'
 
 export interface TimeSeriesData {
   label: string
-  x: (string | number)[]
-  y: number[]
+  x: (string | number | null)[]
+  y: (number | null)[]
   yLabel?: string
   lineColor?: string
 }
