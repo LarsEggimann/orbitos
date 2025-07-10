@@ -1,6 +1,7 @@
 import logging
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     HTTPException,
     status,
     WebSocket,
@@ -30,17 +31,6 @@ router = APIRouter(
     tags=["xy-stages"],
     prefix="/xy-stages",
 )
-
-
-def assert_connected(controller: ControllerDep):
-    """
-    Assert that stage is connected.
-    """
-    if controller.state.get().connection_status != ConnectionStatus.CONNECTED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{controller.device_name} is not connected. Please connect first.",
-        )
 
 def assert_idle(controller: ControllerDep):
     """
@@ -125,7 +115,8 @@ def disconnect_stage(axis: XY, controller: ControllerDep):
     """
     Disconnect stage at given axis.
     """
-    assert_connected(controller)
+    stage = controller.xy_stages[axis]
+    assert_stage_connected(stage)
     assert_idle(controller)
     controller.disconnect(axis)
     return BaseResponse(message=f"Disconnected from {controller.device_name} at {axis}.")
@@ -194,7 +185,6 @@ def set_stages_settings(settings: XYStagesSettingsSet, controller: ControllerDep
     """
     Set the settings of the xy stages.
     """
-    assert_connected(controller)
     assert_idle(controller)
     assert_no_errors(controller)
 
@@ -207,7 +197,7 @@ def set_stages_settings(settings: XYStagesSettingsSet, controller: ControllerDep
     )
 
 @router.post('/{axis}/move-to/{position}', response_model=BaseResponse)
-def move_axis_to_position(axis: XY, position: float, controller: ControllerDep):
+def move_axis_to_position(axis: XY, position: float, controller: ControllerDep, background_tasks: BackgroundTasks):
     """
     Move the specified axis to a given position in mm.
     """
@@ -219,7 +209,7 @@ def move_axis_to_position(axis: XY, position: float, controller: ControllerDep):
     assert_stage_connected(stage)
 
     try:
-        controller.move_to(axis, position)
+        background_tasks.add_task(controller.move_to, axis, position)
     except Exception as e:
         logger.error("Failed to move %s to position %s: %s", axis.value, position, e)
         raise HTTPException(
@@ -230,7 +220,7 @@ def move_axis_to_position(axis: XY, position: float, controller: ControllerDep):
     return BaseResponse(message=f"Moved {axis.value} to position {position} mm.")
 
 @router.post('/{axis}/move-by/{mm}', response_model=BaseResponse)
-def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep):
+def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep, background_tasks: BackgroundTasks):
     """
     Move the specified axis by a amount in mm.
     """
@@ -242,7 +232,7 @@ def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep):
     assert_stage_connected(stage)
 
     try:
-        controller.move_by(axis, mm)
+        background_tasks.add_task(controller.move_by, axis, mm)
     except Exception as e:
         logger.error("Failed to move %s to position %s: %s", axis.value, mm, e)
         raise HTTPException(
@@ -251,6 +241,29 @@ def move_axis_by_mm(axis: XY, mm: float, controller: ControllerDep):
         ) from e
 
     return BaseResponse(message=f"Moved {axis.value} to position {mm} mm.")
+
+@router.post('/{axis}/set-current-position-to-zero', response_model=BaseResponse)
+def set_axis_current_position_to_zero(axis: XY, controller: ControllerDep):
+    """
+    Set the current position of the specified axis to zero.
+    """
+    assert_no_errors(controller)
+
+    stage = controller.xy_stages[axis]
+
+    assert_stage_idle(stage)
+    assert_stage_connected(stage)
+
+    try:
+        controller.set_current_position_to_zero(axis)
+    except Exception as e:
+        logger.error("Failed to set current position of %s to zero: %s", axis.value, e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to set current position of {axis.value} to zero.",
+        ) from e
+
+    return BaseResponse(message=f"Current position of {axis.value} set to zero.")
 
 @router.websocket("/ws")
 async def xy_stages_ws(websocket: WebSocket, controller: ControllerDep):

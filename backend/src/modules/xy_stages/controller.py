@@ -92,7 +92,7 @@ class XYStagesController:
                 y_state = self.xy_stages[XY.Y_AXIS].get_full_stage_state()
                 timestamp = time.time()
 
-                print(f"Acquiring data from xy stages: {timestamp}, x: {x_state.position}, y: {y_state.position}")
+                # print(f"Acquiring data from xy stages: {timestamp}, x: {x_state.position}, y: {y_state.position}")
 
                 data = XYStagesData(
                     timestamp=timestamp,
@@ -130,7 +130,7 @@ class XYStagesController:
                 if sleep_time is not None:
                     time.sleep(sleep_time)
                 else:
-                    time.sleep(0.1)
+                    time.sleep(0.2)
 
 
     def _start_acquire_data(self, sleep_time: float | None = None) -> None:
@@ -169,7 +169,7 @@ class XYStagesController:
         """
         time.sleep(0.5) # wait for the stage to start moving
         while self.xy_stages[axis].state.moving:
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def move_to(self, axis: XY, position: float) -> None:
         """
@@ -185,7 +185,6 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].move_to(position)
-        self._wait_for_movement(axis)
         self._stop_acquire_data()
         self.state.update(status=XYStagesStatus.IDLE)
 
@@ -203,6 +202,25 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].move_by(mm)
+        self._wait_for_movement(axis)
+        self._stop_acquire_data()
+        self.state.update(status=XYStagesStatus.IDLE)
+
+    def set_current_position_to_zero(self, axis: XY) -> None:
+        """
+        Set the current position of the specified axis to zero.
+        This is useful for calibrating the stage.
+        """
+        logger.info("Setting current position of xy stage %s to zero", axis.value)
+
+        if self.xy_stages[axis].state.connection_status != ConnectionStatus.CONNECTED:
+            raise ValueError(
+                f"XY stage {axis.value} is not connected. Please connect first."
+            )
+
+        self._start_acquire_data()
+        self.state.update(status=XYStagesStatus.MOVING)
+        self.xy_stages[axis].set_zero()
         self._wait_for_movement(axis)
         self._stop_acquire_data()
         self.state.update(status=XYStagesStatus.IDLE)

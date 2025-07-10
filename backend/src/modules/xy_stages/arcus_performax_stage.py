@@ -72,7 +72,6 @@ class ArcusPerformaxStage:
         try:
             s = self.dev.get_full_status()
 
-            print(f"Full status: {s}")
             clm = s["current_limit_errors"]
             if clm:
                 if clm == "+":
@@ -88,7 +87,7 @@ class ArcusPerformaxStage:
                 axis_speed=self._to_mmps(s["axis_speed"]),
                 device_number=s["device_number"],
                 current_limit_errors=clm,
-                axis_status=s["axis_status"],
+                axis_status=list(s["axis_status"]),
                 moving=s["moving"],
                 connection_status=ConnectionStatus.CONNECTED if self.dev.is_opened() else ConnectionStatus.DISCONNECTED,
             )

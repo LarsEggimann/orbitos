@@ -1,9 +1,9 @@
 import CircularProgress from '@mui/material/CircularProgress'
-import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
+import Box from '@mui/material/Box'
 
-import type { XyStagesState } from '~/generated'
+import type { XyStagesState, StageState } from '~/generated'
 import { replaceUnderscores } from '~/utils/helpers'
 
 export const XyStagesStateDisplay = ({
@@ -41,28 +41,71 @@ export const XyStagesStateDisplay = ({
   const hasError = errorText && errorText.toLowerCase() !== 'no error'
   const errorColor = hasError ? 'error' : 'default'
 
-  
+  const xState = state?.x_state || {}
+  const yState = state?.y_state || {}
+
+  // Helper to format numbers
+  const fmt = (val: number | null | undefined, digits = 3) =>
+    typeof val === 'number' ? val.toFixed(digits) : '—'
+
+  // Helper to format booleans
+  const fmtBool = (val: boolean | null | undefined) =>
+    val === true ? 'true' : val === false ? 'false' : '—'
+
+  // Axis state display component
+  const AxisState = ({ axis, state }: { axis: string; state: StageState }) => (
+    <Box sx={{ minWidth: 220, flex: 1 }}>
+      <Typography variant='body1' sx={{ mb: 1 }}>
+        {axis} Axis - {state?.connection_status == 'connected' ? '🟢' : '🔴'}
+      </Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Position
+      </Typography>
+      <Typography variant='body1'>{fmt(state.position)}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Moving
+      </Typography>
+      <Typography variant='body1'>{fmtBool(state.moving)}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Enabled
+      </Typography>
+      <Typography variant='body1'>{fmtBool(state.enabled)}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Axis Speed
+      </Typography>
+      <Typography variant='body1'>{fmt(state.axis_speed)}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Device Number
+      </Typography>
+      <Typography variant='body1'>{state.device_number ?? '—'}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Current Limit Errors
+      </Typography>
+      <Typography variant='body1'>{state.current_limit_errors ?? '—'}</Typography>
+      <Typography variant='body2' color='text.secondary'>
+        Axis Status
+      </Typography>
+      <Typography variant='body1'>
+        {Array.isArray(state.axis_status)
+          ? state.axis_status.join(', ')
+          : state.axis_status ?? '—'}
+      </Typography>
+    </Box>
+  )
 
   return (
     <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
-      <Grid container spacing={4}>
-        <Grid sx={{ minWidth: 120 }}>
-          <Typography variant='body1' color='text.secondary'>
-            Connection
-          </Typography>
-          <Typography
-            variant='body1'
-            color={connectionColor}
-            sx={{ display: 'flex', alignItems: 'center' }}
-          >
-            {showConnectionSpinner && (
-              <CircularProgress size={14} sx={{ mr: 1 }} />
-            )}
-            {connectionStatusText}
-          </Typography>
-        </Grid>
-        <Grid sx={{ minWidth: 350 }}>
-          <Typography variant='body1' color='text.secondary'>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 4,
+        }}
+      >
+        
+        {/* General connection/status/error info */}
+        <Box sx={{ minWidth: 220, flexShrink: 0 }}>
+          <Typography variant='body1' color='text.secondary' sx={{ mt: 2 }}>
             Status
           </Typography>
           <Typography
@@ -73,9 +116,7 @@ export const XyStagesStateDisplay = ({
             {!isIdleOrUnknown && <CircularProgress size={14} sx={{ mr: 1 }} />}
             {statusText}
           </Typography>
-        </Grid>
-        <Grid sx={{ minWidth: 150 }}>
-          <Typography variant='body1' color='text.secondary'>
+          <Typography variant='body1' color='text.secondary' sx={{ mt: 2 }}>
             Error
           </Typography>
           <Typography
@@ -85,8 +126,22 @@ export const XyStagesStateDisplay = ({
           >
             {hasError ? errorText : 'no error reported'}
           </Typography>
-        </Grid>
-      </Grid>
+        </Box>
+
+        {/* X and Y axis info side by side */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 2,
+            flexGrow: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          <AxisState axis='X' state={xState} />
+          <AxisState axis='Y' state={yState} />
+        </Box>
+      </Box>
     </Card>
   )
 }

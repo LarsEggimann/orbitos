@@ -28,6 +28,7 @@ import { useConfig } from '~/provider/ConfigProvider'
 import { MenuItem, TextField } from '@mui/material'
 import MultiTimeSeriesPlot from '../plots/MultiTimeSeriesPlot'
 import { XyStagesStateDisplay } from './XYStagesStateDisplay'
+import { UsbDeviceSelect } from './UsbDeviceSelect'
 
 const XyStages: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig()
@@ -165,9 +166,11 @@ const XyStages: React.FC = () => {
     }
   }
 
-
   const [xIndex, setXIndex] = useState<number>(1) // Default X index
   const [yIndex, setYIndex] = useState<number>(0) // Default Y index
+
+  const [xInput, setXInput] = useState<number>(0)
+  const [yInput, setYInput] = useState<number>(0)
 
   const { data: comPortsData, isLoading: comPortsLoading } = useQuery({
     queryKey: ['xy-stages-com-ports'],
@@ -193,7 +196,7 @@ const XyStages: React.FC = () => {
             variant='subtitle1'
             sx={{ display: 'flex', alignItems: 'center' }}
           >
-            {state?.connection_status == 'connected' ? '🟢' : '🔴'}
+            {state?.x_state?.connection_status == 'connected' ? '🟢' : '🔴'} {' '} {state?.y_state?.connection_status == 'connected' ? '🟢' : '🔴'}
           </Typography>
         </Box>
         <Typography variant='subtitle1'>
@@ -203,54 +206,28 @@ const XyStages: React.FC = () => {
       <Divider sx={{ my: 2, mt: 0 }} />
 
       <Stack direction='row' sx={{ alignItems: 'center', gap: 2, my: 2 }}>
-        <TextField
-          size='small'
-          variant='outlined'
+        <UsbDeviceSelect
           label='Select x-axis USB Device'
-          select
+          axis='x-axis'
           value={xIndex}
-          onChange={(e) => setXIndex(Number(e.target.value))}
-          sx={{ minWidth: 250 }}
-          disabled={comPortsLoading}
-        >
-          {comPortsData?.length === 0 && (
-            <MenuItem value='' disabled>
-              No COM ports found
-            </MenuItem>
-          )}
-          {comPortsData &&
-            comPortsData.map((port) => (
-              <MenuItem key={port.index} value={port.index}>
-                {port.index} - {port.description}
-              </MenuItem>
-            ))}
-        </TextField>
-        <ExecQueryButton
-          onClick={async () => {
+          onChange={setXIndex}
+          devices={comPortsData}
+          loading={comPortsLoading}
+          connectionStatus={state?.x_state?.connection_status}
+          onConnect={async () => {
             if (!xIndex) {
-              throw new Error(
-                'You need to select a COM port before connecting!',
-              )
+              throw new Error('You need to select a USB device before connecting!')
             }
             return await XyStagesService.xyStagesConnectToStage({
               path: { axis: 'x-axis', index: xIndex },
             })
           }}
-          disabled={!xIndex || state?.x_state?.connection_status == 'connected'}
-        >
-          Connect
-        </ExecQueryButton>
-        <ExecQueryButton
-          onClick={async () => {
+          onDisconnect={async () => {
             return await XyStagesService.xyStagesDisconnectStage({
               path: { axis: 'x-axis' },
             })
           }}
-          disabled={state?.x_state?.connection_status == 'disconnected'}
-          color='warning'
-        >
-          Disconnect
-        </ExecQueryButton>
+        />
         <Box flexGrow={1}></Box>
         <ExecQueryButton
           onClick={async () => {
@@ -261,36 +238,34 @@ const XyStages: React.FC = () => {
         </ExecQueryButton>
       </Stack>
 
-      <DateRangeSelect
-        startState={[startDate, setStartDate]}
-        endState={[endDate, setEndDate]}
-      ></DateRangeSelect>
+      <Stack direction='row' sx={{ alignItems: 'center', gap: 2, my: 2 }}>
+        <UsbDeviceSelect
+          label='Select y-axis USB Device'
+          axis='y-axis'
+          value={yIndex}
+          onChange={setYIndex}
+          devices={comPortsData}
+          loading={comPortsLoading}
+          connectionStatus={state?.y_state?.connection_status}
+          onConnect={async () => {
+            if (yIndex === undefined || yIndex === null) {
+              throw new Error('You need to select a USB device before connecting!')
+            }
+            return await XyStagesService.xyStagesConnectToStage({
+              path: { axis: 'y-axis', index: yIndex },
+            })
+          }}
+          onDisconnect={async () => {
+            return await XyStagesService.xyStagesDisconnectStage({
+              path: { axis: 'y-axis' },
+            })
+          }}
+        />
+      </Stack>
 
-      <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
-        <Typography variant='h6'>Plot Data</Typography>
-        <Table sx={{ minWidth: 400, tableLayout: 'fixed' }}>
-          <TableBody>
-            <TableRow>
-              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '35%' }}>
-                <Typography>Number of Datapoints loaded:</Typography>
-              </TableCell>
-              <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
-                <Typography>{data?.x_position.length}</Typography>
-              </TableCell>
-              <TableCell colSpan={2} sx={{ border: 0, pl: 0, width: '50%' }}>
-                <DownloadCSVButton
-                  data={{
-                    timestamp: data?.timestamp ?? [],
-                    x_position: data?.x_position ?? [],
-                    y_position: data?.y_position ?? [],
-                  }}
-                  defaultFilename={`xy_stages_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
-                />
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </Card>
+
+
+
 
       <Box
         sx={{
@@ -332,11 +307,56 @@ const XyStages: React.FC = () => {
           />
         </Box>
       </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 1,
+          width: '100%',
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <ExecQueryButton
+            onClick={async () => {
+              return await XyStagesService.xyStagesMoveAxisByMm({
+                path: { axis: 'x-axis', mm: xInput },
+              })
+            }}
+          >
+            x - move by
+          </ExecQueryButton>
+          <ExecQueryButton
+            onClick={async () => {
+              return await XyStagesService.xyStagesMoveAxisToPosition({
+                path: { axis: 'x-axis', position: xInput },
+              })
+            }}
+          >
+            x - move to
+          </ExecQueryButton>
+          <TextField
+            variant='outlined'
+            size='small'
+            value={xInput}
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === '' || !isNaN(Number(value))) {
+                setXInput(Number(value))
+              }
+            }}
+            type={'number'}
+          />
+
+        </Box>
+        <Box sx={{ flex: 1 }}>
+
+        </Box>
+      </Box>
 
       <XyStagesStateDisplay state={state as XyStagesState} />
 
 
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', my: 2 }}>
         <Box
           sx={{
             display: 'flex',
@@ -357,11 +377,43 @@ const XyStages: React.FC = () => {
             onApply={makeSettingApplyHandler('y_direction_modifier')}
           />
           <Typography>
-            The direction modifier is used to invert the direction of the axis position reading. This also inverts the movement control, everything is relative to the 0 and then scaled by this modifier. 
+            The direction modifier is used to invert the direction of the axis position reading. This also inverts the movement control, everything is relative to the 0 and then scaled by this modifier.
           </Typography>
         </Box>
-
       </Box>
+
+      <Divider sx={{ my: 2 }} />
+
+      <DateRangeSelect
+        startState={[startDate, setStartDate]}
+        endState={[endDate, setEndDate]}
+      ></DateRangeSelect>
+
+      <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
+        <Typography variant='h6'>Plot Data</Typography>
+        <Table sx={{ minWidth: 400, tableLayout: 'fixed' }}>
+          <TableBody>
+            <TableRow>
+              <TableCell sx={{ border: 0, pl: 0, pr: 2, width: '35%' }}>
+                <Typography>Number of Datapoints loaded:</Typography>
+              </TableCell>
+              <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
+                <Typography>{data?.x_position.length}</Typography>
+              </TableCell>
+              <TableCell colSpan={2} sx={{ border: 0, pl: 0, width: '50%' }}>
+                <DownloadCSVButton
+                  data={{
+                    timestamp: data?.timestamp ?? [],
+                    x_position: data?.x_position ?? [],
+                    y_position: data?.y_position ?? [],
+                  }}
+                  defaultFilename={`xy_stages_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Card>
     </Box>
   )
 }
