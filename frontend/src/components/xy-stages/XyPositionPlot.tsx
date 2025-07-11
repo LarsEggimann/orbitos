@@ -20,7 +20,7 @@ type PlotlyFigure = {
 const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
     xPosition = 0,
     yPosition = 0,
-    width = '800px',
+    width = '750px',
     height = '600px',
 }) => {
     const muiTheme = useTheme()
@@ -133,10 +133,10 @@ const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
             showlegend: true,
             annotations: [
                 {
-                    text: `Position: X = ${x.toFixed(2)} mm, Y = ${y.toFixed(2)} mm`,
+                    text: `X = ${x.toFixed(2)} mm, Y = ${y.toFixed(2)} mm`,
                     xref: 'paper',
                     yref: 'paper',
-                    x: 0.80,
+                    x: 0.10,
                     y: 0.10,
                     xanchor: 'left',
                     yanchor: 'top',

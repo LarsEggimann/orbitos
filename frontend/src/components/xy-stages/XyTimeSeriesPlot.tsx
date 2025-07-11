@@ -124,7 +124,7 @@ const XyTimeSeriesPlot: React.FC<XyTimeSeriesPlotProps> = ({
         range: [-300, 300],
         fixedrange: true,
       },
-      margin: { l: 20, r: 20, t: 20, b: 20 },
+      margin: { l: 0, r: 20, t: 20, b: 20 },
     }
   }
 

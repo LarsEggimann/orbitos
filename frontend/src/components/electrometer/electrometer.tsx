@@ -11,7 +11,11 @@ import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
-
+import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import FlashOffIcon from '@mui/icons-material/FlashOff';
+import StopIcon from '@mui/icons-material/Stop';
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
@@ -383,6 +387,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         }}
       >
         <ExecQueryButton
+          startIcon={<PlayArrowIcon />}
           onClick={async () => {
             return await ElectrometerService.electrometerStartContinuousMeasurement(
               deviceIdPathArg,
@@ -392,6 +397,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
           Start Continuous
         </ExecQueryButton>
         <ExecQueryButton
+          startIcon={<StopIcon />}
           onClick={async () => {
             return await ElectrometerService.electrometerStopContinuousMeasurement(
               deviceIdPathArg,
@@ -401,6 +407,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
           Stop Continuous
         </ExecQueryButton>
         <ExecQueryButton
+          startIcon={<HourglassBottomIcon />}
           onClick={async () => {
             return await ElectrometerService.electrometerStartTriggerBasedMeasurement(
               deviceIdPathArg,
@@ -531,6 +538,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
           />
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
             <ExecQueryButton
+              startIcon={<FlashOnIcon />}
               onClick={async () => {
                 return await ElectrometerService.electrometerStartSourceVoltageSweep(
                   deviceIdPathArg,
@@ -540,6 +548,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
               Start Voltage Sweep
             </ExecQueryButton>
             <ExecQueryButton
+              startIcon={<FlashOffIcon />}
               onClick={async () => {
                 return await ElectrometerService.electrometerTurnOffSourceVoltage(
                   deviceIdPathArg,

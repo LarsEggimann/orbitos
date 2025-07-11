@@ -276,17 +276,26 @@ const XyStages: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          gap: 1,
+          gap: 0,
           width: '100%',
+          alignItems: { xs: 'center', md: 'flex-start' },
         }}
       >
-        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Box 
+          sx={{ 
+            flexShrink: 0,
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            width: { xs: '100%', md: 'auto' },
+          }}
+        >
           <XyPositionPlot
             xPosition={state?.x_state?.position}
             yPosition={state?.y_state?.position}
           />
         </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ flex: 1, minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
           <XyTimeSeriesPlot
             series={
               [
