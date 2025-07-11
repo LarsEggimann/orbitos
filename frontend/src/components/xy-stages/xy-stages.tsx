@@ -28,6 +28,7 @@ import XyTimeSeriesPlot from './XyTimeSeriesPlot'
 import { XyStagesStateDisplay } from './XyStagesStateDisplay'
 import { UsbDeviceSelect } from './UsbDeviceSelect'
 import { AxisControl } from './AxisControl'
+import XyPositionPlot from './XyPositionPlot'
 
 const XyStages: React.FC = () => {
   const { API_WEBSOCKET_URL } = useConfig()
@@ -279,15 +280,11 @@ const XyStages: React.FC = () => {
           width: '100%',
         }}
       >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {/* <TimeSeriesChart
-            xData={data?.timestamp ?? []}
-            yData={data?.x_position ?? []}
-            dataQuery={dataQuery}
-            height={500}
-            xAxisLabel='Placeholder [deg]'
-            yAxisLabel='Placeholder [rps]'
-          /> */}
+        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <XyPositionPlot
+            xPosition={state?.x_state?.position}
+            yPosition={state?.y_state?.position}
+          />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <XyTimeSeriesPlot

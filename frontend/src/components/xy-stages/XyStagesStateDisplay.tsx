@@ -92,7 +92,7 @@ export const XyStagesStateDisplay = ({
       </Typography>
     </Box>
   )
-
+  
   return (
     <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
       <Box
