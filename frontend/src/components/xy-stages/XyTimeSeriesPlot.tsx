@@ -13,7 +13,7 @@ export interface TimeSeriesData {
   lineColor?: string
 }
 
-interface MultiTimeSeriesPlotProps {
+interface XyTimeSeriesPlotProps {
   series: TimeSeriesData[]
   dataQueries?: UseQueryResult<any, Error>[]
   title?: string
@@ -28,7 +28,7 @@ type PlotlyFigure = {
   config?: Partial<Plotly.Config>
 }
 
-const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
+const XyTimeSeriesPlot: React.FC<XyTimeSeriesPlotProps> = ({
   series,
   dataQueries,
   title,
@@ -62,18 +62,17 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
   }, [series])
 
   const getPlotData = (): Plotly.Data[] => {
-    return localizedSeries.map((s, idx) => {
-      let yaxisName = 'y'
-      if (s.yLabel) {
-        yaxisName = idx === 0 ? 'y' : `y${idx + 1}`
-      }
+    return localizedSeries.map((s) => {
       return {
         x: s.x,
         y: s.y,
         name: s.label,
         type: 'scatter',
         mode: 'lines',
-        yaxis: yaxisName,
+        line: {
+          width: 3,
+        },
+        yaxis: 'y',
         hoverlabel: {
           bgcolor: tooltipBgColor,
           bordercolor: tooltipBorderColor,
@@ -88,25 +87,6 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
   }
 
   const getLayout = (): Partial<Plotly.Layout> => {
-    // Build y-axes if needed
-    const yAxes: Record<string, any> = {}
-    localizedSeries.forEach((s, idx) => {
-      const axisKey = `yaxis${idx === 0 ? '' : idx + 1}`
-      yAxes[axisKey] = {
-        title: {
-          text: s.yLabel || 'Value',
-          standoff: 5,
-        },
-        automargin: true,
-        showgrid: false,
-        showline: false,
-        gridwidth: 0.4,
-        gridcolor: gridColor,
-        overlaying: idx === 0 ? undefined : 'y',
-        side: idx % 2 === 0 ? 'left' : 'right',
-        position: idx === 0 ? undefined : 1 - (idx - 1) * 0.05,
-      }
-    })
     return {
       title: {
         text: title,
@@ -130,8 +110,21 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
         gridwidth: 0.4,
         gridcolor: gridColor,
       },
+      yaxis: {
+        title: {
+          text: 'Position [mm]',
+          standoff: 5,
+        },
+        side: 'right',
+        automargin: true,
+        showgrid: true,
+        showline: false,
+        gridwidth: 0.4,
+        gridcolor: gridColor,
+        range: [-300, 300],
+        fixedrange: true,
+      },
       margin: { l: 20, r: 20, t: 20, b: 20 },
-      ...yAxes,
     }
   }
 
@@ -146,6 +139,7 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
         'zoomOut2d',
         'autoScale2d',
       ],
+      doubleClick: 'reset',
     }
   }
 
@@ -198,4 +192,4 @@ const MultiTimeSeriesPlot: React.FC<MultiTimeSeriesPlotProps> = ({
   )
 }
 
-export default MultiTimeSeriesPlot
+export default XyTimeSeriesPlot

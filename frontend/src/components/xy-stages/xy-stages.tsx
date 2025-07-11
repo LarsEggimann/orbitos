@@ -11,7 +11,6 @@ import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 
-import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import {
   XyStages as XyStagesService,
@@ -25,8 +24,8 @@ import DirtyTextField from '~/components/ui/DirtyTextField'
 import DownloadCSVButton from '~/components/ui/DownloadCSVButton'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
 import { useConfig } from '~/provider/ConfigProvider'
-import MultiTimeSeriesPlot from '../plots/MultiTimeSeriesPlot'
-import { XyStagesStateDisplay } from './XYStagesStateDisplay'
+import XyTimeSeriesPlot from './XyTimeSeriesPlot'
+import { XyStagesStateDisplay } from './XyStagesStateDisplay'
 import { UsbDeviceSelect } from './UsbDeviceSelect'
 import { AxisControl } from './AxisControl'
 
@@ -205,7 +204,12 @@ const XyStages: React.FC = () => {
       </Stack>
       <Divider sx={{ my: 2, mt: 0 }} />
 
-      <Stack direction='row' sx={{ alignItems: 'center', gap: 2, my: 2 }}>
+      <DateRangeSelect
+        startState={[startDate, setStartDate]}
+        endState={[endDate, setEndDate]}
+      ></DateRangeSelect>
+
+      <Stack direction='row' sx={{ alignItems: 'center', gap: 2, mt: 5 }}>
         <UsbDeviceSelect
           label='Select x-axis USB Device'
           axis='x-axis'
@@ -286,7 +290,7 @@ const XyStages: React.FC = () => {
           /> */}
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <MultiTimeSeriesPlot
+          <XyTimeSeriesPlot
             series={
               [
                 {
@@ -361,10 +365,7 @@ const XyStages: React.FC = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      <DateRangeSelect
-        startState={[startDate, setStartDate]}
-        endState={[endDate, setEndDate]}
-      ></DateRangeSelect>
+
 
       <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
         <Typography variant='h6'>Plot Data</Typography>

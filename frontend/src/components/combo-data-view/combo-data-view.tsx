@@ -183,7 +183,7 @@ const ComboDataView: React.FC = () => {
           />
         </Box>
       </Stack>
-      <Divider sx={{ m: 1 }} />
+      <Divider sx={{ mb: 5, mt: 2 }} />
 
       <DateRangeSelect
         startState={[startDate, setStartDate]}

@@ -129,7 +129,7 @@ const CwPosVeloPlot: React.FC<CwPosVeloPlotProps> = ({
         gridwidth: 0.4,
         gridcolor: gridColor,
       },
-      margin: { l: 60, r: 30, t: 0, b: 60 },
+      margin: { l: 20, r: 20, t: 20, b: 20 },
     }
   }
 
