@@ -148,27 +148,36 @@ class XYStagesController:
 
         logger.info("Data acquisition thread started for xy stages")
 
-    def _stop_acquire_data(self) -> None:
+    def _stop_acquire_data_after_movement(self) -> None:
         if (
             self._acquire_data_thread is None
             or not self._acquire_data_thread.is_alive()
         ):
             logger.warning("Data acquisition thread is not running")
             return
+        
+        self._wait_for_movement()
 
-        time.sleep(0.5)  # wait for movement to properly finish before stopping the data acquisition
+        time.sleep(0.2)  # wait for movement to properly finish before stopping the data acquisition
+
+        if (
+            self._acquire_data_thread is None
+            or not self._acquire_data_thread.is_alive()
+        ):
+            return
+        
         self._acquire_data_event.clear()
         self._acquire_data_thread.join()
         self._acquire_data_thread = None
         logger.info("Data acquisition thread stopped for xy stages")
 
-    def _wait_for_movement(self, axis: XY) -> None:
+    def _wait_for_movement(self) -> None:
         """
         Wait for the specified axis to finish moving.
         This is a blocking call that will wait until the axis is idle.
         """
         time.sleep(0.5) # wait for the stage to start moving
-        while self.xy_stages[axis].state.moving:
+        while self.xy_stages[XY.X_AXIS].state.moving or self.xy_stages[XY.Y_AXIS].state.moving:
             time.sleep(0.2)
 
     def move_to(self, axis: XY, position: float) -> None:
@@ -185,8 +194,7 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].move_to(position)
-        self._wait_for_movement(axis)
-        self._stop_acquire_data()
+        self._stop_acquire_data_after_movement()
         self.state.update(status=XYStagesStatus.IDLE)
 
     def move_by(self, axis: XY, mm: float) -> None:
@@ -203,8 +211,7 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].move_by(mm)
-        self._wait_for_movement(axis)
-        self._stop_acquire_data()
+        self._stop_acquire_data_after_movement()
         self.state.update(status=XYStagesStatus.IDLE)
 
     def set_current_position_to_zero(self, axis: XY) -> None:
@@ -222,7 +229,7 @@ class XYStagesController:
         self._start_acquire_data()
         self.state.update(status=XYStagesStatus.MOVING)
         self.xy_stages[axis].set_zero()
-        self._stop_acquire_data()
+        self._stop_acquire_data_after_movement()
         self.state.update(status=XYStagesStatus.IDLE)
 
     def update_settings(self, set_settings: XYStagesSettingsSet):
@@ -258,6 +265,6 @@ class XYStagesController:
         This method should be called when the application is shutting down.
         """
         logger.info("Shutting down xy stages controller")
-        self._stop_acquire_data()
+        self._stop_acquire_data_after_movement()
         self.disconnect(XY.X_AXIS)
         self.disconnect(XY.Y_AXIS)

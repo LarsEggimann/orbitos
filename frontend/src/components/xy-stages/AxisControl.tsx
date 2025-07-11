@@ -6,8 +6,8 @@ import PrestyledButton from '../ui/PrestyledButton'
 
 interface AxisControlProps {
     axis: 'x-axis' | 'y-axis'
-    value: number
-    onChange: (value: number) => void
+    value: number | string
+    onChange: (value: number | string) => void
     connectionStatus?: string
 }
 
@@ -41,9 +41,7 @@ export const AxisControl: React.FC<AxisControlProps> = ({
                     value={value}
                     onChange={(e) => {
                         const val = e.target.value
-                        if (val === '' || !isNaN(Number(val))) {
-                            onChange(Number(val))
-                        }
+                        onChange(val)
                     }}
                     type='number'
                     sx={{}}
@@ -52,7 +50,7 @@ export const AxisControl: React.FC<AxisControlProps> = ({
                 <ExecQueryButton
                     onClick={async () => {
                         return await XyStagesService.xyStagesMoveAxisByMm({
-                            path: { axis, mm: value },
+                            path: { axis, mm: Number(value) },
                         })
                     }}
                     disabled={!isConnected}
@@ -64,7 +62,7 @@ export const AxisControl: React.FC<AxisControlProps> = ({
                 <ExecQueryButton
                     onClick={async () => {
                         return await XyStagesService.xyStagesMoveAxisToPosition({
-                            path: { axis, position: value },
+                            path: { axis, position: Number(value) },
                         })
                     }}
                     disabled={!isConnected}

@@ -169,8 +169,8 @@ const XyStages: React.FC = () => {
   const [xIndex, setXIndex] = useState<number>(1) // Default X index
   const [yIndex, setYIndex] = useState<number>(0) // Default Y index
 
-  const [xInput, setXInput] = useState<number>(0)
-  const [yInput, setYInput] = useState<number>(0)
+  const [xInput, setXInput] = useState<number | string>(0)
+  const [yInput, setYInput] = useState<number | string>(0)
 
   const { data: comPortsData, isLoading: comPortsLoading } = useQuery({
     queryKey: ['xy-stages-com-ports'],
