@@ -92,6 +92,9 @@ const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
     }
 
     const getLayout = (): Partial<Plotly.Layout> => {
+        const x = xPosition || 0
+        const y = yPosition || 0
+        
         return {
             font: {
                 color: textColor,
@@ -128,6 +131,26 @@ const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
             },
             margin: { l: 20, r: 0, t: 20, b: 20 },
             showlegend: true,
+            annotations: [
+                {
+                    text: `Position: X = ${x.toFixed(2)} mm, Y = ${y.toFixed(2)} mm`,
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.80,
+                    y: 0.10,
+                    xanchor: 'left',
+                    yanchor: 'top',
+                    showarrow: false,
+                    font: {
+                        size: 14,
+                        color: textColor,
+                    },
+                    bgcolor: 'transparent',
+                    bordercolor: gridColor,
+                    borderwidth: 1,
+                    borderpad: 8,
+                },
+            ],
         }
     }
 
