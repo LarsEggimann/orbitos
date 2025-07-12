@@ -10,7 +10,9 @@ import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
-
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import BoltIcon from '@mui/icons-material/Bolt';
+import HomeIcon from '@mui/icons-material/Home';
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import ConnectionButtons from '~/components/ui/ConnectionButtons'
@@ -352,6 +354,7 @@ const Chopperwheel: React.FC = () => {
         }}
       >
         <ExecQueryButton
+          startIcon={<AutorenewIcon />}
           onClick={async () => {
             return await ChopperwheelService.chopperwheelRotateDemoChopperWheel()
           }}
@@ -359,6 +362,7 @@ const Chopperwheel: React.FC = () => {
           Rotate Demo
         </ExecQueryButton>
         <ExecQueryButton
+          startIcon={<BoltIcon />}
           onClick={async () => {
             return await ChopperwheelService.chopperwheelFlashBeamChopperWheel()
           }}
@@ -366,6 +370,7 @@ const Chopperwheel: React.FC = () => {
           Flash Beam
         </ExecQueryButton>
         <ExecQueryButton
+          startIcon={<HomeIcon />}
           onClick={async () => {
             return await ChopperwheelService.chopperwheelFindHomeChopperWheel()
           }}
