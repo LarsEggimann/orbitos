@@ -18,6 +18,7 @@ import FlashOffIcon from '@mui/icons-material/FlashOff';
 import StopIcon from '@mui/icons-material/Stop';
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
+import ConnectionButtons from '~/components/ui/ConnectionButtons'
 import {
   Electrometer as ElectrometerService,
   type ElectrometerName,
@@ -266,37 +267,25 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
           label='Electrometer IP'
           sx={{ minWidth: 220 }}
         />
-        <ExecQueryButton
-          onClick={async () => {
+        <ConnectionButtons
+          connectionStatus={state?.connection_status}
+          onConnect={async () => {
             return await ElectrometerService.electrometerConnectToElectrometer({
               path: { device_id: deviceId, ip: ip },
             })
           }}
-          disabled={state?.connection_status == 'connected'}
-        >
-          Connect
-        </ExecQueryButton>
-        <ExecQueryButton
-          onClick={async () => {
+          onDisconnect={async () => {
             return await ElectrometerService.electrometerDisconnectElectrometer(
               deviceIdPathArg,
             )
           }}
-          disabled={state?.connection_status == 'disconnected'}
-          color='warning'
-        >
-          Disconnect
-        </ExecQueryButton>
-        <Box flexGrow={1}></Box>
-        <ExecQueryButton
-          onClick={async () => {
+          showResetError={true}
+          onResetError={async () => {
             return await ElectrometerService.electrometerResetElectrometerError(
               deviceIdPathArg,
             )
           }}
-        >
-          Reset Error
-        </ExecQueryButton>
+        />
       </Stack>
 
       <DateRangeSelect

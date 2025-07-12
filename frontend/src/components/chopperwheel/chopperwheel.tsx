@@ -13,6 +13,7 @@ import TableCell from '@mui/material/TableCell'
 
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
+import ConnectionButtons from '~/components/ui/ConnectionButtons'
 import {
   Chopperwheel as ChopperwheelService,
   type CwDataResponse,
@@ -223,8 +224,9 @@ const Chopperwheel: React.FC = () => {
               </MenuItem>
             ))}
         </TextField>
-        <ExecQueryButton
-          onClick={async () => {
+        <ConnectionButtons
+          connectionStatus={state?.connection_status}
+          onConnect={async () => {
             if (!comPort) {
               throw new Error(
                 'You need to select a COM port before connecting!',
@@ -234,27 +236,15 @@ const Chopperwheel: React.FC = () => {
               path: { com_port: comPort },
             })
           }}
-          disabled={!comPort || state?.connection_status == 'connected'}
-        >
-          Connect
-        </ExecQueryButton>
-        <ExecQueryButton
-          onClick={async () => {
+          onDisconnect={async () => {
             return await ChopperwheelService.chopperwheelDisconnectChopperWheel()
           }}
-          disabled={state?.connection_status == 'disconnected'}
-          color='warning'
-        >
-          Disconnect
-        </ExecQueryButton>
-        <Box flexGrow={1}></Box>
-        <ExecQueryButton
-          onClick={async () => {
+          additionalConnectValidation={!!comPort}
+          showResetError={true}
+          onResetError={async () => {
             return await ChopperwheelService.chopperwheelResetChopperWheelError()
           }}
-        >
-          Reset Error
-        </ExecQueryButton>
+        />
       </Stack>
 
       <DateRangeSelect

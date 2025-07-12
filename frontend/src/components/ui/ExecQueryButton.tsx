@@ -6,11 +6,13 @@ import { useExecQueryHelper } from '../../utils/ExecQueryHelper'
 
 export type ReusableButtonProps = {
   onClick?: () => Promise<AxiosResponse<any> | AxiosError<any> | void>
+  tooltip?: string
 } & React.ComponentProps<typeof PrestyledButton>
 
 const ExecQueryButton: React.FC<ReusableButtonProps> = ({
   onClick,
   children,
+  tooltip,
   ...rest
 }) => {
   const [loading, setLoading] = React.useState(false)
@@ -31,6 +33,7 @@ const ExecQueryButton: React.FC<ReusableButtonProps> = ({
     <PrestyledButton
       onClick={handleClick}
       disabled={loading || rest.disabled}
+      tooltip={tooltip}
       {...rest}
     >
       {children}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { TextField, MenuItem, Stack } from '@mui/material'
-import ExecQueryButton from '~/components/ui/ExecQueryButton'
+import ConnectionButtons from '~/components/ui/ConnectionButtons'
 import type { PerformaxUsbDevice } from '~/generated'
 
 interface UsbDeviceSelectProps {
@@ -19,7 +19,6 @@ interface UsbDeviceSelectProps {
 
 export const UsbDeviceSelect: React.FC<UsbDeviceSelectProps> = ({
   label,
-  axis,
   value,
   onChange,
   devices,
@@ -53,19 +52,11 @@ export const UsbDeviceSelect: React.FC<UsbDeviceSelectProps> = ({
           </MenuItem>
         ))}
       </TextField>
-      <ExecQueryButton
-        onClick={onConnect}
-        disabled={connectionStatus === 'connected'}
-      >
-        Connect
-      </ExecQueryButton>
-      <ExecQueryButton
-        onClick={onDisconnect}
-        disabled={connectionStatus === 'disconnected'}
-        color='warning'
-      >
-        Disconnect
-      </ExecQueryButton>
+      <ConnectionButtons
+        connectionStatus={connectionStatus}
+        onConnect={onConnect}
+        onDisconnect={onDisconnect}
+      />
     </Stack>
   )
 }

@@ -5,6 +5,9 @@ import {
   DateTimePicker,
   type DateTimePickerProps,
 } from '@mui/x-date-pickers/DateTimePicker'
+import FastForwardIcon from '@mui/icons-material/FastForward';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import UpdateIcon from '@mui/icons-material/Update';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import Stack from '@mui/material/Stack'
@@ -81,7 +84,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
                 newValue &&
                 ((endDate &&
                   Math.abs(endDate.getTime() - newValue.toDate().getTime()) >=
-                    24 * 60 * 60 * 1000) ||
+                  24 * 60 * 60 * 1000) ||
                   !endDate ||
                   (endDate &&
                     endDate.getTime() === newValue.toDate().getTime()))
@@ -99,28 +102,35 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
           />
 
           <PrestyledButton
+            tooltip='Reset to current time'
             onClick={() => {
               lastNMinutes(0)
             }}
           >
-            Now
+            <UpdateIcon />
           </PrestyledButton>
 
           <PrestyledButton
+            tooltip='Go back 60 minutes'
+            onClick={() => {
+              startMinusNMinutes(60)
+            }}
+          >
+            <FastForwardIcon
+              sx={{ transform: 'rotate(180deg)' }}
+            />
+          </PrestyledButton>
+          <PrestyledButton
+            tooltip='Go back 5 minutes'
             onClick={() => {
               startMinusNMinutes(5)
             }}
           >
-            - 5 Minutes
+            <PlayArrowIcon
+              sx={{ transform: 'rotate(180deg)' }}
+            />
           </PrestyledButton>
-
-          <PrestyledButton
-            onClick={() => {
-              setRangeToToday()
-            }}
-          >
-            Today
-          </PrestyledButton>
+        
         </Stack>
 
         <Stack
@@ -144,11 +154,12 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
           />
 
           <PrestyledButton
+            tooltip='Reset end date'
             onClick={() => {
               setEndDate(null)
             }}
           >
-            Reset End Date
+            <UpdateIcon />
           </PrestyledButton>
         </Stack>
       </Stack>
