@@ -2,6 +2,7 @@ import * as React from 'react'
 import Button, { type ButtonProps } from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
+import type { Theme } from '@mui/material'
 
 export type PrestyledButtonProps = ButtonProps & {
   tooltip?: string
@@ -15,6 +16,30 @@ const PrestyledButton: React.FC<PrestyledButtonProps> = ({
   tooltip,
   ...rest
 }) => {
+
+  const getBackgroundColor = (theme: Theme) => {
+    if (color === 'primary') {
+      return theme.palette.primary.main + '10'
+    } else if (color === 'secondary') {
+      return theme.palette.secondary.main + '10'
+    } else if (color === 'warning') {
+      return theme.palette.warning.main + '10'
+    }
+    return theme.palette.grey[100]
+  }
+
+  const getHoverBackgroundColor = (theme: Theme) => {
+    if (color === 'primary') {
+      return theme.palette.primary.main + '20'
+    } else if (color === 'secondary') {
+      return theme.palette.secondary.main + '20'
+    } else if (color === 'warning') {
+      return theme.palette.warning.main + '20'
+    }
+    return theme.palette.grey[200]
+  }
+
+
   const button = (
     <Button
       variant={variant}
@@ -25,15 +50,9 @@ const PrestyledButton: React.FC<PrestyledButtonProps> = ({
         alignItems: 'center',
         textAlign: 'center',
         border: 'none',
-        backgroundColor: (theme) =>
-          color === 'primary'
-            ? theme.palette.primary.main + '10'
-            : theme.palette.grey[100],
+        backgroundColor: getBackgroundColor,
         '&:hover': {
-          backgroundColor: (theme) =>
-            color === 'primary'
-              ? theme.palette.primary.main + '20'
-              : theme.palette.grey[200],
+          backgroundColor: getHoverBackgroundColor,
           border: 'none',
         },
         ...sx,
