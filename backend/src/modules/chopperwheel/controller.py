@@ -124,15 +124,23 @@ class CWController:
 
     @synchronized()
     def connect(self, com_port) -> None:
-        interface_args = f"--interface serial_tmcl --port {com_port} --data-rate 9600"
-        self._serial_interface = ConnectionManager(interface_args).connect()
-        self._module = TMCM1021(self._serial_interface)
-        self._motor = self._module.motors[0]
-        self._motor.stop()
-        self._motor.actual_position = 0
-        self.state.update(
-            connection_status=ConnectionStatus.CONNECTED, status=CWStatus.IDLE
+        try:
+            self.state.update(connection_status=ConnectionStatus.CONNECTING)
+            interface_args = f"--interface serial_tmcl --port {com_port} --data-rate 9600"
+            self._serial_interface = ConnectionManager(interface_args).connect()
+            self._module = TMCM1021(self._serial_interface)
+            self._motor = self._module.motors[0]
+            self._motor.stop()
+            self._motor.actual_position = 0
+            self.state.update(
+                connection_status=ConnectionStatus.CONNECTED, status=CWStatus.IDLE
         )
+        except Exception as e:
+            logger.error("Error connecting to chopper wheel: %s", e)
+            self.state.update(
+                connection_status=ConnectionStatus.DISCONNECTED,
+                error=f"Error connecting to chopper wheel: {e}",
+            )
 
     @synchronized()
     def disconnect(self) -> None:
