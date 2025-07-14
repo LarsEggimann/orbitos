@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
-import { Box, Stack, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
+import { Box, Stack, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
+import ScaleIcon from '@mui/icons-material/Scale';
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import { XyStages as XyStagesService } from '~/generated'
 import PrestyledButton from '../ui/PrestyledButton'
@@ -33,55 +36,66 @@ export const AxisControl: React.FC<AxisControlProps> = ({
         <Box sx={{ flex: 1, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <Typography variant='body1' sx={{ mb: 2 }}>{axisLabel} Axis Control</Typography>
 
-            <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                <TextField
-                    variant='outlined'
-                    size='small'
-                    label={`${axisLabel} Input [mm]`}
-                    value={value}
-                    onChange={(e) => {
-                        const val = e.target.value
-                        onChange(val)
-                    }}
-                    type='number'
-                    sx={{}}
-                />
+            <Stack direction='row' sx={{ mb: 2, flexWrap: 'wrap', gap: 1, justifyContent: 'space-between' }}>
+                <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
 
-                <ExecQueryButton
-                    onClick={async () => {
-                        return await XyStagesService.xyStagesMoveAxisByMm({
-                            path: { axis, mm: Number(value) },
-                        })
-                    }}
-                    disabled={!isConnected}
-                    size='small'
-                >
-                    Move By
-                </ExecQueryButton>
+                    <TextField
+                        variant='outlined'
+                        size='small'
+                        label={`${axisLabel} Input [mm]`}
+                        value={value}
+                        onChange={(e) => {
+                            const val = e.target.value
+                            onChange(val)
+                        }}
+                        type='number'
+                        sx={{}}
+                    />
 
-                <ExecQueryButton
-                    onClick={async () => {
-                        return await XyStagesService.xyStagesMoveAxisToPosition({
-                            path: { axis, position: Number(value) },
-                        })
-                    }}
-                    disabled={!isConnected}
-                    size='small'
-                >
-                    Move To
-                </ExecQueryButton>
+                    <ExecQueryButton
+                        onClick={async () => {
+                            return await XyStagesService.xyStagesMoveAxisByMm({
+                                path: { axis, mm: Number(value) },
+                            })
+                        }}
+                        disabled={!isConnected}
+                        size='small'
+                        startIcon={<ZoomOutMapIcon />}
+                        tooltip='Move BY the specified distance relative to the current position'
+                    >
+                        Move By
+                    </ExecQueryButton>
+
+                    <ExecQueryButton
+                        onClick={async () => {
+                            return await XyStagesService.xyStagesMoveAxisToPosition({
+                                path: { axis, position: Number(value) },
+                            })
+                        }}
+                        disabled={!isConnected}
+                        size='small'
+                        startIcon={<ZoomInMapIcon />}
+                        tooltip='Move TO the specified position'
+                    >
+                        Move To
+                    </ExecQueryButton>
+                </Stack>
+
+                <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+
+                    <PrestyledButton
+                        onClick={() => setZeroConfirmOpen(true)}
+                        disabled={!isConnected}
+                        color='warning'
+                        size='small'
+                        startIcon={<ScaleIcon />}
+                        tooltip='Set the current axis position to zero'
+                    >
+                        Set Zero
+                    </PrestyledButton>
+                </Stack>
             </Stack>
 
-            <PrestyledButton
-                onClick={() => setZeroConfirmOpen(true)}
-                disabled={!isConnected}
-                color='warning'
-                size='small'
-                fullWidth
-                variant='outlined'
-            >
-                Set Current Position to Zero
-            </PrestyledButton>
 
             <Dialog open={zeroConfirmOpen} onClose={() => setZeroConfirmOpen(false)}>
                 <DialogTitle>Confirm Zero Position</DialogTitle>

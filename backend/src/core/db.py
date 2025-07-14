@@ -1,4 +1,6 @@
+from typing import Annotated
 from sqlmodel import Session, SQLModel, create_engine
+from fastapi import Depends
 
 from src.core.config import config
 
@@ -14,6 +16,7 @@ def get_session():
     with Session(engine) as session:
         yield session
 
+SessionDep = Annotated[Session, Depends(get_session)]
 
 def init_db() -> None:
     print("Initializing database...")

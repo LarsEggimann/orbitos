@@ -8,11 +8,11 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from sqlmodel import select, asc
-from src.modules.xy_stages.arcus_performax_stage import ArcusPerformaxStage
+from src.core.db import SessionDep
 from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
+from src.modules.xy_stages.arcus_performax_stage import ArcusPerformaxStage
 from src.modules.xy_stages.module import ControllerDep
-from src.modules.xy_stages.db import SessionDep
 from src.modules.xy_stages.module import ws_manager
 from src.modules.xy_stages.models import (
     XY,

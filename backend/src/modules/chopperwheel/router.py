@@ -8,10 +8,10 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from sqlmodel import select, asc
+from src.core.db import SessionDep
 from src.shared.deps import TimeFrameInputDep
 from src.shared.models import BaseResponse, ConnectionStatus
 from src.modules.chopperwheel.module import ControllerDep
-from src.modules.chopperwheel.db import SessionDep
 from src.modules.chopperwheel.module import ws_manager
 from src.modules.chopperwheel.models import (
     CWStatus,
