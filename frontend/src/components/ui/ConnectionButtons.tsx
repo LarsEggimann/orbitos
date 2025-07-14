@@ -32,20 +32,22 @@ const ConnectionButtons: React.FC<ConnectionButtonsProps> = ({
   onResetError,
   resetErrorText = 'Reset Error',
 }) => {
+  const isConnected = connectionStatus === 'connected'
+  const isDisconnected = connectionStatus === 'disconnected'
 
   return (
     <>
       <ExecQueryButton
         onClick={onConnect}
         tooltip={connectTooltipText}
-        disabled={connectDisabled || !additionalConnectValidation}
+        disabled={connectDisabled || !additionalConnectValidation || isConnected}
       >
         <UsbIcon />
       </ExecQueryButton>
       <ExecQueryButton
         onClick={onDisconnect}
         tooltip={disconnectTooltipText}
-        disabled={disconnectDisabled}
+        disabled={disconnectDisabled || isDisconnected}
         color='warning'
       >
         <UsbOffIcon />

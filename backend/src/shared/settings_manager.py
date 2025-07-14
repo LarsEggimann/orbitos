@@ -1,6 +1,7 @@
 from typing import TypeVar, Generic, Type, Callable, Optional, Any
 from sqlmodel import Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 from src.shared.models import BaseSetting
 
@@ -29,10 +30,19 @@ class SettingsManager(Generic[T]):
         with Session(self.engine) as session:
             result = session.get(self.model, self.device_id)
             if result is None:
+                # Create new record if it doesn't exist
                 result = self.model(device_id=self.device_id)
                 session.add(result)
-                session.commit()
-                session.refresh(result)
+                try:
+                    session.commit()
+                    session.refresh(result)
+                except IntegrityError:
+                    # Handle race condition where another thread created the record
+                    session.rollback()
+                    result = session.get(self.model, self.device_id)
+                    if result is None:
+                        # If still None, something is seriously wrong
+                        raise RuntimeError(f"Failed to create or retrieve settings for device_id {self.device_id}")
 
             self._settings = result.model_copy(deep=True)  # Detach from session
 

@@ -431,7 +431,6 @@ class KeysightEM:
             if self.state.get().connection_status != ConnectionStatus.CONNECTED:
                 self.state.update(connection_status=ConnectionStatus.CONNECTING)
                 self.em = self.rm.open_resource(f"TCPIP::{ip}::5025::SOCKET")  # type: ignore
-                self.ip_address = ip
 
                 # For Serial and TCP/IP socket connections enable the read Termination Character, or read's will timeout
                 if self.em.resource_name.startswith(
@@ -447,6 +446,7 @@ class KeysightEM:
                     status=ElectrometerStatus.IDLE,
                 )
 
+                self.ip_address = ip
             # testing connection
             logger.info("Testing connection to EM %s at %s", self.device_name.value, ip)
             idn = self._em_query("*IDN?")
