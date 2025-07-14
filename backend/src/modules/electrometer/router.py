@@ -98,7 +98,6 @@ def disconnect_electrometer(controller: ControllerDep):
     """
     Disconnect the electrometer.
     """
-    assert_connected(controller)
     controller.disconnect_from_keysight_em()
     return BaseResponse(message=f"Disconnected from {controller.device_name}.")
 
