@@ -15,6 +15,8 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 import { Link } from '@tanstack/react-router'
 import { MdElectricBolt, MdLineAxis } from 'react-icons/md'
+import DnsIcon from '@mui/icons-material/Dns';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { FaHome } from 'react-icons/fa'
 import { LuShipWheel, LuAxis3D } from 'react-icons/lu'
 import { TbArrowMergeBoth } from 'react-icons/tb'
@@ -42,6 +44,8 @@ const navLinks = [
   { text: 'Stages', icon: <LuAxis3D />, to: '/stages' },
   { text: 'Combo Control', icon: <TbArrowMergeBoth />, to: '/combo-control' },
   { text: 'Combo Data View', icon: <MdLineAxis />, to: '/combo-data-view' },
+  { text: 'Raspi Server Manage', icon: <DnsIcon />, to: '/raspi-server/manage' },
+  { text: 'Raspi Server Lin Acts', icon: <OpenInFullIcon />, to: '/raspi-server/lin-acts' },
 ]
 
 type LayoutProps = {

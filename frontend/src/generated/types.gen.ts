@@ -428,6 +428,28 @@ export type PerformaxUsbDevice = {
 };
 
 /**
+ * RaspiSettings
+ */
+export type RaspiSettings = {
+    /**
+     * Device Id
+     */
+    device_id: number;
+    /**
+     * Host
+     */
+    host?: string;
+    /**
+     * Port
+     */
+    port?: number;
+    /**
+     * Raspi Server App Directory
+     */
+    raspi_server_app_directory?: string;
+};
+
+/**
  * StageState
  */
 export type StageState = {
@@ -1445,21 +1467,21 @@ export type XyStagesSetAxisCurrentPositionToZeroResponses = {
 
 export type XyStagesSetAxisCurrentPositionToZeroResponse = XyStagesSetAxisCurrentPositionToZeroResponses[keyof XyStagesSetAxisCurrentPositionToZeroResponses];
 
-export type RaspiInstallServerData = {
+export type RaspiStartServerData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/orbitos-api/v1/raspi/server/start';
 };
 
-export type RaspiInstallServerResponses = {
+export type RaspiStartServerResponses = {
     /**
      * Successful Response
      */
     200: BaseResponse;
 };
 
-export type RaspiInstallServerResponse = RaspiInstallServerResponses[keyof RaspiInstallServerResponses];
+export type RaspiStartServerResponse = RaspiStartServerResponses[keyof RaspiStartServerResponses];
 
 export type RaspiStopServerData = {
     body?: never;
@@ -1521,7 +1543,7 @@ export type RaspiExtractLinActData = {
         lin_act_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/raspi/{lin_act_id}/extract';
+    url: '/orbitos-api/v1/raspi/lin-act/{lin_act_id}/extract';
 };
 
 export type RaspiExtractLinActErrors = {
@@ -1551,7 +1573,7 @@ export type RaspiRetractLinActData = {
         lin_act_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/raspi/{lin_act_id}/retract';
+    url: '/orbitos-api/v1/raspi/lin-act/{lin_act_id}/retract';
 };
 
 export type RaspiRetractLinActErrors = {
@@ -1571,6 +1593,22 @@ export type RaspiRetractLinActResponses = {
 };
 
 export type RaspiRetractLinActResponse = RaspiRetractLinActResponses[keyof RaspiRetractLinActResponses];
+
+export type RaspiGetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/settings';
+};
+
+export type RaspiGetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: RaspiSettings;
+};
+
+export type RaspiGetSettingsResponse = RaspiGetSettingsResponses[keyof RaspiGetSettingsResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;

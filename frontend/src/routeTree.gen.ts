@@ -15,6 +15,8 @@ import { Route as PathlessLayoutStagesRouteImport } from './routes/_pathlessLayo
 import { Route as PathlessLayoutComboDataViewRouteImport } from './routes/_pathlessLayout/combo-data-view'
 import { Route as PathlessLayoutComboControlRouteImport } from './routes/_pathlessLayout/combo-control'
 import { Route as PathlessLayoutChopperwheelRouteImport } from './routes/_pathlessLayout/chopperwheel'
+import { Route as PathlessLayoutRaspiServerManageRouteImport } from './routes/_pathlessLayout/raspi-server/manage'
+import { Route as PathlessLayoutRaspiServerLinActsRouteImport } from './routes/_pathlessLayout/raspi-server/lin-acts'
 import { Route as PathlessLayoutElectrometerDeviceIdRouteImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 import { Route as PathlessLayoutElectrometerDeviceId1AndDeviceId2RouteImport } from './routes/_pathlessLayout/electrometer.$deviceId1.and.$deviceId2'
 
@@ -50,6 +52,18 @@ const PathlessLayoutChopperwheelRoute =
     path: '/chopperwheel',
     getParentRoute: () => PathlessLayoutRoute,
   } as any)
+const PathlessLayoutRaspiServerManageRoute =
+  PathlessLayoutRaspiServerManageRouteImport.update({
+    id: '/raspi-server/manage',
+    path: '/raspi-server/manage',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
+const PathlessLayoutRaspiServerLinActsRoute =
+  PathlessLayoutRaspiServerLinActsRouteImport.update({
+    id: '/raspi-server/lin-acts',
+    path: '/raspi-server/lin-acts',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
 const PathlessLayoutElectrometerDeviceIdRoute =
   PathlessLayoutElectrometerDeviceIdRouteImport.update({
     id: '/electrometer/$deviceId',
@@ -70,6 +84,8 @@ export interface FileRoutesByFullPath {
   '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/raspi-server/lin-acts': typeof PathlessLayoutRaspiServerLinActsRoute
+  '/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesByTo {
@@ -79,6 +95,8 @@ export interface FileRoutesByTo {
   '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/raspi-server/lin-acts': typeof PathlessLayoutRaspiServerLinActsRoute
+  '/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesById {
@@ -90,6 +108,8 @@ export interface FileRoutesById {
   '/_pathlessLayout/stages': typeof PathlessLayoutStagesRoute
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/_pathlessLayout/raspi-server/lin-acts': typeof PathlessLayoutRaspiServerLinActsRoute
+  '/_pathlessLayout/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
   '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRouteTypes {
@@ -101,6 +121,8 @@ export interface FileRouteTypes {
     | '/stages'
     | '/'
     | '/electrometer/$deviceId'
+    | '/raspi-server/lin-acts'
+    | '/raspi-server/manage'
     | '/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +132,8 @@ export interface FileRouteTypes {
     | '/stages'
     | '/'
     | '/electrometer/$deviceId'
+    | '/raspi-server/lin-acts'
+    | '/raspi-server/manage'
     | '/electrometer/$deviceId1/and/$deviceId2'
   id:
     | '__root__'
@@ -120,6 +144,8 @@ export interface FileRouteTypes {
     | '/_pathlessLayout/stages'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
+    | '/_pathlessLayout/raspi-server/lin-acts'
+    | '/_pathlessLayout/raspi-server/manage'
     | '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesById: FileRoutesById
 }
@@ -171,6 +197,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutChopperwheelRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
+    '/_pathlessLayout/raspi-server/manage': {
+      id: '/_pathlessLayout/raspi-server/manage'
+      path: '/raspi-server/manage'
+      fullPath: '/raspi-server/manage'
+      preLoaderRoute: typeof PathlessLayoutRaspiServerManageRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/raspi-server/lin-acts': {
+      id: '/_pathlessLayout/raspi-server/lin-acts'
+      path: '/raspi-server/lin-acts'
+      fullPath: '/raspi-server/lin-acts'
+      preLoaderRoute: typeof PathlessLayoutRaspiServerLinActsRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
     '/_pathlessLayout/electrometer/$deviceId': {
       id: '/_pathlessLayout/electrometer/$deviceId'
       path: '/electrometer/$deviceId'
@@ -195,6 +235,8 @@ interface PathlessLayoutRouteChildren {
   PathlessLayoutStagesRoute: typeof PathlessLayoutStagesRoute
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
+  PathlessLayoutRaspiServerLinActsRoute: typeof PathlessLayoutRaspiServerLinActsRoute
+  PathlessLayoutRaspiServerManageRoute: typeof PathlessLayoutRaspiServerManageRoute
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
@@ -206,6 +248,8 @@ const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,
+  PathlessLayoutRaspiServerLinActsRoute: PathlessLayoutRaspiServerLinActsRoute,
+  PathlessLayoutRaspiServerManageRoute: PathlessLayoutRaspiServerManageRoute,
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route:
     PathlessLayoutElectrometerDeviceId1AndDeviceId2Route,
 }

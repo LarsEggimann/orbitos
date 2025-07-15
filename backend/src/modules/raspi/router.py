@@ -49,7 +49,7 @@ def raise_server_error(message: str):
 
 
 @router.post("/server/start", response_model=BaseResponse)
-async def install_server(controller: ControllerDep):
+async def start_server(controller: ControllerDep):
     """
     Try to start the server on the host.
     """
@@ -175,6 +175,13 @@ async def retract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: C
     except Exception as e:
         logger.error("Error retracting lin_act %d: %s", lin_act_id, e)
         raise_server_error(f"Failed to retract lin_act {lin_act_id}.")
+
+@router.get("/settings", response_model=RaspiSettings)
+async def get_settings(controller: ControllerDep):
+    """
+    Get the current settings for the raspi server.
+    """
+    return controller.settings.get()
 
 @router.websocket("/ws")
 async def raspi_ws(websocket: WebSocket, controller: ControllerDep):
