@@ -105,10 +105,9 @@ async def server_health_check(client: RaspiClientDep, controller: ControllerDep)
         controller.state.update(connection_status=ConnectionStatus.DISCONNECTED)
         raise_server_error("Failed to connect to raspi server.")
  
-@router.get("/server/status", response_model=list[BusStatus])
-async def get_bus_status(client: RaspiClientDep, controller: ControllerDep):
+async def update_bus_status(client: RaspiClientDep, controller: ControllerDep):
     """
-    Get the current status of the lin_acts.
+    Update the bus status by fetching it from the raspi server.
     """
     try:
         response = await raspi_server_get_status.asyncio_detailed(client=client)
@@ -123,6 +122,57 @@ async def get_bus_status(client: RaspiClientDep, controller: ControllerDep):
         logger.error("Error reading lin_act status: %s", e)
         controller.state.update(bus_status=None)
         raise_server_error("Failed to read lin_act status.")
+
+@router.get("/bus/status", response_model=dict[int, BusStatus])
+async def get_bus_status(client: RaspiClientDep, controller: ControllerDep):
+    """
+    Get the current status of the lin_acts.
+    """
+    return await update_bus_status(client, controller)
+    
+@router.post("/{lin_act_id}/extract", response_model=BaseResponse)
+async def extract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):
+    """
+    Switch lin act assigned to the given ID to the 'extract' position.
+    """
+    try:
+        response = await raspi_server_extract_lin_act.asyncio_detailed(
+            lin_act_id=lin_act_id, client=client
+        )
+        if response.status_code == status.HTTP_200_OK:
+            await update_bus_status(client, controller)
+            return BaseResponse(
+                message=f"lin_act {lin_act_id} switched to extract position."
+            )
+        else:
+            raise_server_error(
+                f"Unexpected status code {response.status_code} from extract command, content: {response.content.decode()}"
+            )
+    except Exception as e:
+        logger.error("Error extracting lin_act %d: %s", lin_act_id, e)
+        raise_server_error(f"Failed to extract lin_act {lin_act_id}.")
+
+@router.post("/{lin_act_id}/retract", response_model=BaseResponse)
+async def retract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):
+    """
+    Switch lin act assigned to the given ID to the 'retract' position.
+    """
+    try:
+        response = await raspi_server_retract_lin_act.asyncio_detailed(
+            lin_act_id=lin_act_id, client=client
+        )
+        if response.status_code == status.HTTP_200_OK:
+            await update_bus_status(client, controller)
+            return BaseResponse(
+                message=f"lin_act {lin_act_id} switched to retract position."
+            )
+        else:
+            raise_server_error(
+                f"Unexpected status code {response.status_code} from retract command, content: {response.content.decode()}"
+            )
+    except Exception as e:
+        logger.error("Error retracting lin_act %d: %s", lin_act_id, e)
+        raise_server_error(f"Failed to retract lin_act {lin_act_id}.")
 
 @router.websocket("/ws")
 async def raspi_ws(websocket: WebSocket, controller: ControllerDep):

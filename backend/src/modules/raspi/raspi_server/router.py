@@ -58,13 +58,13 @@ def retract_lin_act(lin_act_id: int):
         message=f"lin_act {lin_act_id} switched to retract position."
     )
 
-@router.get("/status", response_model=list[BusStatus])
+@router.get("/status", response_model=dict[int, BusStatus])
 def get_status():
     """
     Get the current status of the lin_acts.
     """
     try:
-        bus_status = []
+        bus_status = {}
         for lin_act_id in lin_act_ids:
             raw_value = bus().read_byte_data(DEVICE_ADDR, lin_act_id)
             
@@ -76,7 +76,7 @@ def get_status():
             else:
                 status_str = LinActStatus.UNKNOWN
             
-            bus_status.append(BusStatus(lin_act_id=lin_act_id, status=status_str, raw_value=raw_value))
+            bus_status[lin_act_id] = BusStatus(lin_act_id=lin_act_id, status=status_str, raw_value=raw_value)
 
         return bus_status
     
