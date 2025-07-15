@@ -5,7 +5,9 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.bus_status import BusStatus
+from ...models.raspi_server_get_status_response_raspi_server_get_status import (
+    RaspiServerGetStatusResponseRaspiServerGetStatus,
+)
 from ...types import Response
 
 
@@ -20,14 +22,9 @@ def _get_kwargs() -> dict[str, Any]:
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[list["BusStatus"]]:
+) -> Optional[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     if response.status_code == 200:
-        response_200 = []
-        _response_200 = response.json()
-        for response_200_item_data in _response_200:
-            response_200_item = BusStatus.from_dict(response_200_item_data)
-
-            response_200.append(response_200_item)
+        response_200 = RaspiServerGetStatusResponseRaspiServerGetStatus.from_dict(response.json())
 
         return response_200
     if client.raise_on_unexpected_status:
@@ -38,7 +35,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[list["BusStatus"]]:
+) -> Response[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -50,7 +47,7 @@ def _build_response(
 def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
-) -> Response[list["BusStatus"]]:
+) -> Response[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     """Get Status
 
      Get the current status of the lin_acts.
@@ -60,7 +57,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[list['BusStatus']]
+        Response[RaspiServerGetStatusResponseRaspiServerGetStatus]
     """
 
     kwargs = _get_kwargs()
@@ -75,7 +72,7 @@ def sync_detailed(
 def sync(
     *,
     client: Union[AuthenticatedClient, Client],
-) -> Optional[list["BusStatus"]]:
+) -> Optional[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     """Get Status
 
      Get the current status of the lin_acts.
@@ -85,7 +82,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        list['BusStatus']
+        RaspiServerGetStatusResponseRaspiServerGetStatus
     """
 
     return sync_detailed(
@@ -96,7 +93,7 @@ def sync(
 async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
-) -> Response[list["BusStatus"]]:
+) -> Response[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     """Get Status
 
      Get the current status of the lin_acts.
@@ -106,7 +103,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[list['BusStatus']]
+        Response[RaspiServerGetStatusResponseRaspiServerGetStatus]
     """
 
     kwargs = _get_kwargs()
@@ -119,7 +116,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: Union[AuthenticatedClient, Client],
-) -> Optional[list["BusStatus"]]:
+) -> Optional[RaspiServerGetStatusResponseRaspiServerGetStatus]:
     """Get Status
 
      Get the current status of the lin_acts.
@@ -129,7 +126,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        list['BusStatus']
+        RaspiServerGetStatusResponseRaspiServerGetStatus
     """
 
     return (

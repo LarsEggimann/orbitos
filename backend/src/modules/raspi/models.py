@@ -8,7 +8,7 @@ from src.modules.raspi.raspi_server.models import BusStatus
 
 class RaspiState(BaseState):
     status: str = "unknown"
-    bus_status: list[BusStatus] | None = None
+    bus_status: dict[int, BusStatus] | None = None
 
 
 class RaspiSettings(BaseSetting, table=True):

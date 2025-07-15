@@ -1477,27 +1477,27 @@ export type RaspiStopServerResponses = {
 
 export type RaspiStopServerResponse = RaspiStopServerResponses[keyof RaspiStopServerResponses];
 
-export type RaspiGetServerStatusData = {
+export type RaspiServerHealthCheckData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/orbitos-api/v1/raspi/server/health-check';
 };
 
-export type RaspiGetServerStatusResponses = {
+export type RaspiServerHealthCheckResponses = {
     /**
      * Successful Response
      */
     200: BaseResponse;
 };
 
-export type RaspiGetServerStatusResponse = RaspiGetServerStatusResponses[keyof RaspiGetServerStatusResponses];
+export type RaspiServerHealthCheckResponse = RaspiServerHealthCheckResponses[keyof RaspiServerHealthCheckResponses];
 
 export type RaspiGetBusStatusData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/orbitos-api/v1/raspi/server/status';
+    url: '/orbitos-api/v1/raspi/bus/status';
 };
 
 export type RaspiGetBusStatusResponses = {
@@ -1505,10 +1505,72 @@ export type RaspiGetBusStatusResponses = {
      * Response Raspi-Get Bus Status
      * Successful Response
      */
-    200: Array<BusStatus>;
+    200: {
+        [key: string]: BusStatus;
+    };
 };
 
 export type RaspiGetBusStatusResponse = RaspiGetBusStatusResponses[keyof RaspiGetBusStatusResponses];
+
+export type RaspiExtractLinActData = {
+    body?: never;
+    path: {
+        /**
+         * Lin Act Id
+         */
+        lin_act_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/raspi/{lin_act_id}/extract';
+};
+
+export type RaspiExtractLinActErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RaspiExtractLinActError = RaspiExtractLinActErrors[keyof RaspiExtractLinActErrors];
+
+export type RaspiExtractLinActResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type RaspiExtractLinActResponse = RaspiExtractLinActResponses[keyof RaspiExtractLinActResponses];
+
+export type RaspiRetractLinActData = {
+    body?: never;
+    path: {
+        /**
+         * Lin Act Id
+         */
+        lin_act_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/raspi/{lin_act_id}/retract';
+};
+
+export type RaspiRetractLinActErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RaspiRetractLinActError = RaspiRetractLinActErrors[keyof RaspiRetractLinActErrors];
+
+export type RaspiRetractLinActResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type RaspiRetractLinActResponse = RaspiRetractLinActResponses[keyof RaspiRetractLinActResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;
