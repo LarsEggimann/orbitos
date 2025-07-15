@@ -44,8 +44,8 @@ def retract_lin_act(lin_act_id: int):
         message=f"lin_act {lin_act_id} switched to retract position."
     )
 
-@router.get("/status", response_model=list[BusStatus])
-def get_status():
+@router.get("/bus/status", response_model=list[BusStatus])
+def get_bus_status():
     """
     Get the current status of the lin_acts.
     """
@@ -73,3 +73,11 @@ def get_status():
             detail="Failed to read lin_act status."
         ) from e
 
+@router.get("/status", response_model=BaseResponse)
+def get_status():
+    """
+    Get the current status of the server.
+    """
+    return BaseResponse(
+        message="Raspi server is running and accessible."
+    )
