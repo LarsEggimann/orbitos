@@ -14,6 +14,8 @@ DEVICE_BUS = 1
 DEVICE_ADDR = 0x10
 bus = smbus.SMBus(DEVICE_BUS)  # Initialize the I2C bus
 
+valve_ids = [1, 2 , 3]
+
 router = APIRouter(
     tags=["raspi-server"],
     prefix="/raspi-server",
@@ -48,7 +50,11 @@ def get_status():
     Get the current status of the valves.
     """
     try:
-        bus_status = bus.read_byte_data(DEVICE_ADDR, 0x00)
+        bus_status = {}
+        for valve_id in valve_ids:
+            s = bus.read_byte_data(DEVICE_ADDR, valve_id)
+            bus_status[valve_id] = s
+
         return BusStatus(
             status=bus_status
         )

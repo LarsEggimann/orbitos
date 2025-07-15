@@ -4,4 +4,4 @@ class BaseResponse(BaseModel):
     message: str
 
 class BusStatus(BaseModel):
-    status: str
+    status: dict[int, str]
