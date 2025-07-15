@@ -1,5 +1,7 @@
 import logging
 import subprocess
+
+import httpx
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -80,24 +82,12 @@ async def get_server_status(controller: ControllerDep):
     """
     Check if the server is running on the host.
     """
-    host = controller.settings.get().host
-    port = controller.settings.get().port
-    
-    # Check if FastAPI process is running
-    command = "pgrep -f 'fastapi run main.py' || echo 'not running'"
-    
-    logger.info("Checking server status on %s", host)
-    result = run_ssh(host, command)
-    
-    if result.returncode == 0 and result.stdout.strip() and result.stdout.strip() != 'not running':
-        pid = result.stdout.strip()
-        return BaseResponse(
-            message=f"Server is running on {host}:{port} (PID: {pid})"
-        )
-    else:
-        return BaseResponse(
-            message=f"Server is not running on {host}:{port}"
-        )
+    request = httpx.get(
+        f"http://{controller.settings.get().host}:{controller.settings.get().port}/raspi-server/status",
+    )
+    return BaseResponse(
+        message=f"Server status check on {controller.settings.get().host}:{controller.settings.get().port} returned: {request.content.decode()}"
+    )
 
 @router.websocket("/ws")
 async def raspi_ws(websocket: WebSocket, controller: ControllerDep):
