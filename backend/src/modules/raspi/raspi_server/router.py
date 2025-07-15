@@ -4,17 +4,32 @@ from fastapi import (
     HTTPException,
     status,
 )
-import smbus # sudo apt install -y i2c-tools python3-smbus
-# import smbus3 as smbus  # use for local development
 from .models import BaseResponse, BusStatus, LinActStatus
 
 logger = logging.getLogger(__name__)
 
 DEVICE_BUS = 1
 DEVICE_ADDR = 0x10
-bus = smbus.SMBus(DEVICE_BUS)  # Initialize the I2C bus
+
+# try import smbus (apt package on raspi)
+try:
+    import smbus # type: ignore
+    # -> to install on raspi: sudo apt install -y i2c-tools python3-smbus
+except ImportError:
+    logger.warning("native smbus not available, using smbus3")
+    import smbus3 as smbus  # use for local development
 
 lin_act_ids = [1, 2 , 3]
+
+# Global bus instance - initialized lazily
+_bus = None
+
+def bus() -> smbus.SMBus:
+    """Get or initialize the SMBus connection."""
+    global _bus
+    if _bus is None:
+        _bus = smbus.SMBus(DEVICE_BUS)
+    return _bus
 
 router = APIRouter(
     tags=["raspi-server"],
@@ -26,8 +41,7 @@ def extract_lin_act(lin_act_id: int):
     """
     Switch lin act assigned to the given ID to the 'extract' position.
     """
-    bus.write_byte_data(DEVICE_ADDR, lin_act_id, 0xFF)
-
+    bus().write_byte_data(DEVICE_ADDR, lin_act_id, 0xFF)
 
     return BaseResponse(
         message=f"lin_act {lin_act_id} switched to extract position."
@@ -38,21 +52,21 @@ def retract_lin_act(lin_act_id: int):
     """
     Switch lin_act assigned to the given ID to the 'retract' position.
     """
-    bus.write_byte_data(DEVICE_ADDR, lin_act_id, 0x00)
+    bus().write_byte_data(DEVICE_ADDR, lin_act_id, 0x00)
 
     return BaseResponse(
         message=f"lin_act {lin_act_id} switched to retract position."
     )
 
-@router.get("/bus/status", response_model=list[BusStatus])
-def get_bus_status():
+@router.get("/status", response_model=list[BusStatus])
+def get_status():
     """
     Get the current status of the lin_acts.
     """
     try:
         bus_status = []
         for lin_act_id in lin_act_ids:
-            raw_value = bus.read_byte_data(DEVICE_ADDR, lin_act_id)
+            raw_value = bus().read_byte_data(DEVICE_ADDR, lin_act_id)
             
             # Interpret the raw byte value
             if raw_value == 0x00:
@@ -73,8 +87,8 @@ def get_bus_status():
             detail="Failed to read lin_act status."
         ) from e
 
-@router.get("/status", response_model=BaseResponse)
-def get_status():
+@router.get("/health-check", response_model=BaseResponse)
+def health_check():
     """
     Get the current status of the server.
     """
