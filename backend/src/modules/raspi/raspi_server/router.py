@@ -6,7 +6,7 @@ from fastapi import (
 )
 import smbus # sudo apt install -y i2c-tools python3-smbus
 # import smbus3 as smbus  # use for local development
-from .models import BaseResponse, BusStatus, ValveStatus
+from .models import BaseResponse, BusStatus, LinActStatus
 
 logger = logging.getLogger(__name__)
 
@@ -14,62 +14,62 @@ DEVICE_BUS = 1
 DEVICE_ADDR = 0x10
 bus = smbus.SMBus(DEVICE_BUS)  # Initialize the I2C bus
 
-valve_ids = [1, 2 , 3]
+lin_act_ids = [1, 2 , 3]
 
 router = APIRouter(
     tags=["raspi-server"],
     prefix="/raspi-server",
 )
 
-@router.post("/{valve_id}/extract", response_model=BaseResponse)
-def extract_valve(valve_id: int):
+@router.post("/{lin_act_id}/extract", response_model=BaseResponse)
+def extract_lin_act(lin_act_id: int):
     """
-    Switch valve assigned to the given ID to the 'extract' position.
+    Switch lin act assigned to the given ID to the 'extract' position.
     """
-    bus.write_byte_data(DEVICE_ADDR, valve_id, 0xFF)
+    bus.write_byte_data(DEVICE_ADDR, lin_act_id, 0xFF)
 
 
     return BaseResponse(
-        message=f"Valve {valve_id} switched to extract position."
+        message=f"lin_act {lin_act_id} switched to extract position."
     )
 
-@router.post("/{valve_id}/retract", response_model=BaseResponse)
-def retract_valve(valve_id: int):
+@router.post("/{lin_act_id}/retract", response_model=BaseResponse)
+def retract_lin_act(lin_act_id: int):
     """
-    Switch valve assigned to the given ID to the 'retract' position.
+    Switch lin_act assigned to the given ID to the 'retract' position.
     """
-    bus.write_byte_data(DEVICE_ADDR, valve_id, 0x00)
+    bus.write_byte_data(DEVICE_ADDR, lin_act_id, 0x00)
 
     return BaseResponse(
-        message=f"Valve {valve_id} switched to retract position."
+        message=f"lin_act {lin_act_id} switched to retract position."
     )
 
 @router.get("/status", response_model=list[BusStatus])
 def get_status():
     """
-    Get the current status of the valves.
+    Get the current status of the lin_acts.
     """
     try:
         bus_status = []
-        for valve_id in valve_ids:
-            raw_value = bus.read_byte_data(DEVICE_ADDR, valve_id)
+        for lin_act_id in lin_act_ids:
+            raw_value = bus.read_byte_data(DEVICE_ADDR, lin_act_id)
             
             # Interpret the raw byte value
             if raw_value == 0x00:
-                status_str = ValveStatus.RETRACTED
+                status_str = LinActStatus.RETRACTED
             elif raw_value == 0xFF:
-                status_str = ValveStatus.EXTRACTED
+                status_str = LinActStatus.EXTRACTED
             else:
-                status_str = ValveStatus.UNKNOWN
+                status_str = LinActStatus.UNKNOWN
             
-            bus_status.append(BusStatus(valve_id=valve_id, status=status_str, raw_value=raw_value))
+            bus_status.append(BusStatus(lin_act_id=lin_act_id, status=status_str, raw_value=raw_value))
 
         return bus_status
     
     except Exception as e:
-        logger.error("Error reading valve status: %s", e)
+        logger.error("Error reading lin_act status: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to read valve status."
+            detail="Failed to read lin_act status."
         ) from e
 

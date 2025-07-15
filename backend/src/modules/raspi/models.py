@@ -23,6 +23,7 @@ class RaspiSettingsSet(BaseModel):
 
 class RaspiData(SQLModel, table=True):
     __tablename__ = "raspi_data"
+    device_id: int = Field(primary_key=True, index=True)
 
 class RaspiDataResponse(BaseModel):
     device_id: int

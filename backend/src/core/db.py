@@ -6,6 +6,7 @@ from src.core.config import config
 
 from src.modules.chopperwheel.models import CWSettings, CWData
 from src.modules.xy_stages.models import XYStagesSettings, XYStagesData
+from src.modules.raspi.models import RaspiSettings, RaspiData
 
 
 connect_args = {"check_same_thread": False}
@@ -25,5 +26,8 @@ def init_db() -> None:
         SQLModel.metadata.tables[CWData.__tablename__],
         SQLModel.metadata.tables[XYStagesSettings.__tablename__],
         SQLModel.metadata.tables[XYStagesData.__tablename__],
+        SQLModel.metadata.tables[RaspiSettings.__tablename__],
+        SQLModel.metadata.tables[RaspiData.__tablename__],
+
     ]
     SQLModel.metadata.create_all(engine, tables=tables)

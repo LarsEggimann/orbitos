@@ -5,12 +5,12 @@ from typing import Optional
 class BaseResponse(BaseModel):
     message: str
 
-class ValveStatus(str, Enum):
+class LinActStatus(str, Enum):
     EXTRACTED = "extracted"
     RETRACTED = "retracted"
     UNKNOWN = "unknown"
 
 class BusStatus(BaseModel):
-    valve_id: int
-    status: ValveStatus
+    lin_act_id: int
+    status: LinActStatus
     raw_value: Optional[int] = None  # Optional raw value for debugging
