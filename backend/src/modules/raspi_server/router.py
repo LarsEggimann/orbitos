@@ -6,7 +6,7 @@ from fastapi import (
 )
 import smbus # sudo apt install -y i2c-tools python3-smbus
 # import smbus3 as smbus  # use for local development
-from .models import BaseResponse, BusStatus
+from .models import BaseResponse, BusStatus, ValveStatus
 
 logger = logging.getLogger(__name__)
 
