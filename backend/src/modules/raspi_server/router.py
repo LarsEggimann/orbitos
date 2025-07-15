@@ -44,20 +44,28 @@ def retract_valve(valve_id: int):
         message=f"Valve {valve_id} switched to retract position."
     )
 
-@router.get("/status", response_model=BusStatus)
+@router.get("/status", response_model=list[BusStatus])
 def get_status():
     """
     Get the current status of the valves.
     """
     try:
-        bus_status = {}
+        bus_status = []
         for valve_id in valve_ids:
-            s = bus.read_byte_data(DEVICE_ADDR, valve_id)
-            bus_status[valve_id] = s
+            raw_value = bus.read_byte_data(DEVICE_ADDR, valve_id)
+            
+            # Interpret the raw byte value
+            if raw_value == 0x00:
+                status_str = ValveStatus.RETRACTED
+            elif raw_value == 0xFF:
+                status_str = ValveStatus.EXTRACTED
+            else:
+                status_str = ValveStatus.UNKNOWN
+            
+            bus_status.append(BusStatus(valve_id=valve_id, status=status_str, raw_value=raw_value))
 
-        return BusStatus(
-            status=bus_status
-        )
+        return bus_status
+    
     except Exception as e:
         logger.error("Error reading valve status: %s", e)
         raise HTTPException(
