@@ -4,9 +4,11 @@ from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Index
 
 from src.shared.models import BaseState, BaseSetting
+from src.modules.raspi.raspi_server.models import BusStatus
 
 class RaspiState(BaseState):
     status: str = "unknown"
+    bus_status: list[BusStatus] | None = None
 
 
 class RaspiSettings(BaseSetting, table=True):

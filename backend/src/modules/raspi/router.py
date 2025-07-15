@@ -20,8 +20,10 @@ from src.modules.raspi.models import (
     RaspiState,
 )
 from src.core.db import SessionDep
-from src.modules.raspi.module import ControllerDep
+from src.modules.raspi.client.raspi_server_api_client.api.raspi_server import raspi_server_get_status, raspi_server_health_check, raspi_server_extract_lin_act, raspi_server_retract_lin_act
+from src.modules.raspi.module import ControllerDep, RaspiClientDep
 from src.modules.raspi.module import ws_manager
+from src.modules.raspi.raspi_server.models import BusStatus
 
 def run_ssh(host: str, command: str):
     return subprocess.run(["ssh", host, command], capture_output=True, text=True, check=False)
@@ -37,6 +39,13 @@ router = APIRouter(
     tags=["raspi"],
     prefix="/raspi",
 )
+
+def raise_server_error(message: str):
+    """Raise an HTTPException with a server error message."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=message
+    )
 
 
 @router.post("/server/start", response_model=BaseResponse)
@@ -77,17 +86,43 @@ async def stop_server(controller: ControllerDep):
         message=f"Server stop command executed on {host}. Process ID: {process.pid}"
     )
 
-@router.get("/server/status", response_model=BaseResponse)
-async def get_server_status(controller: ControllerDep):
+@router.get("/server/health-check", response_model=BaseResponse)
+async def server_health_check(client: RaspiClientDep, controller: ControllerDep):
     """
     Check if the server is running on the host.
     """
-    request = httpx.get(
-        f"http://{controller.settings.get().host}:{controller.settings.get().port}/raspi-server/status",
-    )
-    return BaseResponse(
-        message=f"Server status check on {controller.settings.get().host}:{controller.settings.get().port} returned: {request.content.decode()}"
-    )
+    try:
+        response = await raspi_server_health_check.asyncio_detailed(client=client)
+        if response.status_code == status.HTTP_200_OK:
+            controller.state.update(connection_status=ConnectionStatus.CONNECTED)
+            return response.parsed
+        else:
+            raise_server_error(
+                f"Unexpected status code {response.status_code} from server health check, content: {response.content.decode()}"
+            )
+    except Exception as e:
+        logger.error("Error connecting to raspi server: %s", e)
+        controller.state.update(connection_status=ConnectionStatus.DISCONNECTED)
+        raise_server_error("Failed to connect to raspi server.")
+ 
+@router.get("/server/status", response_model=list[BusStatus])
+async def get_bus_status(client: RaspiClientDep, controller: ControllerDep):
+    """
+    Get the current status of the lin_acts.
+    """
+    try:
+        response = await raspi_server_get_status.asyncio_detailed(client=client)
+        if response.status_code == status.HTTP_200_OK:
+            controller.state.update(bus_status=response.parsed)
+            return response.parsed
+        else:
+            raise_server_error(
+                f"Unexpected status code {response.status_code} from server status check, content: {response.content.decode()}"
+            )
+    except Exception as e:
+        logger.error("Error reading lin_act status: %s", e)
+        controller.state.update(bus_status=None)
+        raise_server_error("Failed to read lin_act status.")
 
 @router.websocket("/ws")
 async def raspi_ws(websocket: WebSocket, controller: ControllerDep):

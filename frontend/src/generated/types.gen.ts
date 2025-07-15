@@ -50,6 +50,21 @@ export type BaseWebSocketMessage = {
 };
 
 /**
+ * BusStatus
+ */
+export type BusStatus = {
+    /**
+     * Lin Act Id
+     */
+    lin_act_id: number;
+    status: LinActStatus;
+    /**
+     * Raw Value
+     */
+    raw_value?: number | null;
+};
+
+/**
  * COMPort
  */
 export type ComPort = {
@@ -392,6 +407,11 @@ export type HttpValidationError = {
      */
     detail?: Array<ValidationError>;
 };
+
+/**
+ * LinActStatus
+ */
+export type LinActStatus = 'extracted' | 'retracted' | 'unknown';
 
 /**
  * PerformaxUSBDevice
@@ -1424,6 +1444,71 @@ export type XyStagesSetAxisCurrentPositionToZeroResponses = {
 };
 
 export type XyStagesSetAxisCurrentPositionToZeroResponse = XyStagesSetAxisCurrentPositionToZeroResponses[keyof XyStagesSetAxisCurrentPositionToZeroResponses];
+
+export type RaspiInstallServerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/server/start';
+};
+
+export type RaspiInstallServerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type RaspiInstallServerResponse = RaspiInstallServerResponses[keyof RaspiInstallServerResponses];
+
+export type RaspiStopServerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/server/stop';
+};
+
+export type RaspiStopServerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type RaspiStopServerResponse = RaspiStopServerResponses[keyof RaspiStopServerResponses];
+
+export type RaspiGetServerStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/server/health-check';
+};
+
+export type RaspiGetServerStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type RaspiGetServerStatusResponse = RaspiGetServerStatusResponses[keyof RaspiGetServerStatusResponses];
+
+export type RaspiGetBusStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/server/status';
+};
+
+export type RaspiGetBusStatusResponses = {
+    /**
+     * Response Raspi-Get Bus Status
+     * Successful Response
+     */
+    200: Array<BusStatus>;
+};
+
+export type RaspiGetBusStatusResponse = RaspiGetBusStatusResponses[keyof RaspiGetBusStatusResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;

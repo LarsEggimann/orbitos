@@ -2,9 +2,14 @@
 fastapi[standard]
 sqlmodel # sql, also installs sqlalchemy and pydantic
 
+# http requests
+httpx
+
+# code gen
+openapi-python-client
+
 # testing
 pytest
-httpx
 
 # useful stuff
 orjson
