@@ -293,8 +293,19 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         endState={[endDate, setEndDate]}
       ></DateRangeSelect>
 
-      <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
-        <Typography variant='h6'>Plot Data</Typography>
+      <ElectrometerStateDisplay state={state as ElectrometerState} />
+
+      <TimeSeriesChart
+        xData={data?.timestamp ?? []}
+        yData={data?.current ?? []}
+        dataQuery={dataQuery}
+        height={500}
+        xAxisLabel='Time'
+        yAxisLabel='Current [A]'
+        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
+      />
+
+      <Card sx={{ flexGrow: 1, my: 2, py: 0, px: 2 }}>
         <Table sx={{ minWidth: 300 }}>
           <TableBody>
             <TableRow>
@@ -352,17 +363,6 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         </Table>
       </Card>
 
-      <TimeSeriesChart
-        xData={data?.timestamp ?? []}
-        yData={data?.current ?? []}
-        dataQuery={dataQuery}
-        height={500}
-        xAxisLabel='Time'
-        yAxisLabel='Current [A]'
-        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
-      />
-
-      <ElectrometerStateDisplay state={state as ElectrometerState} />
 
       <Box
         sx={{
@@ -422,24 +422,25 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             onOff={true}
             value={settings?.current_range_auto ?? ''}
             onApply={makeSettingApplyHandler('current_range_auto')}
+            disabled={state?.status !== 'idle'}
           />
           <DirtyTextField
             label={'Manual Current Range [A]'}
             value={settings?.current_range ?? ''}
             onApply={makeSettingApplyHandler('current_range')}
-            disabled={settings?.current_range_auto == 'ON'}
+            disabled={settings?.current_range_auto == 'ON' || state?.status !== 'idle'}
           />
           <DirtyTextField
             label={'Auto Current Range Upper Limit [A]'}
             value={settings?.current_range_auto_upper_limit ?? ''}
             onApply={makeSettingApplyHandler('current_range_auto_upper_limit')}
-            disabled={settings?.current_range_auto == 'OFF'}
+            disabled={settings?.current_range_auto == 'OFF' || state?.status !== 'idle'}
           />
           <DirtyTextField
             label={'Auto Current Range Lower Limit [A]'}
             value={settings?.current_range_auto_lower_limit ?? ''}
             onApply={makeSettingApplyHandler('current_range_auto_lower_limit')}
-            disabled={settings?.current_range_auto == 'OFF'}
+            disabled={settings?.current_range_auto == 'OFF' || state?.status !== 'idle'}
           />
         </Box>
 
@@ -457,12 +458,13 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             onOff={true}
             value={settings?.aperture_auto ?? ''}
             onApply={makeSettingApplyHandler('aperture_auto')}
+            disabled={state?.status !== 'idle'}
           />
           <DirtyTextField
             label={'Manual Aperture Integration Time [s]'}
             value={settings?.aperture_integration_time ?? ''}
             onApply={makeSettingApplyHandler('aperture_integration_time')}
-            disabled={settings?.aperture_auto == 'ON'}
+            disabled={settings?.aperture_auto == 'ON' || state?.status !== 'idle'}
           />
         </Box>
 
@@ -480,12 +482,14 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             value={settings?.trigger_count ?? ''}
             onApply={makeSettingApplyHandler('trigger_count')}
             onChange={(e) => setTriggerCount(Number(e.target.value) || 0)}
+            disabled={state?.status !== 'idle'}
           />
           <DirtyTextField
             label={'Trigger Time Interval [s]'}
             value={settings?.trigger_time_interval ?? ''}
             onApply={makeSettingApplyHandler('trigger_time_interval')}
             onChange={(e) => setTriggerTime(Number(e.target.value) || 0)}
+            disabled={state?.status !== 'idle'}
           />
           <Typography>
             Total Measurement Time: {triggerCount * triggerTime} s
@@ -494,6 +498,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             label={'Trigger Delay [s]'}
             value={settings?.trigger_delay ?? ''}
             onApply={makeSettingApplyHandler('trigger_delay')}
+            disabled={state?.status !== 'idle'}
           />
         </Box>
         <Box

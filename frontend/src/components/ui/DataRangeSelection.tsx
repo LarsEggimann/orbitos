@@ -111,9 +111,9 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
           </PrestyledButton>
 
           <PrestyledButton
-            tooltip='Go back 60 minutes'
+            tooltip='Go back 10 minutes'
             onClick={() => {
-              startMinusNMinutes(60)
+              startMinusNMinutes(10)
             }}
           >
             <FastForwardIcon
@@ -121,9 +121,9 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
             />
           </PrestyledButton>
           <PrestyledButton
-            tooltip='Go back 5 minutes'
+            tooltip='Go back 10 seconds'
             onClick={() => {
-              startMinusNMinutes(5)
+              startMinusNMinutes(1 / 6) // 10 seconds is 1/6 of a minute
             }}
           >
             <PlayArrowIcon

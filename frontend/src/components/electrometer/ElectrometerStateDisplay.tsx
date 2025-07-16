@@ -41,12 +41,11 @@ export const ElectrometerStateDisplay = ({
     showConnectionSpinner = true
   } else connectionColor = 'error'
 
-  // Error chip color
+  // Error detection
   const hasError = errorText && errorText.toLowerCase() !== 'no error'
-  const errorColor = hasError ? 'error' : 'default'
 
   return (
-    <Card sx={{ flexGrow: 1, mb: 1, p: 2 }}>
+    <Card sx={{ flexGrow: 1, my: 1, p: 2 }}>
       <Grid container spacing={4}>
         <Grid sx={{ minWidth: 120 }}>
           <Typography variant='body1' color='text.secondary'>
@@ -107,8 +106,17 @@ export const ElectrometerStateDisplay = ({
           </Typography>
           <Typography
             variant='body1'
-            color={errorColor}
-            sx={{ wordBreak: 'break-word' }}
+            sx={{
+              wordBreak: 'break-word',
+              ...(hasError && {
+                backgroundColor: 'error.main',
+                color: 'error.contrastText',
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                fontWeight: 'medium'
+              })
+            }}
           >
             {hasError ? errorText : 'no error reported'}
           </Typography>
