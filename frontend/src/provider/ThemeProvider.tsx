@@ -17,6 +17,8 @@ interface ThemeContextType {
   mode: ThemeMode
   setMode: (mode: ThemeMode) => void
   resolvedMode: 'light' | 'dark'
+  logoSrc: string
+  faviconHref: string
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -53,6 +55,18 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   const appliedMode = mode === 'system' ? resolvedMode : mode
 
+  // Get appropriate logo and favicon based on theme
+  const logoSrc = appliedMode === 'dark' ? '/favicon-inverted.png' : '/favicon.png'
+  const faviconHref = appliedMode === 'dark' ? '/favicon-inverted.ico' : '/favicon.ico'
+
+  // Update favicon dynamically
+  useEffect(() => {
+    const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement
+    if (link) {
+      link.href = faviconHref
+    }
+  }, [faviconHref])
+
   const theme = useMemo(
     () =>
       createTheme({
@@ -63,8 +77,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     [appliedMode],
   )
 
+  const contextValue = useMemo(
+    () => ({ mode, setMode, resolvedMode, logoSrc, faviconHref }),
+    [mode, setMode, resolvedMode, logoSrc, faviconHref],
+  )
+
   return (
-    <ThemeContext.Provider value={{ mode, setMode, resolvedMode }}>
+    <ThemeContext.Provider value={contextValue}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         {children}
