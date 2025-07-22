@@ -131,6 +131,14 @@ async def get_bus_status(client: RaspiClientDep, controller: ControllerDep):
     Get the current status of the lin_acts.
     """
     return await update_bus_status(client, controller)
+
+@router.get("/state", response_model=RaspiState)
+async def get_state(client: RaspiClientDep, controller: ControllerDep):
+    """
+    Get the current state of the raspi module.
+    """
+    await update_bus_status(client, controller)
+    return controller.state.get()
     
 @router.post("/lin-act/{lin_act_id}/extract", response_model=BaseResponse)
 async def extract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):
