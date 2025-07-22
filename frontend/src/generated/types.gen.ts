@@ -450,6 +450,31 @@ export type RaspiSettings = {
 };
 
 /**
+ * RaspiState
+ */
+export type RaspiState = {
+    /**
+     * Device Name
+     */
+    device_name: string;
+    /**
+     * Status
+     */
+    status?: string;
+    connection_status?: ConnectionStatus;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Bus Status
+     */
+    bus_status?: {
+        [key: string]: BusStatus;
+    } | null;
+};
+
+/**
  * StageState
  */
 export type StageState = {
@@ -1533,6 +1558,22 @@ export type RaspiGetBusStatusResponses = {
 };
 
 export type RaspiGetBusStatusResponse = RaspiGetBusStatusResponses[keyof RaspiGetBusStatusResponses];
+
+export type RaspiGetStateData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/raspi/state';
+};
+
+export type RaspiGetStateResponses = {
+    /**
+     * Successful Response
+     */
+    200: RaspiState;
+};
+
+export type RaspiGetStateResponse = RaspiGetStateResponses[keyof RaspiGetStateResponses];
 
 export type RaspiExtractLinActData = {
     body?: never;
