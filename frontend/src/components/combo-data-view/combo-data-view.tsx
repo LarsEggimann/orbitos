@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import Stack from '@mui/material/Stack'
+import Switch from '@mui/material/Switch'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import {
   Chopperwheel as ChopperwheelService,
   type CwDataResponse,
@@ -62,12 +64,27 @@ const ComboDataView: React.FC = () => {
     return []
   })
 
+  // Auto-reload functionality
+  const [autoReload, setAutoReload] = useState<boolean>(() => {
+    const saved = localStorage.getItem('combo_data_view_auto_reload')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  const autoReloadIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
     localStorage.setItem(
       'combo_data_view_selected_devices',
       JSON.stringify(selectedDevices),
     )
   }, [selectedDevices])
+
+  useEffect(() => {
+    localStorage.setItem(
+      'combo_data_view_auto_reload',
+      JSON.stringify(autoReload),
+    )
+  }, [autoReload])
 
   const getQueryArgs = () => ({
     query: {
@@ -125,6 +142,37 @@ const ComboDataView: React.FC = () => {
     enabled: datesLoaded && selectedDevices.includes('electrometer_2'),
   })
 
+  // Auto-reload functionality - simple interval-based refetching
+  const refetchQueries = useCallback(() => {
+    if (selectedDevices.includes('chopperwheel') && cwQuery.refetch) {
+      cwQuery.refetch()
+    }
+    if (selectedDevices.includes('electrometer_1') && em1Query.refetch) {
+      em1Query.refetch()
+    }
+    if (selectedDevices.includes('electrometer_2') && em2Query.refetch) {
+      em2Query.refetch()
+    }
+  }, [selectedDevices, cwQuery.refetch, em1Query.refetch, em2Query.refetch])
+
+  useEffect(() => {
+    if (autoReload) {
+      autoReloadIntervalRef.current = setInterval(() => {
+        refetchQueries()
+      }, 60000) // 1 minute = 60000ms
+    } else if (autoReloadIntervalRef.current) {
+      clearInterval(autoReloadIntervalRef.current)
+      autoReloadIntervalRef.current = null
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (autoReloadIntervalRef.current) {
+        clearInterval(autoReloadIntervalRef.current)
+      }
+    }
+  }, [autoReload, refetchQueries])
+
   // Build the series array based on selected devices and update when selectedDevices, cwData, em1Data, em2Data, startDate, or endDate changes
   const [series, setSeries] = useState<any[]>([])
   useEffect(() => {
@@ -166,7 +214,7 @@ const ComboDataView: React.FC = () => {
     setSeries(newSeries)
   }, [selectedDevices, cwData, em1Data, em2Data, startDate, endDate])
 
-  const [selectedOnlyElectrometers, setSelectedOnlyElectrometers] = useState<Boolean>(false)
+  const [selectedOnlyElectrometers, setSelectedOnlyElectrometers] = useState<boolean>(false)
   useEffect(() => {
     if (selectedDevices.includes('electrometer_1') && selectedDevices.includes('electrometer_2') && !selectedDevices.includes('chopperwheel')) {
       setSelectedOnlyElectrometers(true)
@@ -192,6 +240,17 @@ const ComboDataView: React.FC = () => {
             minWidth={300}
           />
         </Box>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={autoReload}
+              onChange={(e) => setAutoReload(e.target.checked)}
+              color="primary"
+            />
+          }
+          label="Auto-reload (1 min)"
+          sx={{ mb: 0 }}
+        />
       </Stack>
       <Divider sx={{ mb: 5, mt: 2 }} />
 
