@@ -13,6 +13,7 @@ import {
 import DateRangeSelect from '~/components/ui/DataRangeSelection'
 import DeviceMultiSelect, { type DeviceType } from '../ui/DeviceMultiSelect'
 import MultiTimeSeriesPlot from '../plots/MultiTimeSeriesPlot'
+import ScatterPlot from '../plots/ScatterPlot'
 
 const ComboDataView: React.FC = () => {
   const pageName = 'combo-data-view'
@@ -56,7 +57,7 @@ const ComboDataView: React.FC = () => {
       try {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed)) return parsed
-      } catch {}
+      } catch { }
     }
     return []
   })
@@ -165,6 +166,15 @@ const ComboDataView: React.FC = () => {
     setSeries(newSeries)
   }, [selectedDevices, cwData, em1Data, em2Data, startDate, endDate])
 
+  const [selectedOnlyElectrometers, setSelectedOnlyElectrometers] = useState<Boolean>(false)
+  useEffect(() => {
+    if (selectedDevices.includes('electrometer_1') && selectedDevices.includes('electrometer_2') && !selectedDevices.includes('chopperwheel')) {
+      setSelectedOnlyElectrometers(true)
+    } else {
+      setSelectedOnlyElectrometers(false)
+    }
+  }, [selectedDevices])
+
   return (
     <Box sx={{ bgcolor: 'background.paper' }}>
       <Stack
@@ -194,6 +204,18 @@ const ComboDataView: React.FC = () => {
         series={series}
         dataQueries={[cwQuery, em1Query, em2Query]}
       />
+
+      {selectedOnlyElectrometers && (
+        <Box sx={{ mt: 2 }}>
+          <ScatterPlot
+            xData={em1Data?.current || []}
+            yData={em2Data?.current || []}
+            title='EM 1 vs EM 2 Correlation'
+            xAxisLabel='EM 1 Current [A]'
+            yAxisLabel='EM 2 Current [A]'
+          />
+        </Box>
+      )}
     </Box>
   )
 }
