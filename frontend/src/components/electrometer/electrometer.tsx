@@ -11,6 +11,8 @@ import TableBody from '@mui/material/TableBody'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
 import TextField from '@mui/material/TextField'
+import Switch from '@mui/material/Switch'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
@@ -82,6 +84,19 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     undefined,
   )
 
+  // State for controlling data append
+  const [dataAppendEnabled, setDataAppendEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem(`${deviceName}_dataAppendEnabled`)
+    return saved ? JSON.parse(saved) : true // Default to enabled
+  })
+
+  useEffect(() => {
+    localStorage.setItem(
+      `${deviceName}_dataAppendEnabled`,
+      JSON.stringify(dataAppendEnabled),
+    )
+  }, [dataAppendEnabled, deviceName])
+
   const dataQuery = useQuery({
     queryKey: [deviceName, startDate, endDate],
     queryFn: async () => {
@@ -118,6 +133,8 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         )
       ).data!,
     dataAppendFunction: (newData) => {
+      if (!dataAppendEnabled) return // Don't append if disabled
+      
       setData((prevData) => {
         if (!prevData) return newData
         return {
@@ -253,9 +270,22 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             {state?.connection_status == 'connected' ? '🟢' : '🔴'}
           </Typography>
         </Box>
-        <Typography variant='subtitle1'>
-          Live State via WebSocket {connected ? '🟢' : '🔴'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={dataAppendEnabled}
+                onChange={(e) => setDataAppendEnabled(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Live Data Append"
+            sx={{ mb: 0 }}
+          />
+          <Typography variant='subtitle1'>
+            Live State via WebSocket {connected ? '🟢' : '🔴'}
+          </Typography>
+        </Box>
       </Stack>
       <Divider sx={{ my: 2, mt: 0 }} />
 

@@ -289,7 +289,7 @@ class CWController:
                 if time.time() - start_time > timeout:
                     logger.error("Timeout while waiting for home position")
                     break
-
+            time.sleep(0.1)
             if self._home_position():
                 logger.info("Home position found")
                 self._set_angular_position(0)
