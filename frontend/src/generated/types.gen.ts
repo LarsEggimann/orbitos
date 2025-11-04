@@ -1098,6 +1098,36 @@ export type ChopperwheelFlashBeamChopperWheelResponses = {
 
 export type ChopperwheelFlashBeamChopperWheelResponse = ChopperwheelFlashBeamChopperWheelResponses[keyof ChopperwheelFlashBeamChopperWheelResponses];
 
+export type ChopperwheelGoToPositionChopperWheelData = {
+    body?: never;
+    path: {
+        /**
+         * Angle Deg
+         */
+        angle_deg: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/chopperwheel/go-to-position/{angle_deg}';
+};
+
+export type ChopperwheelGoToPositionChopperWheelErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChopperwheelGoToPositionChopperWheelError = ChopperwheelGoToPositionChopperWheelErrors[keyof ChopperwheelGoToPositionChopperWheelErrors];
+
+export type ChopperwheelGoToPositionChopperWheelResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type ChopperwheelGoToPositionChopperWheelResponse = ChopperwheelGoToPositionChopperWheelResponses[keyof ChopperwheelGoToPositionChopperWheelResponses];
+
 export type ChopperwheelDisconnectChopperWheelData = {
     body?: never;
     path?: never;
