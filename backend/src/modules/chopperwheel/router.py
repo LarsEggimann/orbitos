@@ -152,6 +152,20 @@ def flash_beam_chopper_wheel(
         message=f"Chopper wheel {controller.device_name} is performing flash beam operation."
     )
 
+@router.post("/go-to-position/{angle_deg}", response_model=BaseResponse)
+def go_to_position_chopper_wheel(angle_deg: float, controller: ControllerDep, background_tasks: BackgroundTasks):
+    """
+    Move the chopper wheel to a specific angular position.
+    """
+    assert_connected(controller)
+    assert_idle(controller)
+    assert_no_errors(controller)
+
+    background_tasks.add_task(controller.go_to_position, angle_deg)
+    return BaseResponse(
+        message=f"Chopper wheel {controller.device_name} is moving to position {angle_deg} degrees."
+    )
+
 
 @router.post("/disconnect", response_model=BaseResponse)
 def disconnect_chopper_wheel(controller: ControllerDep):

@@ -1,7 +1,7 @@
 import logging
 import time
 import threading
-import serial.tools.list_ports
+import serial.tools.list_ports # type: ignore
 
 from sqlmodel import Session
 from pytrinamic.connections import ConnectionManager  # type: ignore
@@ -328,6 +328,37 @@ class CWController:
 
         except Exception as e:
             logger.error("Error during demo rotation: %s", e)
+            self.state.update(error=str(e))
+        finally:
+            self._stop_acquire_data()
+            self.state.update(status=CWStatus.IDLE)
+
+    def go_to_position(self, angle_deg: float) -> None:
+        """
+        Move the chopper wheel to a specified angle.
+
+        Args:
+            angle_deg: The angle in degrees.
+        """
+        if not self._home_position():
+            logger.error("Not at home. Cannot move to position.")
+            self.state.update(error="Not at home, to make sure position is correct move to home first.")
+            return
+        
+        self.state.update(status=CWStatus.ROTATING)
+        logger.info(f"Moving chopper wheel to position {angle_deg} degrees")
+
+        try:
+            self._start_acquire_data()
+            time.sleep(0.1)  # wait for acquisition to start
+            self._motor_move_to(angle_deg)
+
+            self._wait_for_target_position_reached()
+
+            self._motor_stop()
+
+        except Exception as e:
+            logger.error("Error during move to position: %s", e)
             self.state.update(error=str(e))
         finally:
             self._stop_acquire_data()
