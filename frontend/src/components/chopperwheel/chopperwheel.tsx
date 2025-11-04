@@ -13,6 +13,7 @@ import TableCell from '@mui/material/TableCell'
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import BoltIcon from '@mui/icons-material/Bolt';
 import HomeIcon from '@mui/icons-material/Home';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import ConnectionButtons from '~/components/ui/ConnectionButtons'
@@ -39,6 +40,7 @@ const Chopperwheel: React.FC = () => {
   const [startDate, setStartDate] = React.useState(null as Date | null)
   const [endDate, setEndDate] = React.useState(null as Date | null)
   const [datesLoaded, setDatesLoaded] = useState(false)
+  const [moveToPosition, setMoveToPosition] = useState<number | null>(null)
 
   // persist date range in localStorage using deviceIdFull as key
   useEffect(() => {
@@ -68,6 +70,27 @@ const Chopperwheel: React.FC = () => {
       console.error('Error saving date range to localStorage:', error)
     }
   }, [startDate, endDate, deviceName])
+
+  // persist moveToPosition in localStorage
+  useEffect(() => {
+    const savedPosition = localStorage.getItem(`${deviceName}_moveToPosition`)
+    if (savedPosition) {
+      setMoveToPosition(Number(savedPosition))
+    }
+  }, [deviceName])
+
+  useEffect(() => {
+    try {
+      if (moveToPosition !== null) {
+        localStorage.setItem(
+          `${deviceName}_moveToPosition`,
+          moveToPosition.toString(),
+        )
+      }
+    } catch (error) {
+      console.error('Error saving moveToPosition to localStorage:', error)
+    }
+  }, [moveToPosition, deviceName])
 
   const [data, setData] = useState<CwDataResponse | undefined>(undefined)
 
@@ -283,9 +306,9 @@ const Chopperwheel: React.FC = () => {
               <TableCell sx={{ border: 0, pl: 0, width: '15%' }}>
                 <Typography>
                   {typeof data?.velocity?.[data?.velocity.length - 1] ===
-                  'number'
+                    'number'
                     ? data?.velocity[data?.velocity.length - 1].toFixed(3) +
-                      ' rps'
+                    ' rps'
                     : ''}
                 </Typography>
               </TableCell>
@@ -298,8 +321,8 @@ const Chopperwheel: React.FC = () => {
                     data?.angular_position.length - 1
                   ] === 'number'
                     ? data?.angular_position[
-                        data?.angular_position.length - 1
-                      ].toFixed(3) + ' °'
+                      data?.angular_position.length - 1
+                    ].toFixed(3) + ' °'
                     : ''}
                 </Typography>
               </TableCell>
@@ -377,6 +400,28 @@ const Chopperwheel: React.FC = () => {
         >
           Find Home
         </ExecQueryButton>
+        <Box>
+          <ExecQueryButton
+            startIcon={<ControlCameraIcon />}
+            onClick={async () => {
+              return await ChopperwheelService.chopperwheelGoToPositionChopperWheel({
+                path: { angle_deg: moveToPosition },
+              })
+            }}
+          >
+            Move To Position
+          </ExecQueryButton>
+          <TextField
+            variant='outlined'
+            size='small'
+            value={moveToPosition}
+            onChange={(e) => {
+              setMoveToPosition(Number(e.target.value))
+            }}
+            type={'number'}
+          />
+
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>

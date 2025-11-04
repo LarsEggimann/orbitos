@@ -340,10 +340,6 @@ class CWController:
         Args:
             angle_deg: The angle in degrees.
         """
-        if not self._home_position():
-            logger.error("Not at home. Cannot move to position.")
-            self.state.update(error="Not at home, to make sure position is correct move to home first.")
-            return
         
         self.state.update(status=CWStatus.ROTATING)
         logger.info(f"Moving chopper wheel to position {angle_deg} degrees")
