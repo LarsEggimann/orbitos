@@ -295,7 +295,7 @@ const Chopperwheel: React.FC = () => {
                     velocity: data?.velocity ?? [],
                     angular_position: data?.angular_position ?? [],
                   }}
-                  defaultFilename={`chopperwheel_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                  defaultFilename={`chopperwheel_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString('ch')}`}
                 />
               </TableCell>
             </TableRow>

@@ -391,7 +391,7 @@ const XyStages: React.FC = () => {
                     x_position: data?.x_position ?? [],
                     y_position: data?.y_position ?? [],
                   }}
-                  defaultFilename={`xy_stages_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                  defaultFilename={`xy_stages_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString('ch')}`}
                 />
               </TableCell>
             </TableRow>

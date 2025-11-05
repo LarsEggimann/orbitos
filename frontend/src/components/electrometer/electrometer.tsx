@@ -351,7 +351,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
                     timestamp: data?.timestamp ?? [],
                     current: data?.current ?? [],
                   }}
-                  defaultFilename={`em${deviceId}_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString()}`}
+                  defaultFilename={`em${deviceId}_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString('ch')}`}
                 />
               </TableCell>
             </TableRow>
