@@ -400,12 +400,14 @@ const Chopperwheel: React.FC = () => {
         >
           Find Home
         </ExecQueryButton>
-        <Box>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <ExecQueryButton
             startIcon={<ControlCameraIcon />}
             onClick={async () => {
               return await ChopperwheelService.chopperwheelGoToPositionChopperWheel({
-                path: { angle_deg: moveToPosition },
+                path: { angle_deg: moveToPosition! },
               })
             }}
           >
@@ -414,12 +416,18 @@ const Chopperwheel: React.FC = () => {
           <TextField
             variant='outlined'
             size='small'
+            label='Move to Position [deg]'
             value={moveToPosition}
             onChange={(e) => {
               setMoveToPosition(Number(e.target.value))
             }}
             type={'number'}
           />
+          <Typography>
+            Open Position: XXX° for New Wheel (v2) with new mount.
+            <br />
+            TODO: Add correct angle!!
+          </Typography>
 
         </Box>
       </Box>
