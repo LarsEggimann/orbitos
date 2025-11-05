@@ -18,7 +18,7 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import FlashOffIcon from '@mui/icons-material/FlashOff';
 import StopIcon from '@mui/icons-material/Stop';
-import TimeSeriesChart from '~/components/plots/TimeSeriesPlot'
+import EMPlot from '~/components/electrometer/EMPlot'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import ConnectionButtons from '~/components/ui/ConnectionButtons'
 import {
@@ -47,8 +47,8 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
   const deviceName = `electrometer_${deviceId}` as ElectrometerName
   const deviceIdPathArg = { path: { device_id: deviceId } }
 
-  const [startDate, setStartDate] = React.useState(null as Date | null)
-  const [endDate, setEndDate] = React.useState(null as Date | null)
+  const [startDate, setStartDate] = useState(null as Date | null)
+  const [endDate, setEndDate] = useState(null as Date | null)
   const [datesLoaded, setDatesLoaded] = useState(false)
 
   // persist date range in localStorage using deviceIdFull as key
@@ -134,7 +134,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
       ).data!,
     dataAppendFunction: (newData) => {
       if (!dataAppendEnabled) return // Don't append if disabled
-      
+
       setData((prevData) => {
         if (!prevData) return newData
         return {
@@ -169,23 +169,19 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     }
   }, [data?.current, data?.timestamp])
 
-  const [conversionFactor, setConversionFactor] = useState(1) // Default conversion factor
-  useEffect(() => {
-    // Load conversion factor from localStorage if available
-    const savedFactor = localStorage.getItem(`${deviceName}_conversionFactor`)
-    if (savedFactor) {
-      setConversionFactor(parseFloat(savedFactor))
-    }
-  }, [deviceName])
+  const [conversionFactor, setConversionFactor] = useState<number | undefined>(
+    () => parseFloat(localStorage.getItem(`${deviceName}_conversionFactor`) || '1')
+  )
   useEffect(() => {
     // Save conversion factor to localStorage whenever it changes
-    localStorage.setItem(
-      `${deviceName}_conversionFactor`,
-      conversionFactor.toString(),
-    )
+    if (conversionFactor) {
+      localStorage.setItem(
+        `${deviceName}_conversionFactor`,
+        conversionFactor.toString(),
+      )
+    }
   }, [conversionFactor, deviceName])
 
-  // const field1Ref = useRef<DirtyTextFieldHandle>(null)
 
   const { openSnackbar } = useSnackbarContext()
 
@@ -325,14 +321,14 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
 
       <ElectrometerStateDisplay state={state as ElectrometerState} />
 
-      <TimeSeriesChart
+      <EMPlot
         xData={data?.timestamp ?? []}
         yData={data?.current ?? []}
         dataQuery={dataQuery}
         height={500}
         xAxisLabel='Time'
         yAxisLabel='Current [A]'
-        hoverTemplate='<b>Time:</b> %{customdata[0]}<br><b>Current:</b> %{customdata[1]} A<extra></extra>'
+        currentToGreyConversionFactor={conversionFactor || 1}
       />
 
       <Card sx={{ flexGrow: 1, my: 2, py: 0, px: 2 }}>
@@ -375,6 +371,8 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
                     const value = parseFloat(e.target.value)
                     if (!isNaN(value)) {
                       setConversionFactor(value)
+                    } else {
+                      setConversionFactor(undefined)
                     }
                   }}
                   type={'number'}
@@ -383,7 +381,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
               <TableCell sx={{ border: 0, pl: 0 }}>
                 <Typography>
                   {integratedCharge
-                    ? (integratedCharge * conversionFactor).toExponential(6)
+                    ? (integratedCharge * (conversionFactor ?? 1)).toExponential(6)
                     : 'N/A'}{' '}
                   Gy
                 </Typography>
