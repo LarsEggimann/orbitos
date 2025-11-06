@@ -87,7 +87,13 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
 
     const loadInitial = async () => {
       try {
+        // when switching devices (url changes), reset to loading state
         setLoading(true)
+        setError(null)
+        // clear stale values while loading the new device
+        setState(null)
+        setSettings(null)
+
         const [s, set] = await Promise.all([
           fetchInitialState(),
           fetchInitialSettings(),
@@ -110,7 +116,8 @@ export function useDeviceWebSocket<TState, TData, TSettings>({
     return () => {
       cancelled = true
     }
-  }, [])
+    // Re-load initial state/settings whenever the device URL changes
+  }, [url])
 
   return { state, settings, connected, loading, error }
 }
