@@ -64,6 +64,15 @@ def assert_no_errors(controller: ControllerDep):
             detail=f"{controller.device_name.value} has pending error, reset the error.",
         )
 
+def assert_output_off(controller: ControllerDep):
+    """
+    Assert that the electrometer output is off.
+    """
+    if controller.state.get().output_status != "OFF":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{controller.device_name.value} output is ON, please turn it off before starting new sweep.",
+        )
 
 @router.post("/{device_id}/connect/{ip}", response_model=BaseResponse)
 def connect_to_electrometer(
@@ -254,6 +263,7 @@ def start_source_voltage_sweep(
     """
     assert_connected(controller)
     assert_no_errors(controller)
+    assert_output_off(controller)
 
     background_tasks.add_task(controller.do_source_voltage_sweep)
     return BaseResponse(
