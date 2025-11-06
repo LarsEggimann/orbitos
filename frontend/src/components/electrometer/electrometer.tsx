@@ -52,37 +52,45 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
   const [datesLoaded, setDatesLoaded] = useState(false)
 
   // persist date range in localStorage using deviceIdFull as key
-  useEffect(() => {
+  useMemo(() => {
     const savedStart = localStorage.getItem(`${deviceName}_startDate`)
     const savedEnd = localStorage.getItem(`${deviceName}_endDate`)
+
     if (savedStart) {
       setStartDate(new Date(savedStart))
     } else {
-      // Default to 12 hours ago if no start date is saved
+      // default to 12 hours ago if no start date is saved or empty string
       setStartDate(new Date(Date.now() - 12 * 60 * 60 * 1000)) // 12 hours ago
     }
-    if (savedEnd) setEndDate(new Date(savedEnd))
+
+    if (savedEnd) {
+      setEndDate(new Date(savedEnd))
+    } else {
+      setEndDate(null)
+    }
+
     setDatesLoaded(true)
   }, [deviceName])
 
   useEffect(() => {
+    if (!datesLoaded) return
     try {
-      if (startDate)
+      if (startDate) {
         localStorage.setItem(`${deviceName}_startDate`, startDate.toISOString())
+      }
+
       if (endDate) {
         localStorage.setItem(`${deviceName}_endDate`, endDate.toISOString())
       } else {
-        // if endDate is null, clear it from localStorage, this allows to reset the end date
+        // if endDate is null or undefined, remove it from localStorage
         localStorage.removeItem(`${deviceName}_endDate`)
       }
     } catch (error) {
       console.error('Error saving date range to localStorage:', error)
     }
-  }, [startDate, endDate, deviceName])
+  }, [startDate, endDate, deviceName, datesLoaded])
 
-  const [data, setData] = useState<ElectrometerDataResponse | undefined>(
-    undefined,
-  )
+  const [data, setData] = useState<ElectrometerDataResponse | undefined>(undefined)
 
   // State for controlling data append
   const [dataAppendEnabled, setDataAppendEnabled] = useState<boolean>(() => {
@@ -133,7 +141,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
         )
       ).data!,
     dataAppendFunction: (newData) => {
-      if (!dataAppendEnabled) return // Don't append if disabled
+      if (!dataAppendEnabled) return // do not append if disabled
 
       setData((prevData) => {
         if (!prevData) return newData

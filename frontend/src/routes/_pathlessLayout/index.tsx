@@ -58,7 +58,7 @@ function Home() {
     >
       <Box sx={{ width: '100%', maxWidth: 800 }}>
         <Paper
-          elevation={3}
+          elevation={2}
           sx={{
             p: 5,
             width: '100%',
@@ -136,14 +136,19 @@ function Home() {
   )
 }
 
-// === Simple hard-coded changelog ===
-// Edit here to add/remove entries. Latest first.
+// === simple hard-coded changelog ===
 type ChangelogEntry = {
   date: string
   items: string[]
 }
 
 const CHANGELOG: ChangelogEntry[] = [
+    {
+    date: '2025-11-06',
+    items: [
+      'Fix date range persisting in electrometer component',
+    ],
+  },
   {
     date: '2025-11-05',
     items: [
