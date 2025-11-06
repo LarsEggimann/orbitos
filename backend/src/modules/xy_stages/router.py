@@ -117,7 +117,6 @@ def disconnect_stage(axis: XY, controller: ControllerDep):
     """
     stage = controller.xy_stages[axis]
     assert_stage_connected(stage)
-    assert_idle(controller)
     controller.disconnect(axis)
     return BaseResponse(message=f"Disconnected from {controller.device_name} at {axis}.")
 

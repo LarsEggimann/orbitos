@@ -147,7 +147,8 @@ const CHANGELOG: ChangelogEntry[] = [
     date: '2025-11-06',
     items: [
       'Fix date range persisting in electrometer component',
-      'Fix settings state reloading when switching devices via sidebar'
+      'Fix settings state reloading when switching devices via sidebar',
+      'Allow disconnecting axis of the stages even when they are not idle',
     ],
   },
   {
