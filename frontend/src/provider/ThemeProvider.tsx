@@ -56,8 +56,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const appliedMode = mode === 'system' ? resolvedMode : mode
 
   // Get appropriate logo and favicon based on theme
-  const logoSrc = appliedMode === 'dark' ? '/favicon-inverted.png' : '/favicon.png'
-  const faviconHref = appliedMode === 'dark' ? '/favicon-inverted.ico' : '/favicon.ico'
+  const logoSrc = appliedMode === 'dark' ? '/favicon-new-alt.ico' : '/favicon-new.ico'
+  const faviconHref = appliedMode === 'dark' ? '/favicon-new-alt.ico' : '/favicon-new.ico'
 
   // Update favicon dynamically
   useEffect(() => {
