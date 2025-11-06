@@ -146,6 +146,7 @@ const CHANGELOG: ChangelogEntry[] = [
     {
     date: '2025-11-06',
     items: [
+      'Fix electrometer trigger based measurements where the data was showing spikes when using source voltage of the same electrometer (quick toggle of output voltage caused capacitive spikes e.g when connected to the ionization chamber)',
       'Fix date range persisting in electrometer component',
       'Fix settings state reloading when switching devices via sidebar',
       'Allow disconnecting axis of the stages even when they are not idle',

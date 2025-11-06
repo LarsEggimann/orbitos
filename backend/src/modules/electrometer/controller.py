@@ -214,8 +214,9 @@ class KeysightEM:
                 status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
             )
             logger.info("Starting trigger based measurement")
+            if self.state.get().output_status != "ON":
+                self.enable_output()  # output relay needs to be enabled for INIT:ALL
             self.enable_input()
-            self.enable_output()  # output relay needs to be enabled for INIT:ALL
             self._safe_write_and_log(":INIT:ALL (@1);")
             wait_time = int(
                 float(self.settings.get().trigger_count)
