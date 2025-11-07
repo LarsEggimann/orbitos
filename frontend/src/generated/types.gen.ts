@@ -411,7 +411,7 @@ export type HttpValidationError = {
 /**
  * LinActStatus
  */
-export type LinActStatus = 'extracted' | 'retracted' | 'unknown';
+export type LinActStatus = 'extended' | 'retracted' | 'unknown';
 
 /**
  * PerformaxUSBDevice
@@ -1605,7 +1605,7 @@ export type RaspiGetStateResponses = {
 
 export type RaspiGetStateResponse = RaspiGetStateResponses[keyof RaspiGetStateResponses];
 
-export type RaspiExtractLinActData = {
+export type RaspiExtendLinActData = {
     body?: never;
     path: {
         /**
@@ -1614,26 +1614,26 @@ export type RaspiExtractLinActData = {
         lin_act_id: number;
     };
     query?: never;
-    url: '/orbitos-api/v1/raspi/lin-act/{lin_act_id}/extract';
+    url: '/orbitos-api/v1/raspi/lin-act/{lin_act_id}/extend';
 };
 
-export type RaspiExtractLinActErrors = {
+export type RaspiExtendLinActErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type RaspiExtractLinActError = RaspiExtractLinActErrors[keyof RaspiExtractLinActErrors];
+export type RaspiExtendLinActError = RaspiExtendLinActErrors[keyof RaspiExtendLinActErrors];
 
-export type RaspiExtractLinActResponses = {
+export type RaspiExtendLinActResponses = {
     /**
      * Successful Response
      */
     200: BaseResponse;
 };
 
-export type RaspiExtractLinActResponse = RaspiExtractLinActResponses[keyof RaspiExtractLinActResponses];
+export type RaspiExtendLinActResponse = RaspiExtendLinActResponses[keyof RaspiExtendLinActResponses];
 
 export type RaspiRetractLinActData = {
     body?: never;

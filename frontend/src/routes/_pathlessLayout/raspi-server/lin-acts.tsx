@@ -38,7 +38,7 @@ function RouteComponent() {
         <Stack direction='row' sx={{ alignItems: 'center', gap: 2, mt: 5 }}>
             <ExecQueryButton
                 onClick={async () => {
-                    return await RaspiService.raspiExtractLinAct({
+                    return await RaspiService.raspiExtendLinAct({
                         path: {lin_act_id: 1},
                     })
                 }}

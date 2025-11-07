@@ -36,15 +36,15 @@ router = APIRouter(
     prefix="/raspi-server",
 )
 
-@router.post("/{lin_act_id}/extract", response_model=BaseResponse)
-def extract_lin_act(lin_act_id: int):
+@router.post("/{lin_act_id}/extend", response_model=BaseResponse)
+def extend_lin_act(lin_act_id: int):
     """
-    Switch lin act assigned to the given ID to the 'extract' position.
+    Switch lin act assigned to the given ID to the 'extend' position.
     """
     bus().write_byte_data(DEVICE_ADDR, lin_act_id, 0xFF)
 
     return BaseResponse(
-        message=f"lin_act {lin_act_id} switched to extract position."
+        message=f"lin_act {lin_act_id} switched to extend position."
     )
 
 @router.post("/{lin_act_id}/retract", response_model=BaseResponse)
@@ -72,7 +72,7 @@ def get_status():
             if raw_value == 0x00:
                 status_str = LinActStatus.RETRACTED
             elif raw_value == 0xFF:
-                status_str = LinActStatus.EXTRACTED
+                status_str = LinActStatus.EXTENDED
             else:
                 status_str = LinActStatus.UNKNOWN
             

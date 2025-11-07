@@ -20,7 +20,7 @@ from src.modules.raspi.models import (
     RaspiState,
 )
 from src.core.db import SessionDep
-from src.modules.raspi.client.raspi_server_api_client.api.raspi_server import raspi_server_get_status, raspi_server_health_check, raspi_server_extract_lin_act, raspi_server_retract_lin_act
+from src.modules.raspi.client.raspi_server_api_client.api.raspi_server import raspi_server_get_status, raspi_server_health_check, raspi_server_extend_lin_act, raspi_server_retract_lin_act
 from src.modules.raspi.module import ControllerDep, RaspiClientDep
 from src.modules.raspi.module import ws_manager
 from src.modules.raspi.raspi_server.models import BusStatus
@@ -140,27 +140,27 @@ async def get_state(client: RaspiClientDep, controller: ControllerDep):
     await update_bus_status(client, controller)
     return controller.state.get()
     
-@router.post("/lin-act/{lin_act_id}/extract", response_model=BaseResponse)
-async def extract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):
+@router.post("/lin-act/{lin_act_id}/extend", response_model=BaseResponse)
+async def extend_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):
     """
-    Switch lin act assigned to the given ID to the 'extract' position.
+    Switch lin act assigned to the given ID to the 'extend' position.
     """
     try:
-        response = await raspi_server_extract_lin_act.asyncio_detailed(
+        response = await raspi_server_extend_lin_act.asyncio_detailed(
             lin_act_id=lin_act_id, client=client
         )
         if response.status_code == status.HTTP_200_OK:
             await update_bus_status(client, controller)
             return BaseResponse(
-                message=f"lin_act {lin_act_id} switched to extract position."
+                message=f"lin_act {lin_act_id} switched to extend position."
             )
         else:
             raise_server_error(
-                f"Unexpected status code {response.status_code} from extract command, content: {response.content.decode()}"
+                f"Unexpected status code {response.status_code} from extend command, content: {response.content.decode()}"
             )
     except Exception as e:
-        logger.error("Error extracting lin_act %d: %s", lin_act_id, e)
-        raise_server_error(f"Failed to extract lin_act {lin_act_id}.")
+        logger.error("Error extending lin_act %d: %s", lin_act_id, e)
+        raise_server_error(f"Failed to extend lin_act {lin_act_id}.")
 
 @router.post("/lin-act/{lin_act_id}/retract", response_model=BaseResponse)
 async def retract_lin_act(lin_act_id: int, client: RaspiClientDep, controller: ControllerDep):

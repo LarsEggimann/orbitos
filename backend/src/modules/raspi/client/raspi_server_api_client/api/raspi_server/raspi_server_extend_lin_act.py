@@ -15,7 +15,7 @@ def _get_kwargs(
 ) -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": f"/raspi-server/{lin_act_id}/extract",
+        "url": f"/raspi-server/{lin_act_id}/extend",
     }
 
     return _kwargs
@@ -54,9 +54,9 @@ def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Union[BaseResponse, HTTPValidationError]]:
-    """Extract Lin Act
+    """Extend Lin Act
 
-     Switch lin act assigned to the given ID to the 'extract' position.
+     Switch lin act assigned to the given ID to the 'extend' position.
 
     Args:
         lin_act_id (int):
@@ -85,9 +85,9 @@ def sync(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Optional[Union[BaseResponse, HTTPValidationError]]:
-    """Extract Lin Act
+    """Extend Lin Act
 
-     Switch lin act assigned to the given ID to the 'extract' position.
+     Switch lin act assigned to the given ID to the 'extend' position.
 
     Args:
         lin_act_id (int):
@@ -111,9 +111,9 @@ async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Union[BaseResponse, HTTPValidationError]]:
-    """Extract Lin Act
+    """Extend Lin Act
 
-     Switch lin act assigned to the given ID to the 'extract' position.
+     Switch lin act assigned to the given ID to the 'extend' position.
 
     Args:
         lin_act_id (int):
@@ -140,9 +140,9 @@ async def asyncio(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Optional[Union[BaseResponse, HTTPValidationError]]:
-    """Extract Lin Act
+    """Extend Lin Act
 
-     Switch lin act assigned to the given ID to the 'extract' position.
+     Switch lin act assigned to the given ID to the 'extend' position.
 
     Args:
         lin_act_id (int):

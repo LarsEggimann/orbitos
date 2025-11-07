@@ -6,7 +6,7 @@ class BaseResponse(BaseModel):
     message: str
 
 class LinActStatus(str, Enum):
-    EXTRACTED = "extracted"
+    EXTENDED = "extended"
     RETRACTED = "retracted"
     UNKNOWN = "unknown"
 

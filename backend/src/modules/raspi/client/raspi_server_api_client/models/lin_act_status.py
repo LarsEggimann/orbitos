@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class LinActStatus(str, Enum):
-    EXTRACTED = "extracted"
+    EXTENDED = "extended"
     RETRACTED = "retracted"
     UNKNOWN = "unknown"
 

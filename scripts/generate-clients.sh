@@ -12,8 +12,12 @@ cd frontend
 npm run generate-client
 rm openapi.json
 
+echo "Generated frontend client."
+
 # generate raspi server api client
 cd ../backend/src/modules/raspi
 python -c "import raspi_server.main; import json; print(json.dumps(raspi_server.main.app.openapi()))" > ./openapi.json
 openapi-python-client generate --path ./openapi.json --output-path ./client --overwrite
 rm openapi.json
+
+echo "Generated raspi server api client."
