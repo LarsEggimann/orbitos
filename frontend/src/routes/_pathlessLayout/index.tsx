@@ -143,6 +143,12 @@ type ChangelogEntry = {
 }
 
 const CHANGELOG: ChangelogEntry[] = [
+      {
+    date: '2025-11-10',
+    items: [
+      'Try fix "no running event loop" error in run_async_in_background utility function',
+    ],
+  },
     {
     date: '2025-11-06',
     items: [
