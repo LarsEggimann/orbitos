@@ -208,43 +208,53 @@ class KeysightEM:
         if self.trigger_based_measurement_running:
             logger.warning("Trigger based measurement is already running!")
         else:
-            self._init_trigger_based_measurement()
-            self.trigger_based_measurement_running = True
-            self.state.update(
-                status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
-            )
-            logger.info("Starting trigger based measurement")
-            if self.state.get().output_status != "ON":
-                self.enable_output()  # output relay needs to be enabled for INIT:ALL
-            self.enable_input()
-            self._safe_write_and_log(":INIT:ALL (@1);")
-            wait_time = int(
-                float(self.settings.get().trigger_count)
-                * float(self.settings.get().trigger_time_interval)
-            )
-            logger.info("Waiting for %s seconds to retrieve data", wait_time)
-            start = time.time()
-            while time.time() - start < wait_time:
-                time.sleep(0.2)
-                progress = f"{(time.time() - start):.2f} / {wait_time:.2f}"
-                print(
-                    f"Keysight controller info: {progress} seconds measurement time",
-                    end="\r",
-                )
+            try:
+                self._init_trigger_based_measurement()
+                self.trigger_based_measurement_running = True
                 self.state.update(
-                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING,
-                    trigger_based_measurement_status=f"{progress} seconds",
+                    status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING
                 )
-            self.state.update(
-                status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA,
-                trigger_based_measurement_status="Fetching data ...",
-            )
-            self._fetch_trigger_based_data(start)
-            self.disable_input()
-            self.trigger_based_measurement_running = False
-            self.state.update(
-                status=ElectrometerStatus.IDLE, trigger_based_measurement_status="Done"
-            )
+                logger.info("Starting trigger based measurement")
+                if self.state.get().output_status != "ON":
+                    self.enable_output()  # output relay needs to be enabled for INIT:ALL
+                self.enable_input()
+                self._safe_write_and_log(":INIT:ALL (@1);")
+                wait_time = int(
+                    float(self.settings.get().trigger_count)
+                    * float(self.settings.get().trigger_time_interval)
+                )
+                logger.info("Waiting for %s seconds to retrieve data", wait_time)
+                start = time.time()
+                while time.time() - start < wait_time:
+                    time.sleep(0.2)
+                    progress = f"{(time.time() - start):.2f} / {wait_time:.2f}"
+                    print(
+                        f"Keysight controller info: {progress} seconds measurement time",
+                        end="\r",
+                    )
+                    self.state.update(
+                        status=ElectrometerStatus.TRIGGER_BASED_MEASUREMENT_RUNNING,
+                        trigger_based_measurement_status=f"{progress} seconds",
+                    )
+                self.state.update(
+                    status=ElectrometerStatus.FETCHING_TRIGGER_BASED_MEASUREMENT_DATA,
+                    trigger_based_measurement_status="Fetching data ...",
+                )
+                self._fetch_trigger_based_data(start)
+
+            except Exception as e:
+
+                logger.error("Error during trigger based measurement: %s", e)
+                self.state.update(
+                    error=str(e)
+                )
+
+            finally:
+                self.disable_input()
+                self.trigger_based_measurement_running = False
+                self.state.update(
+                    status=ElectrometerStatus.IDLE, trigger_based_measurement_status="Done"
+                )
 
     def update_settings(self, set_settings: ElectrometerSettingsSet):
         logger.info("Updating settings for Keysight EM %s", self.device_name.value)
