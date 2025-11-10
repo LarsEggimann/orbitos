@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, List, TypeVar, Generic
-import asyncio
+import threading
 from fastapi import WebSocket
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -23,34 +23,37 @@ H = TypeVar("H", bound=BaseSetting)  # setting model type
 class WebSocketManager(Generic[T, G, H]):
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {}
-        self.lock = asyncio.Lock()
+        self.lock = threading.Lock()
 
     async def connect(self, device_name: str, websocket: WebSocket):
         await websocket.accept()
-        async with self.lock:
+        with self.lock:
             if device_name not in self.active_connections:
                 self.active_connections[device_name] = []
             self.active_connections[device_name].append(websocket)
 
     async def disconnect(self, device_name: str, websocket: WebSocket):
-        async with self.lock:
+        with self.lock:
             if device_name in self.active_connections:
                 self.active_connections[device_name].remove(websocket)
                 if not self.active_connections[device_name]:
                     del self.active_connections[device_name]
 
     async def _broadcast_message(self, device_name: str, message: BaseWebSocketMessage):
-        async with self.lock:
-            if device_name in self.active_connections:
-                for ws in self.active_connections[device_name]:
-                    try:
-                        await ws.send_json(jsonable_encoder(message))
-                    except Exception as e:
-                        logger.exception(
-                            "Failed to send message to %s websocket, error %s",
-                            device_name,
-                            e,
-                        )
+        
+        # copy list to avoid holding the lock while sending
+        with self.lock:
+            connections = list(self.active_connections.get(device_name, []))
+
+        for ws in connections:
+            try:
+                await ws.send_json(jsonable_encoder(message))
+            except Exception as e:
+                logger.exception(
+                    "Failed to send message to %s websocket, error %s",
+                    device_name,
+                    e,
+                )
 
     async def broadcast_state(self, device_name: str, state: T):
         logger.info("Broadcasting state for device %s", device_name)

@@ -146,6 +146,7 @@ const CHANGELOG: ChangelogEntry[] = [
       {
     date: '2025-11-10',
     items: [
+      'Try fix "Lock ... is bound to a different event loop" error in WebSocketManager by using different locking',
       'Try fix "no running event loop" error in run_async_in_background utility function',
     ],
   },
