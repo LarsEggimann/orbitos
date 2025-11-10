@@ -68,6 +68,7 @@ class KeysightEM:
 
         self.trigger_based_measurement_running = False
         self._voltage_sweep_cancel_event = threading.Event()
+        self._previous_voltage_range: float | None = None
 
         self.time_list: list[str] = []
         self.current_list: list[str] = []
@@ -340,7 +341,6 @@ class KeysightEM:
         if prev_range is None:
             logger.info("Setting initial voltage range to %s V", v_range)
             self._safe_write_and_log(f":SOUR1:VOLT:RANG {v_range};")
-            self.enable_output()
         elif v_range != prev_range:
             logger.info(
                 "Switching voltage range to %s V, disabling output temporarily.",
@@ -390,7 +390,7 @@ class KeysightEM:
             ":OUTP1:OFF:MODE ZERO;:OUTP1:LOW COMM;:SOUR1:FUNC:MODE VOLT;:SOUR1:FUNC:TRIG:CONT OFF;:SOUR1:VOLT 0;:SOUR1:VOLT:TRIG 0;:SOUR1:VOLT:RLIM:STAT OFF;"
         )
         self._voltage_sweep_cancel_event.clear()  # reset the cancel event
-        prev_range = self._set_source_voltage_with_range(
+        self._previous_voltage_range = self._set_source_voltage_with_range(
             0, None
         )  # set initial voltage to 0 and range to 1000 V
 
@@ -408,13 +408,26 @@ class KeysightEM:
                 logger.info("Voltage sweep cancelled.")
                 self._voltage_sweep_cancel_event.clear()
                 break
-            prev_range = self._set_source_voltage_with_range(v, prev_range)
+            self._previous_voltage_range = self._set_source_voltage_with_range(v, self._previous_voltage_range)
             time.sleep(self.settings.get().voltage_settle_time)
 
     def turn_off_source_voltage(self):
         """Turn off the source voltage for the Keysight EM."""
         logger.info("Turning off source voltage for %s", self.device_name.value)
+        if self.state.get().output_status != "ON":
+            logger.info("Source voltage output is already off.")
+            return
+        
         self._voltage_sweep_cancel_event.set()  # cancel any ongoing voltage sweep
+        latest_voltage:float = float(self._em_query("SOUR1:VOLT?"))
+        voltages = self._generate_sweep_voltages_with_zero(
+            latest_voltage, 0, np.sign(latest_voltage) * -1 * self.settings.get().voltage_step
+        )
+
+        for v in voltages:
+            self._previous_voltage_range = self._set_source_voltage_with_range(v, self._previous_voltage_range)
+            time.sleep(self.settings.get().voltage_settle_time)
+            
         self._set_source_voltage_with_range(0, 1000)
         self.disable_output()
 

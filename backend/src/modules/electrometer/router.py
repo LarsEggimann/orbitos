@@ -272,16 +272,16 @@ def start_source_voltage_sweep(
 
 
 @router.post("/{device_id}/source-voltage/off", response_model=BaseResponse)
-def turn_off_source_voltage(controller: ControllerDep):
+def turn_off_source_voltage(controller: ControllerDep, background_tasks: BackgroundTasks):
     """
     Turn off the source voltage on the electrometer.
     """
 
     assert_connected(controller)
 
-    controller.turn_off_source_voltage()
+    background_tasks.add_task(controller.turn_off_source_voltage)
     return BaseResponse(
-        message=f"Source voltage sweep stopped for {controller.device_name}"
+        message=f"Source voltage stop sweep started for {controller.device_name}"
     )
 
 

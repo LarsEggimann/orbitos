@@ -557,7 +557,7 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             onApply={makeSettingApplyHandler('voltage_stop')}
           />
           <DirtyTextField
-            label={'Step [V]'}
+            label={'Step [V] (add negative sign for decreasing sweep)'}
             value={settings?.voltage_step ?? ''}
             onApply={makeSettingApplyHandler('voltage_step')}
           />
