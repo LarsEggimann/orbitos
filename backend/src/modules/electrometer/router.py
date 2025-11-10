@@ -15,6 +15,8 @@ from src.modules.electrometer.models import (
     ElectrometerSettings,
     ElectrometerDataResponse,
     ElectrometerData,
+    ElectrometerSourceVoltageData,
+    ElectrometerSourceVoltageDataResponse,
     ElectrometerName,
     ElectrometerSettingsSet,
     ElectrometerStatus,
@@ -201,6 +203,44 @@ async def get_current_data(
     return ElectrometerDataResponse(
         device_name=ElectrometerName("electrometer_" + str(device_id)),
         current=list(current),
+        timestamp=list(time),
+    )
+
+@router.get("/{device_id}/source-voltage-data", response_model=ElectrometerSourceVoltageDataResponse)
+async def get_source_voltage_data(
+    device_id: int, session: SessionDep, time_frame: TimeFrameInputDep
+):
+    """
+    Get the source voltage data from the electrometer for a specified time frame.
+    """
+    statement = select(
+        ElectrometerSourceVoltageData.timestamp, ElectrometerSourceVoltageData.source_voltage, ElectrometerSourceVoltageData.device_id
+    ).where(ElectrometerSourceVoltageData.device_id == device_id)
+    log_string = f"Fetching source voltage data from electrometer {device_id}"
+
+    if time_frame.start:
+        log_string += f" from {time_frame.start}-{time_frame.start.tzinfo}"
+        statement = statement.where(
+            ElectrometerSourceVoltageData.timestamp >= time_frame.start.timestamp()
+        )
+    if time_frame.end:
+        log_string += f" to {time_frame.end}-{time_frame.end.tzinfo}"
+        statement = statement.where(
+            ElectrometerSourceVoltageData.timestamp <= time_frame.end.timestamp()
+        )
+
+    logger.info(log_string)
+
+    # sort by timestamp ascending
+    statement = statement.order_by(asc(ElectrometerSourceVoltageData.timestamp))
+
+    session_hr = session.exec(statement).all()
+
+    time, source_voltage, _ = zip(*session_hr) if session_hr else ([], [], [])
+
+    return ElectrometerSourceVoltageDataResponse(
+        device_name=ElectrometerName("electrometer_" + str(device_id)),
+        source_voltage=list(source_voltage),
         timestamp=list(time),
     )
 

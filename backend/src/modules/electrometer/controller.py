@@ -16,6 +16,7 @@ from src.modules.electrometer.models import (
     ElectrometerState,
     ElectrometerName,
     ElectrometerData,
+    ElectrometerSourceVoltageData,
     ElectrometerDataResponse,
     ElectrometerStatus,
     ElectrometerSettingsSet,
@@ -112,6 +113,9 @@ class KeysightEM:
         self._safe_write_and_log(
             ':FORM ASC;:FORM:DIG ASC;:FORM:ELEM:CALC CALC,TIME,STAT;:FORM:SREG ASC;:SENS1:FUNC "CURR",;'
         )
+        # set initial source voltage to 'null' to indicate that the state is unknown.
+        # since we do not know the state of the output relay and voltage we just set it to null
+        self._store_latest_voltage_set(None) 
 
     def _health_check(self):
         logger.info("Starting health check for Keysight EM %s", self.device_name.value)
@@ -356,7 +360,18 @@ class KeysightEM:
         self._safe_write_and_log(f":SOUR1:VOLT {voltage};")
         set_value = self._em_query("SOUR1:VOLT?")
         self.state.update(source_voltage_status=f"{float(set_value)} V")
+        self._store_latest_voltage_set(float(set_value))
         return v_range
+
+    def _store_latest_voltage_set(self, voltage: float | None):
+        data = ElectrometerSourceVoltageData(
+            device_id=self.device_id,
+            timestamp=time.time(),
+            source_voltage=voltage,
+        )
+        with Session(engine) as session:
+            session.add(data)
+            session.commit()
 
     def _pause_continuous_measurement(self):
         """Pause the continuous measurement for the Keysight EM."""

@@ -146,6 +146,7 @@ const CHANGELOG: ChangelogEntry[] = [
       {
     date: '2025-11-10',
     items: [
+      'Add source voltage data to electrometer database as separate table, store source voltage only when it changes, null indicates unknown state (data not yet available in frontend)',
       'Add voltage de-ramp when turning off source voltage to reduce capacitive spikes',
       'Try catch errors during trigger based measurements which prevented the electrometer controller from returning to idle state',
       'Try fix "Lock ... is bound to a different event loop" error in WebSocketManager by using different locking',

@@ -60,10 +60,23 @@ class ElectrometerData(SQLModel, table=True):
 
     __table_args__ = (Index("idx_device_time", "device_id", "timestamp"),)
 
+class ElectrometerSourceVoltageData(SQLModel, table=True):
+    __tablename__ = "electrometer_source_voltage_data"
+    device_id: int = Field(primary_key=True, index=True)
+    timestamp: float = Field(primary_key=True, index=True)
+    source_voltage: Optional[float] = Field(nullable=True)
+
+    __table_args__ = (Index("idx_device_time_source_voltage", "device_id", "timestamp"),)
+
 
 class ElectrometerDataResponse(BaseModel):
     device_name: ElectrometerName
     current: list[float]
+    timestamp: list[float]
+
+class ElectrometerSourceVoltageDataResponse(BaseModel):
+    device_name: ElectrometerName
+    source_voltage: list[float | None]
     timestamp: list[float]
 
 
