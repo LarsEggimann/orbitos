@@ -12,7 +12,7 @@ import {
 import { useConfig } from '~/provider/ConfigProvider'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 
-export const Route = createFileRoute('/_pathlessLayout/raspi-server/lin-acts')({
+export const Route = createFileRoute('/_pathlessLayout/raspi-server/linear-actuator')({
     component: RouteComponent,
 })
 
