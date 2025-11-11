@@ -39,18 +39,18 @@ const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
 
         // Create rectangle coordinates for the stage
         const stageX = [
-            x - stageWidth / 2,
-            x + stageWidth / 2,
-            x + stageWidth / 2,
-            x - stageWidth / 2,
-            x - stageWidth / 2,
+            0 - stageWidth / 2,
+            0 + stageWidth / 2,
+            0 + stageWidth / 2,
+            0 - stageWidth / 2,
+            0 - stageWidth / 2,
         ]
         const stageY = [
-            y - stageHeight / 2,
-            y - stageHeight / 2,
-            y + stageHeight / 2,
-            y + stageHeight / 2,
-            y - stageHeight / 2,
+            0 - stageHeight / 2,
+            0 - stageHeight / 2,
+            0 + stageHeight / 2,
+            0 + stageHeight / 2,
+            0 - stageHeight / 2,
         ]
 
         return [
@@ -71,8 +71,8 @@ const XyPositionPlot: React.FC<XyPositionPlotProps> = ({
             },
             // Center cross
             {
-                x: [0],
-                y: [0],
+                x: [x],
+                y: [y],
                 type: 'scatter',
                 mode: 'markers',
                 marker: {

@@ -291,8 +291,8 @@ const XyStages: React.FC = () => {
           }}
         >
           <XyPositionPlot
-            xPosition={state?.x_state?.position}
-            yPosition={state?.y_state?.position}
+            xPosition={(settings?.x_direction_modifier ?? 1) * (state?.x_state?.position ?? 0)}
+            yPosition={(settings?.y_direction_modifier ?? 1) * (state?.y_state?.position ?? 0)}
           />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
