@@ -19,7 +19,7 @@ except ImportError:
     logger.warning("native smbus not available, using smbus3")
     import smbus3 as smbus  # use for local development
 
-lin_act_ids = [1, 2 , 3]
+lin_act_ids = [1, 2 , 3, 4]
 
 # Global bus instance - initialized lazily
 _bus = None
