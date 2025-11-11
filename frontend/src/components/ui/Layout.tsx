@@ -123,12 +123,24 @@ function LayoutWithSnackbar({ children }: { children: ReactNode }) {
             >
               <MenuIcon />
             </IconButton>
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+            <Box
+              component={Link}
+              to="/"
+              sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mr: 2,
+              textDecoration: 'none',
+              color: 'inherit',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
               <Logo />
-            </Box>
-            <Typography variant='h6' noWrap component='div'>
+              </Box>
+              <Typography variant="h6" noWrap component="div">
               ORBITOS v2
-            </Typography>
+              </Typography>
+            </Box>
           </Toolbar>
         </AppBar>
         {/* Main Content */}

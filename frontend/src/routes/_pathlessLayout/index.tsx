@@ -147,6 +147,7 @@ const CHANGELOG: ChangelogEntry[] = [
     date: '2025-11-11',
     items: [
       'Add download button and textfield for source voltage data in electrometer page, only fetch data when needed',
+      'Logo and title in topbar now link to home page',
     ],
   },
   {
