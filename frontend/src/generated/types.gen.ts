@@ -362,6 +362,21 @@ export type ElectrometerSettingsSet = {
 };
 
 /**
+ * ElectrometerSourceVoltageDataResponse
+ */
+export type ElectrometerSourceVoltageDataResponse = {
+    device_name: ElectrometerName;
+    /**
+     * Source Voltage
+     */
+    source_voltage: Array<number | null>;
+    /**
+     * Timestamp
+     */
+    timestamp: Array<number>;
+};
+
+/**
  * ElectrometerState
  */
 export type ElectrometerState = {
@@ -852,6 +867,45 @@ export type ElectrometerGetCurrentDataResponses = {
 };
 
 export type ElectrometerGetCurrentDataResponse = ElectrometerGetCurrentDataResponses[keyof ElectrometerGetCurrentDataResponses];
+
+export type ElectrometerGetSourceVoltageDataData = {
+    body?: never;
+    path: {
+        /**
+         * Device Id
+         */
+        device_id: number;
+    };
+    query?: {
+        /**
+         * Start
+         */
+        start?: string | null;
+        /**
+         * End
+         */
+        end?: string | null;
+    };
+    url: '/orbitos-api/v1/electrometer/{device_id}/source-voltage-data';
+};
+
+export type ElectrometerGetSourceVoltageDataErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ElectrometerGetSourceVoltageDataError = ElectrometerGetSourceVoltageDataErrors[keyof ElectrometerGetSourceVoltageDataErrors];
+
+export type ElectrometerGetSourceVoltageDataResponses = {
+    /**
+     * Successful Response
+     */
+    200: ElectrometerSourceVoltageDataResponse;
+};
+
+export type ElectrometerGetSourceVoltageDataResponse = ElectrometerGetSourceVoltageDataResponses[keyof ElectrometerGetSourceVoltageDataResponses];
 
 export type ElectrometerStartContinuousMeasurementData = {
     body?: never;
