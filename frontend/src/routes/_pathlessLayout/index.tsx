@@ -143,7 +143,13 @@ type ChangelogEntry = {
 }
 
 const CHANGELOG: ChangelogEntry[] = [
-      {
+    {
+    date: '2025-11-11',
+    items: [
+      'Add download button and textfield for source voltage data in electrometer page, only fetch data when needed',
+    ],
+  },
+  {
     date: '2025-11-10',
     items: [
       'Add source voltage data to electrometer database as separate table, store source voltage only when it changes, null indicates unknown state (data not yet available in frontend)',
@@ -153,7 +159,7 @@ const CHANGELOG: ChangelogEntry[] = [
       'Try fix "no running event loop" error in run_async_in_background utility function',
     ],
   },
-    {
+  {
     date: '2025-11-06',
     items: [
       'Fix being able to start multiple voltage sweeps in parallel',

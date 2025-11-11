@@ -25,6 +25,7 @@ import {
   Electrometer as ElectrometerService,
   type ElectrometerName,
   type ElectrometerDataResponse,
+  type ElectrometerSourceVoltageDataResponse,
   type ElectrometerState,
   type ElectrometerSettings,
 } from '~/generated'
@@ -120,6 +121,26 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
     },
     refetchOnWindowFocus: true,
     enabled: datesLoaded,
+  })
+
+  const [sourceVoltageData, setSourceVoltageData] = useState<ElectrometerSourceVoltageDataResponse | undefined>(undefined)
+
+  const sourceVoltageDataQuery = useQuery({
+    queryKey: [deviceName, startDate, endDate],
+    queryFn: async () => {
+      const response = await ElectrometerService.electrometerGetSourceVoltageData({
+        ...deviceIdPathArg,
+        query: {
+          start: startDate?.toISOString(),
+          end: endDate?.toISOString(),
+        },
+      })
+      setSourceVoltageData(response.data)
+      return response.data
+    },
+    refetchOnWindowFocus: true,
+    // do not fetch automatically - only fetch when user requests CSV export
+    enabled: false,
   })
 
   const { state, settings, connected } = useDeviceWebSocket<
@@ -587,6 +608,28 @@ const Electrometer: React.FC<ElectrometerProps> = ({ deviceId }) => {
             >
               Turn Off Voltage
             </ExecQueryButton>
+            <DownloadCSVButton
+              data={{
+                timestamp: sourceVoltageData?.timestamp ?? [],
+                source_voltage: sourceVoltageData?.source_voltage ?? [],
+              }}
+              buttonLabel="Download Source Voltage Data"
+              defaultFilename={`em${deviceId}_source_voltage_${startDate?.toLocaleDateString()}T${startDate?.toLocaleTimeString('ch')}`}
+              beforeDownload={async () => {
+                try {
+                  const res = await sourceVoltageDataQuery.refetch()
+                  const sv = res.data ?? sourceVoltageData
+                  if (!sv) return
+
+                  return {
+                    timestamp: sv.timestamp ?? [],
+                    source_voltage: sv.source_voltage ?? [],
+                  }
+                } catch (e) {
+                  console.error('Error fetching source voltage data for CSV:', e)
+                }
+              }}
+            />
           </Box>
         </Box>
       </Box>
