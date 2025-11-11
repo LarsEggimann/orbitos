@@ -114,8 +114,10 @@ async def update_bus_status(client: RaspiClientDep, controller: ControllerDep):
         if response.status_code == status.HTTP_200_OK:
             if response.parsed is not None:
                 to_dict = response.parsed.to_dict()
-                controller.state.update(bus_status=to_dict)
-                return to_dict
+                # try to convert keys to int and values to BusStatus
+                new_dict = {int(k): BusStatus(**v) for k, v in to_dict.items()}
+                controller.state.update(bus_status=new_dict)
+                return new_dict
         else:
             raise_server_error(
                 f"Unexpected status code {response.status_code} from server status check, content: {response.content.decode()}"
