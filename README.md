@@ -1,104 +1,128 @@
-# ORBITOS - V2 ☢️
-The goal of V2 is to split the software properly into a backend and a frontend. The backend will be responsible for all the device connections and data acquisition, while the frontend will be responsible for the user interface. The main goal of this is to improve UI responsiveness and data process performance. Currently NiceGUI is used for the UI, which is a great library, but it has some limitations. The main one is that it has to call the backend for every interaction (e.g. opening sidebars, changing themes, etc.) which results in a laggy feeling. With splitting the software into a backend and a frontend, we can use a more modern UI library (e.g. React) for the frontend, which will allow us to create a more responsive and modern UI.
+# ORBITOS v2 ☢️
+The development of the software ORBITOS (Omnipurpose Radiation Beam Instrumentation and Tuning Operational Software) was part of my Masters Thesis at the [Laboratory for High Energy Physics (LHEP)](https://www.lhep.unibe.ch/index_eng.html) of the [University of Bern](https://www.unibe.ch/index_eng.html) working within the [Medical Applications of Particle Physics Group](https://www.lhep.unibe.ch/research/medical_applications/index_eng.html). The core purpose of ORBITOS is to improve measurement control and reproducibility for radiobiology studies using the Bern Medical Cyclotron particle accelerator. Specifically, it is used for various cell irradiation studies at ultra-high dose rates, minibeam experiments, cross section measurements and radiation hardness studies.
 
-## Current Ideas
-### Backend
-- Use [FastAPI](https://fastapi.tiangolo.com/) for the backend . FastAPI is easy to use and and boasts high performance.
-- Use [SQLModel](https://sqlmodel.tiangolo.com/) for the database. SQLModel is a library for interacting with SQL databases using Python. It is built on top of SQLAlchemy and Pydantic, and provides a simple and intuitive API for working with databases.
-
-### Frontend
-- Use [React](https://reactjs.org/) for the frontend. This will allow us to create a more responsive and modern UI.
-
-
-# ORBITOS - V1 ☢️
-The development of the software ORBITOS (Omnipurpose Radiation Beam Instrumentation and Tuning Operational Software) was part of my Masters Thesis at the [Laboratory for High Energy Physics (LHEP)](https://www.lhep.unibe.ch/index_eng.html) of the [University of Bern](https://www.unibe.ch/index_eng.html) working within the [Medical Applications of Particle Physics Group](https://www.lhep.unibe.ch/research/medical_applications/index_eng.html). The core purpose of ORBITOS is to improve measurement control and reproducibility for radiobiology studies using the Bern Medical Cyclotron particle accelerator. Specifically, it is used for various cell irradiation studies at ultra-high dose rates, minibeam experiments and radiation hardness studies.
+ORBITOS v2 is a complete rewrite that cleanly separates a Python backend (device control, data acquisition, data storage) from a modern React frontend (UI, state, visualization). The split makes the UI snappier and the data path simpler and faster while keeping the device integration robust and flexible using the vast Python ecosystem.
         
-The software successfully integrates multiple devices, including a chopper wheel and multiple electrometers, providing an intuitive and robust interface for controlling and acquiring data.
+The software successfully integrates multiple devices, including a chopper wheel and multiple electrometers, linear actuators, etc. while providing an intuitive and robust interface for controlling and acquiring data.
 
-## Demo
-A live demo of the software is available at [orbitos-demo](https://orbitos-demo.izzecloud.duckdns.org/main). The demo is hosted in a containerized environment, therefore all connections to the various measurement and control devices will not work. However, the UI and general layout can be explored. (To access the demo, use the following credentials: `username: lhep`, `password: topsecret`)
+Important: This software is tailored for our laboratory setup and devices used at the Bern Medical Cyclotron. ORBITOS is very designed for a specific use case and not designed for public deployment. However, the code is open source and can be adapted for other setups.
 
-## Software Design
+## Tech stack
 
-Python was chosen as a programming language for its ease of use, extensive libraries, and because it is a language that almost every researcher is at least somewhat familiar with.
+- Backend: Python, FastAPI, SQLModel/SQLAlchemy, SQLite, WebSockets, Uvicorn
+- Frontend: React + TypeScript, Vite, TanStack Router, TanStack Query, MUI (Material UI), Plotly
+- API client generation: OpenAPI → typed axios client via @hey-api/openapi-ts
+- Networking: Tailscale
 
-ORBITOS is designed to be a web application to allow for easy access and use on any device with a web browser. The idea is to have one end-user device controlling the measurements and data acquisition, and another end-user device for positioning the irradiation targets using the 2D stages.
+## Architecture
 
-Unlike most modern web applications, which typically separate the front and backend into distinct services, this software merges them within a single application. This reduces complexity and improves maintainability for future users, who may have varying levels of expertise.
+- Backend exposes a versioned REST API and WebSockets under `/orbitos-api/v1`.
+- Device modules encapsulate logic, routes and databases for each device: chopper wheel, electrometers, XY stages, a Raspberry Pi helper, etc.
+- Application lifecycle hooks initialize/shutdown modules and the per module SQLite database.
+- Frontend consumes the OpenAPI-generated client and streams live updates via WebSockets.
 
-ORBITOS is deployed on the local laboratory PC running Windows 11 (Lab-PC), to which all devices are connected, and can be accessed by any device connected to the same network. The web app is secured by a very basic authentication system, sufficient for its purpose since it is not intended to be publicly accessible. 
-
-The figure below shows a schematic overview of the currently integrated devices and the connections to the Lab-PC.
-![Schematic overview of the currently integrated devices and the connections to the Lab-PC.](orbitos-v1/static/images/flash-beamline-overview.png)
-
-
-The UI components and the web server are provided by the [NiceGUI](https://github.com/zauberzeug/nicegui) library, which is built on top of [FastAPI](https://github.com/tiangolo/fastapi), [Starlette](https://github.com/encode/starlette), and [Uvicorn](https://github.com/encode/uvicorn).
+```
+[Devices] ⇄ [FastAPI (REST + WebSockets) + SQLModel/SQLite] ⇄ [OpenAPI client] ⇄ [React UI]
+```
 
 ## Features
 
-### Login Page
-The user must log in upon the first startup. This simple system prevents accidental access, with only one username and password hardcoded into the software.
+- Device control modules
+	- Chopper wheel: connect, control, state, live plots
+	- Electrometers: connect, acquire, visualize time series
+	- XY stages: connect, jog/position, display positions
+	- Raspberry Pi helper: auxiliary device server integration
+- Real-time data streaming via WebSockets (state/data/settings messages)
+- Persistent per‑device settings in SQLite (via SQLModel)
+- Type‑safe client calls generated from the API spec
+- Robust error handling with a global exception handler
+- Responsive UI built with MUI and TanStack Router/Query
+- Combined data view to correlate device signals
 
-### General Layout
-![Screenshot of the main page and expanded sidebars.](orbitos-v1/static/images/main_page.png)
+Screenshots (to be added):
+- Main layout and navigation
+- Chopper wheel control view
+- Electrometer control view
+- XY stages control view
+- Combined data view
+- Connection/status indicators
 
-The general layout is divided into:
-- Left Sidebar: Contains navigation buttons.
-- Central Content Area: Displays the page's main content.
-- Right Sidebar: Includes device connection UI, appearance settings (dark mode, themes), debugging tools, and logout options.
+## Repository layout
 
-### Main Page
-After login, the user is redirected to the main page, which contains a welcome message, a picture of the BTL, and device connection UI.
+- `backend/` — FastAPI app, device modules, persistence
+	- `src/main.py` — app entry (routes, CORS, lifespan, error handler)
+	- `src/modules/{chopperwheel|electrometer|xy_stages|raspi}/` — device logic + routers
+	- `src/shared/` — common models, settings/state managers, websocket manager
+	- `src/core/` — config, DB setup, logging
+- `frontend/` — React app (Vite + TypeScript)
+	- `src/generated/` — OpenAPI-generated typed client and SDK
+	- `src/utils/webSocketHook.tsx` — reusable device WebSocket hook
+	- `src/components/` — device UIs and plots (Plotly)
+	- `public/config-*.json` — runtime API endpoint config
+- `scripts/generate-clients.sh` — generate frontend client and raspi client
 
-### Chopper Wheel Control
-![Screenshot of the CW control page.](orbitos-v1/static/images/cw_page.png)
+## Getting started
 
-The CW control page includes:
-- Connection menu
-- Data visualization (real-time plots)
-- Device control and settings
-- Data and file management UI
+Prerequisites
+- Python 3.11+
+- Node.js 20+ and npm
 
-### Electrometer Control
-![Screenshot of the Electrometer control page.](orbitos-v1/static/images/em_page_1.png)
+### 1) Backend
+One can use the `requirements_no_versions.txt` to avoid strict version pins and install the latest compatible versions.
 
-The Electrometer control page includes:
-- Connection menu
-- Data visualization (live plots)
-- Device control and settings
-- Data and file management UI
+```
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 
-### 2D Positioning Table Control
-![Screenshot of the 2D positioning table control page.](orbitos-v1/static/images/stages_page.png)
+fastapi dev src/main.py
+```
 
-This page contains:
-- Connection menu
-- Settings
-- Position visualization
-- Device control for each axis
+The API will be available at `http://localhost:8000`. OpenAPI docs: `http://localhost:8000/docs`.
 
-### FlashUI
-![Screenshot of the Flash UI page with two devices selected.](orbitos-v1/static/images/flash_ui_page.png)
+Notes
+- API base prefix: `/orbitos-api/v1`
+- Local DB files are created per device module in `backend/src/modules/{module}/` (SQLite)
 
-The FlashUI page coordinates CW and electrometer controls, allowing multiple devices to be controlled simultaneously.
+### 2) Frontend
 
-### Dose Calibration
-![Screenshot of the dose calibration page.](orbitos-v1/static/images/dose_calibration_page.png)
+```
+cd frontend
+npm install
 
-This page provides dose estimations based on GAFchromic film scans and visualizes dose distribution.
+# Configure endpoints (used at runtime):
+#   public/config-dev.json       → development
+#   public/config-preview.json   → preview/production
+npm run dev
+```
 
-### Lab Notes and Settings Saver
-![Screenshot of the lab notes page.](orbitos-v1/static/images/lab_notes_page.png)
+Default dev server: `http://localhost:3000` (see `vite.config.ts`).
 
-Users can write notes using Markdown syntax and save or import device settings.
+Run both (Linux) with one command:
+```
+cd frontend
+npm run linux:dev
+```
 
-### Combined Data View
-![Screenshot of the combined data view page.](orbitos-v1/static/images/combined_data_page.png)
+Windows helpers also exist (`win:dev`, `win:preview`) and a root `launch-orbitos-v2.bat`.
 
-This page displays combined data from multiple devices in a single plot for verification purposes.
+### 3) Generate the typed API client (when API changes)
 
-### Bug Reporting
-![Screenshot of the bug report and feature request page.](orbitos-v1/static/images/bug_report_page.png)
+```
+./scripts/generate-clients.sh
+```
 
-Users can submit bug reports or feature requests through this interface.
+### Networking (Tailscale)
+
+For secure access between the devices, we recommend running both the backend host and client machines on the same [Tailscale](https://tailscale.com/) tailnet. Point `API_BASE_URL` and `API_WEBSOCKET_URL` (see `public/config-*.json`) to the backend’s Tailscale IP/hostname.
+
+## Scope and safety
+
+This code targets a specific lab setup and device mix. It’s not hardened for internet exposure and should be used on trusted networks only.
+
+---
+
+Looking for ORBITOS v1?
+The v1 monolithic app (NiceGUI-based) served as the original prototype. ORBITOS v2 supersedes it with a split backend/frontend architecture for better UI responsiveness and data handling.
 
