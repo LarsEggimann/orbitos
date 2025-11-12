@@ -1,0 +1,31 @@
+services:
+  backend:
+    image: python:3.13-slim
+    container_name: orbitos-backend
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+    # Prefer prebuilt wheels to avoid heavy builds in slim image
+    command: >-
+      sh -c "pip install --no-cache-dir --prefer-binary -r requirements.txt \
+      && uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: node:20
+    container_name: orbitos-frontend
+    working_dir: /app
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      # Avoid writing node_modules to the host
+      - /app/node_modules
+    # Build and serve the production bundle via vite preview
+    command: >-
+      sh -c "npm install --include=dev && npx vite build && npm run preview"
+    ports:
+      - "3000:3000"
