@@ -7,6 +7,9 @@ The software successfully integrates multiple devices, including a chopper wheel
 
 Important: This software is tailored for our laboratory setup and devices used at the Bern Medical Cyclotron. ORBITOS is very designed for a specific use case and not designed for public deployment. However, the code is open source and can be adapted for other setups.
 
+### Demo available [here](https://orbitos-demo.izzecloud.duckdns.org/)
+A containerized demo version of ORBITOS v2 is reachable under this [link](https://orbitos-demo.izzecloud.duckdns.org/). Note that this demo does not work properly as the containerized backend does not connect to any real measurement devices; it only serves to illustrate the UI and basic navigation.
+
 ## Tech stack
 
 - Backend: Python, FastAPI, SQLModel/SQLAlchemy, SQLite, WebSockets, Uvicorn
@@ -123,6 +126,7 @@ This code targets a specific lab setup and device mix. It’s not hardened for i
 
 ---
 
-Looking for ORBITOS v1?
+Looking for [ORBITOS v1](https://github.com/LarsEggimann/orbitos/tree/main)?
+
 The v1 monolithic app (NiceGUI-based) served as the original prototype. ORBITOS v2 supersedes it with a split backend/frontend architecture for better UI responsiveness and data handling.
 
