@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   server: {
     port: 3000,
-    allowedHosts: ['irradiations-pc'],
+    allowedHosts: ['irradiations-pc', 'orbitos-demo.izzecloud.duckdns.org'],
   },
   plugins: [
     tsConfigPaths({
