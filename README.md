@@ -42,13 +42,21 @@ A containerized demo version of ORBITOS v2 is reachable under this [link](https:
 - Responsive UI built with MUI and TanStack Router/Query
 - Combined data view to correlate device signals
 
-Screenshots (to be added):
-- Main layout and navigation
-- Chopper wheel control view
-- Electrometer control view
-- XY stages control view
-- Combined data view
-- Connection/status indicators
+### Screenshots
+Landing page showing theme switch (dark/light) and some basic changelog information. Below are screenshots of the individual device pages and the combined view. Each device page shows connection status, control widgets and live data plots.
+
+![alt text](images/home_page.png)
+
+![alt text](images/electrometer_page.png)
+
+![alt text](images/chopper_wheel_page.png)
+
+![alt text](images/xy_stages_page.png)
+
+![alt text](images/combo_page.png)
+
+![alt text](images/linear_actuator_page.png)
+
 
 ## Repository layout
 
