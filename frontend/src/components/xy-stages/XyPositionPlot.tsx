@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import Plot from 'react-plotly.js'
 import Box from '@mui/material/Box'
 import { useTheme } from '@mui/material/styles'
+import Plot from '~/components/plots/Plot'
 
 interface XyPositionPlotProps {
     xPosition?: number | null

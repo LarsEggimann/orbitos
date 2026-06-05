@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import Plot from 'react-plotly.js'
-import { fromTimestampToLocalizedString } from '~/utils/helpers'
 import type { UseQueryResult } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import { useTheme } from '@mui/material/styles'
+import { fromTimestampToLocalizedString } from '~/utils/helpers'
+import Plot from '~/components/plots/Plot'
 
 export interface TimeSeriesData {
   label: string
