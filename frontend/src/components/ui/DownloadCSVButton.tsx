@@ -115,7 +115,7 @@ const DownloadCSVButton: React.FC<DownloadCSVButtonProps> = ({
   const canTriggerPrefetch = typeof beforeDownload === 'function'
 
   return (
-    <Stack direction='row' spacing={2} alignItems='center'>
+    <Stack direction='row' spacing={2} sx={{ alignItems: 'center' }}>
       <TextField
         label='Filename Prefix'
         value={prefix}

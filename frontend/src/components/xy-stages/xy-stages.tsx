@@ -233,7 +233,7 @@ const XyStages: React.FC = () => {
             })
           }}
         />
-        <Box flexGrow={1}></Box>
+        <Box sx={{ flexGrow: 1 }}></Box>
         <ExecQueryButton
           onClick={async () => {
             return await XyStagesService.xyStagesResetStagesError()

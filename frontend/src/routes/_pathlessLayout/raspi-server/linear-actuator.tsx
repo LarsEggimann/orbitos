@@ -51,7 +51,7 @@ function Actuator({
                 : 'Unknown'
 
     return (
-        <Stack alignItems="center" spacing={1}>
+        <Stack sx={{ alignItems: 'center' }} spacing={1}>
             <Chip
                 size="small"
                 color={
@@ -197,5 +197,3 @@ function RouteComponent() {
     )
 }
 
-
-export default RouteComponent

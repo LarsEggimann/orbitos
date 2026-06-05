@@ -28,8 +28,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   height = 400,
   slowMessage = (
     <Box
-      mt={2}
-      sx={{ color: 'text.secondary', textAlign: 'center', maxWidth: 500 }}
+      sx={{ mt: 2, color: 'text.secondary', textAlign: 'center', maxWidth: 500 }}
     >
       loading large amount of data, this may take a while ...
       <br />

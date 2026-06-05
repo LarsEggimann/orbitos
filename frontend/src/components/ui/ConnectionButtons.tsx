@@ -52,7 +52,7 @@ const ConnectionButtons: React.FC<ConnectionButtonsProps> = ({
       >
         <UsbOffIcon />
       </ExecQueryButton>
-      <Box flexGrow={1}></Box>
+      <Box sx={{ flexGrow: 1 }}></Box>
       {showResetError && onResetError && (
         <ExecQueryButton
         onClick={onResetError}

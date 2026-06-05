@@ -12,14 +12,12 @@ export const XyStagesStateDisplay = ({
   state?: XyStagesState
 }) => {
   const {
-    status = 'unknown',
-    connection_status = 'unknown',
-    error = 'unknown',
-  } = state || {}
+      status = "unknown",
+      error = "unknown",
+    } = state || {}
 
-  const statusText = replaceUnderscores(status)
-  const connectionStatusText = replaceUnderscores(connection_status)
-  const errorText = error
+    const statusText = replaceUnderscores(status)
+    const errorText = error
 
   // Status color and spinner
   const isIdleOrUnknown =
@@ -27,17 +25,6 @@ export const XyStagesStateDisplay = ({
     statusText.toLowerCase() === 'unknown'
   const statusColor = isIdleOrUnknown ? 'default' : 'primary'
 
-  // Connection color and spinner
-  let connectionColor: 'success' | 'warning' | 'error' | 'default' = 'default'
-  let showConnectionSpinner = false
-  if (connectionStatusText.toLowerCase() === 'connected')
-    connectionColor = 'success'
-  else if (connectionStatusText.toLowerCase() === 'connecting') {
-    connectionColor = 'warning'
-    showConnectionSpinner = true
-  } else connectionColor = 'error'
-
-  // Error chip color
   const hasError = errorText && errorText.toLowerCase() !== 'no error'
   const errorColor = hasError ? 'error' : 'default'
 

@@ -31,14 +31,6 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
     dayjs.locale('de')
   }, [])
 
-  const setRangeToToday = () => {
-    const today = new Date()
-    setStartDate(
-      new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0),
-    )
-    setEndDate(null)
-  }
-
   const lastNMinutes = (n: number) => {
     const now = new Date()
     const start = new Date(now.getTime() - n * 60 * 1000)

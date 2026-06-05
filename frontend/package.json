@@ -19,6 +19,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
+    "@mui/x-date-pickers": "^9.4.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@tanstack/react-query": "^5.101.0",
     "@tanstack/react-query-devtools": "^5.101.0",
@@ -28,6 +29,7 @@
     "@tanstack/router-plugin": "^1.168.14",
     "@vitejs/plugin-react": "^6.0.2",
     "axios": "^1.17.0",
+    "dayjs": "^1.11.21",
     "notistack": "^3.0.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -50,8 +52,7 @@
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite": "^8.0.16"
   },
   "prettier": {
     "singleQuote": true,
