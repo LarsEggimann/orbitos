@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -16,12 +18,12 @@ class BusStatus:
     Attributes:
         lin_act_id (int):
         status (LinActStatus):
-        raw_value (Union[None, Unset, int]):
+        raw_value (int | None | Unset):
     """
 
     lin_act_id: int
     status: LinActStatus
-    raw_value: Union[None, Unset, int] = UNSET
+    raw_value: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -29,7 +31,7 @@ class BusStatus:
 
         status = self.status.value
 
-        raw_value: Union[None, Unset, int]
+        raw_value: int | None | Unset
         if isinstance(self.raw_value, Unset):
             raw_value = UNSET
         else:
@@ -55,12 +57,12 @@ class BusStatus:
 
         status = LinActStatus(d.pop("status"))
 
-        def _parse_raw_value(data: object) -> Union[None, Unset, int]:
+        def _parse_raw_value(data: object) -> int | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(Union[None, Unset, int], data)
+            return cast(int | None | Unset, data)
 
         raw_value = _parse_raw_value(d.pop("raw_value", UNSET))
 

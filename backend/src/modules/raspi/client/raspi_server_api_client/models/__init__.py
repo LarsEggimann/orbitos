@@ -6,6 +6,7 @@ from .http_validation_error import HTTPValidationError
 from .lin_act_status import LinActStatus
 from .raspi_server_get_status_response_raspi_server_get_status import RaspiServerGetStatusResponseRaspiServerGetStatus
 from .validation_error import ValidationError
+from .validation_error_context import ValidationErrorContext
 
 __all__ = (
     "BaseResponse",
@@ -14,4 +15,5 @@ __all__ = (
     "LinActStatus",
     "RaspiServerGetStatusResponseRaspiServerGetStatus",
     "ValidationError",
+    "ValidationErrorContext",
 )

@@ -5,19 +5,17 @@ description = "A client library for accessing Raspi Server API"
 authors = []
 readme = "README.md"
 packages = [
-    {include = "raspi_server_api_client"},
+    { include = "raspi_server_api_client" },
 ]
-include = ["CHANGELOG.md", "raspi_server_api_client/py.typed"]
-
+include = ["raspi_server_api_client/py.typed"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-httpx = ">=0.23.0,<0.29.0"
+python = "^3.11"
+httpx = ">=0.23.1,<0.29.0"
 attrs = ">=22.2.0"
-python-dateutil = "^2.8.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
