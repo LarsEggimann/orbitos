@@ -20,7 +20,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
+    
+    /* Path mapping works natively here without baseUrl */
     "paths": {
       "~/*": ["./src/*"]
     }
