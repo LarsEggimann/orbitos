@@ -78,11 +78,11 @@ const PathlessLayoutElectrometerDeviceId1AndDeviceId2Route =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof PathlessLayoutIndexRoute
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/combo-control': typeof PathlessLayoutComboControlRoute
   '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
   '/stages': typeof PathlessLayoutStagesRoute
-  '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/raspi-server/linear-actuator': typeof PathlessLayoutRaspiServerLinearActuatorRoute
   '/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
@@ -115,11 +115,11 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/chopperwheel'
     | '/combo-control'
     | '/combo-data-view'
     | '/stages'
-    | '/'
     | '/electrometer/$deviceId'
     | '/raspi-server/linear-actuator'
     | '/raspi-server/manage'
@@ -158,7 +158,7 @@ declare module '@tanstack/react-router' {
     '/_pathlessLayout': {
       id: '/_pathlessLayout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof PathlessLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
