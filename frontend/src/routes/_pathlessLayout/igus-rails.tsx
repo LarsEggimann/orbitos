@@ -5,5 +5,5 @@ export const Route = createFileRoute('/_pathlessLayout/igus-rails')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_pathlessLayout/igus-rails"!</div>
+  return <div>Hello From LARS!!!"!</div>
 }
