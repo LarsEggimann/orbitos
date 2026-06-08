@@ -7,44 +7,37 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from .pandora_wheels.controller import WheelsController 
+from src.core.logging import setup_logging
 
-# imports from parent folders ... I think this is not very clean, but I can reuse the stuff I already have so I think it makes sense for now
-from src.shared.websocket_manager import WebSocketManager
-from src.modules.pandora.models import (
-    PandoraState,
-    PandoraDataResponse,
-    PandoraSettings,
-)
-
+from .module import init_pandora_server, shutdown_pandora_server
 from .router import router as pandora_server_router
+from .pandora_wheels.router import router as wheels_router
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 api_router = APIRouter()
 api_router.include_router(pandora_server_router)
+api_router.include_router(wheels_router)
 
-class PandoraServer:
-    wheels_controller: WheelsController | None = None
 
-pandora_server = PandoraServer()
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
+
+    setup_logging()
+
     # startup
-    logger.info("Starting PANDORA Control Server API...")
-
-    # here we will hardcode the initialization of the wheels with parameters and stuff
-    pandora_server.wheels_controller = WheelsController(
-
-    )
+    logger.info("Starting PANDORA Control Server API")
+    init_pandora_server()
 
     yield  # run the app
 
     # shutdown
+    logger.info("Shutting down PANDORA Control Server API")
+    shutdown_pandora_server()
 
 app = FastAPI(
     title="PANDORA Control Server API",
@@ -61,11 +54,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-ws_manager = WebSocketManager[
-    PandoraState, PandoraDataResponse, PandoraSettings
-]()
-
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
