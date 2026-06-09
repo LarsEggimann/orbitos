@@ -10,15 +10,7 @@ from pytrinamic.modules import TMCM1240  # type: ignore
 from src.shared.websocket_manager import WebSocketManager
 from src.shared.settings_manager import SettingsManager
 from src.shared.state_manager import StateManager
-from src.modules.chopperwheel.models import (
-    COMPort,
-    CWSettings,
-    CWSettingsSet,
-    CWData,
-    CWDataResponse,
-    CWState,
-    CWStatus,
-)
+
 from src.shared.models import ConnectionStatus
 from src.core.db import engine
 
@@ -27,21 +19,6 @@ logger = logging.getLogger(__name__)
 from src.shared.websocket_manager import WebSocketManager
 
 from .wheel import Wheel
-
-
-# decorator to synchronize access to methods to serial interface and motor
-# methods annotated with this decorator will acquire a lock before executing and keep it until the method returns
-# this ensures that only one thread can access the serial interface and motor at a time AND more importantly
-# waits for the connection to respond before releasing the lock
-def synchronized(lock_attr="_lock"):
-    def decorator(method):
-        def wrapper(self, *args, **kwargs):
-            lock = getattr(self, lock_attr)
-            with lock:
-                return method(self, *args, **kwargs)
-        return wrapper
-    return decorator
-
 
 class WheelsController:
     def __init__(self, ws_manager: WebSocketManager):
