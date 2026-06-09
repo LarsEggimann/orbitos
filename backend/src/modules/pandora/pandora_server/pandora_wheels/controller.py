@@ -7,6 +7,10 @@ from sqlmodel import Session
 from pytrinamic.connections import ConnectionManager, UsbTmclInterface  # type: ignore
 from pytrinamic.modules import TMCM1240  # type: ignore
 
+from ..models import (
+    PandoraState,
+)
+
 from src.shared.websocket_manager import WebSocketManager
 from src.shared.settings_manager import SettingsManager
 from src.shared.state_manager import StateManager
@@ -21,22 +25,17 @@ from src.shared.websocket_manager import WebSocketManager
 from .wheel import Wheel
 
 class WheelsController:
-    def __init__(self, ws_manager: WebSocketManager):
+    def __init__(self, state: StateManager[PandoraState], ws_manager: WebSocketManager):
 
-        # self._wheels = dict(
-        #     0: Wheel(wheel_id=0, connection_port="/dev/ttyACM0")
-        #     # 1: Wheel(wheel_id=1, connection_port="/dev/ttyACM1"),
-        #     # 2: Wheel(wheel_id=2, connection_port="/dev/ttyACM2"),
-        #     # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3"),
-        # )
         self._wheels: dict[int, Wheel] = {
-            0: Wheel(wheel_id=0, connection_port="/dev/ttyACM0"),
-            # 1: Wheel(wheel_id=1, connection_port="/dev/ttyACM1"),
-            # 2: Wheel(wheel_id=2, connection_port="/dev/ttyACM2"),
-            # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3"),
+            0: Wheel(wheel_id=0, connection_port="/dev/ttyACM0", state=state),
+            # 1: Wheel(wheel_id=1, connection_port="/dev/ttyACM1", state=state),
+            # 2: Wheel(wheel_id=2, connection_port="/dev/ttyACM2", state=state),
+            # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3", state=state),
         }
 
         self.ws_manager = ws_manager
+        self.state = state
 
     def get_wheel(self, wheel_id: int) -> Wheel:
         if wheel_id not in self._wheels:

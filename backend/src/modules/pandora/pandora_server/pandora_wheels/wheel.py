@@ -14,6 +14,8 @@ from src.shared.state_manager import StateManager
 from src.shared.models import ConnectionStatus
 from src.core.db import engine
 
+from ..models import PandoraState
+
 logger = logging.getLogger(__name__)
 
 from src.shared.websocket_manager import WebSocketManager
@@ -34,9 +36,10 @@ def synchronized(lock_attr="_lock"):
 
 
 class Wheel():
-    def __init__(self, wheel_id: int, connection_port: str):
+    def __init__(self, wheel_id: int, connection_port: str, state: StateManager[PandoraState]):
         self.wheel_id = wheel_id
         self.connection_port = connection_port
+        self.state = state
 
         self._serial_interface: UsbTmclInterface | None = None
         self._module: TMCM1240 | None = None
@@ -101,7 +104,6 @@ class Wheel():
         self._motor.actual_position = 0
         logger.info(f"Wheel {self.wheel_id} connected on port {com_port}")
 
-
     @synchronized()
     def disconnect(self) -> None:
         if self._serial_interface is not None:
@@ -121,6 +123,10 @@ class Wheel():
         logger.info(f"Moving  wheel with ID {self.wheel_id} to position {angle_deg} degrees")
 
         try:
+            this_state = self.state.get().wheels[self.wheel_id]
+            this_state.status = "moving"
+            self.state.update()
+
             # self._start_acquire_data()
             time.sleep(0.1)  # wait for acquisition to start
             self._motor_move_to(angle_deg)

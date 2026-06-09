@@ -7,14 +7,22 @@ from fastapi import (
     WebSocketDisconnect,
 )
 
-from .models import BaseResponse
-from .module import ws_manager
+from .models import BaseResponse, PandoraState
+from .module import ws_manager, PandoraServerDep
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     tags=["pandora-control-server"],
 )
+
+@router.get("/state", response_model=PandoraState)
+def get_state(pandora_server: PandoraServerDep):
+    """
+    Get the current state of the server.
+    """
+    return pandora_server.state.get()
+
 
 @router.get("/health-check", response_model=BaseResponse)
 def health_check():
