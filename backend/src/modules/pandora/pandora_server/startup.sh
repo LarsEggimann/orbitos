@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Activating virtual environment and installing pip packages..."
+echo "Activating virtual environment..."
 source .venv/bin/activate
 
 echo "Setting up environment variables..."
