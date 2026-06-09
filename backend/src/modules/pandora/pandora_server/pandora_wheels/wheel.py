@@ -14,7 +14,7 @@ from src.shared.state_manager import StateManager
 from src.shared.models import ConnectionStatus
 from src.core.db import engine
 
-from ..models import PandoraState
+from ..models import PandoraState, PandoraWheelState
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,15 @@ class Wheel():
         self.wheel_id = wheel_id
         self.connection_port = connection_port
         self.state = state
+
+        # add the wheel to the state
+        this_state = self.state.get()
+        wheels_dict = this_state.wheels
+        wheels_dict[self.wheel_id] = PandoraWheelState(
+            status="unknown",
+            position=None,
+            velocity=None,
+        )   
 
         self._serial_interface: UsbTmclInterface | None = None
         self._module: TMCM1240 | None = None
