@@ -8,7 +8,7 @@ from src.modules.pandora.models import (
     PandoraSettings,
 )
 from src.modules.pandora.controller import PandoraController
-from src.modules.pandora.client.pandora_server_api_client import Client
+from src.modules.pandora.client.pandora_control_server_api_client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ def get_pandora_client() -> Client:
     return module_state.pandora_client
 
 ControllerDep = Annotated[PandoraController, Depends(get_controller)]
-PandoraClientDep = Annotated[Client, Depends(get_pandora_client)]
+# PandoraClientDep = Annotated[Client, Depends(get_pandora_client)]
 
 ws_manager = WebSocketManager[
     PandoraState, PandoraDataResponse, PandoraSettings
