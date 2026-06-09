@@ -24,7 +24,7 @@ def go_to_position(wheel_id: int, angle_deg: float, pandora_server: PandoraServe
     Move the wheel with the given ID to the specified angle in degrees.
     """
     background_tasks.add_task(
-        pandora_server.wheels_controller.go_to_position(wheel_id, angle_deg)
+        pandora_server.wheels_controller.go_to_position, wheel_id, angle_deg
     )
 
     return BaseResponse(
@@ -37,7 +37,7 @@ def start_reference_search(wheel_id: int, pandora_server: PandoraServerDep, back
     Start the reference search for the wheel with the given ID.
     """
     background_tasks.add_task(
-        pandora_server.wheels_controller.start_reference_search(wheel_id)
+        pandora_server.wheels_controller.start_reference_search, wheel_id
     )
 
     return BaseResponse(
@@ -50,7 +50,7 @@ def stop_reference_search(wheel_id: int, pandora_server: PandoraServerDep, backg
     Stop the reference search for the wheel with the given ID.
     """
     background_tasks.add_task(
-        pandora_server.wheels_controller.stop_reference_search(wheel_id)
+        pandora_server.wheels_controller.stop_reference_search, wheel_id
     )
 
     return BaseResponse(
