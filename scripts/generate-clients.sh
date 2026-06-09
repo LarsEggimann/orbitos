@@ -1,23 +1,51 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-set -x
+# make sure the script is run from the project root directory
+cd "$(dirname "$(dirname "$(realpath "$0")")")"
 
-source .venv/bin/activate
-cd backend
-python -c "import src.main; import json; print(json.dumps(src.main.app.openapi()))" > ../openapi.json
-cd ..
-mv openapi.json frontend/
-cd frontend
-npm run generate-client
-rm openapi.json
+# Make sure Python knows 'backend' is the source directory
+export PYTHONPATH="backend"
 
-echo "Generated frontend client."
+echo "=================================================="
+echo "        Generating Frontend Client"
+echo "=================================================="
 
-# generate raspi server api client
-cd ../backend/src/modules/raspi
-python -c "import raspi_server.main; import json; print(json.dumps(raspi_server.main.app.openapi()))" > ./openapi.json
-openapi-python-client generate --path ./openapi.json --output-path ./client --overwrite
-rm openapi.json
+python3 -c "import json, src.main; print(json.dumps(src.main.app.openapi(), indent=2))" > frontend/openapi.json
 
-echo "Generated raspi server api client."
+(cd frontend && npm run generate-client -- --silent && rm openapi.json)
+
+echo "Frontend client generated successfully!"
+
+# crate variable for backend/src/modules to avoid repeating it
+MODULES_DIR="backend/src/modules"      
+
+echo "=================================================="
+echo "        Generating Pandora Server API Client"
+echo "=================================================="
+python3 -c "import json, src.modules.pandora.pandora_server.main; print(json.dumps(src.modules.pandora.pandora_server.main.app.openapi(), indent=2))" > $MODULES_DIR/pandora/openapi.json
+
+openapi-python-client generate \
+    --path $MODULES_DIR/pandora/openapi.json \
+    --output-path $MODULES_DIR/pandora/pandora_server/client \
+    --overwrite
+rm $MODULES_DIR/pandora/openapi.json
+
+echo "Pandora Server API client generated successfully!"
+
+echo "=================================================="
+echo "        Generating Raspi Server API Client"
+echo "=================================================="
+python3 -c "import json, src.modules.raspi.raspi_server.main; print(json.dumps(src.modules.raspi.raspi_server.main.app.openapi(), indent=2))" > $MODULES_DIR/raspi/openapi.json
+
+openapi-python-client generate \
+    --path $MODULES_DIR/raspi/openapi.json \
+    --output-path $MODULES_DIR/raspi/client \
+    --overwrite
+rm $MODULES_DIR/raspi/openapi.json
+
+echo "Raspi Server API client generated successfully!"
+
+echo "=================================================="
+echo "       All clients generated successfully!"
+echo "=================================================="
