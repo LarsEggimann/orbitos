@@ -122,22 +122,24 @@ class Wheel():
         """
         logger.info(f"Moving  wheel with ID {self.wheel_id} to position {angle_deg} degrees")
 
-        try:
-            this_state = self.state.get().wheels[self.wheel_id]
-            this_state.status = "moving"
-            self.state.update()
+        # try:
+        this_state = self.state.get().wheels[self.wheel_id]
+        this_state.status = "moving"
+        self.state.update()
 
-            # self._start_acquire_data()
-            time.sleep(0.1)  # wait for acquisition to start
-            self._motor_move_to(angle_deg)
+        # self._start_acquire_data()
+        time.sleep(0.1)  # wait for acquisition to start
+        self._motor_move_to(angle_deg)
 
-            self._wait_for_target_position_reached()
+        self._wait_for_target_position_reached()
 
-        except Exception as e:
-            logger.error("Error during move to position: %s", e)
-        finally:
-            # self._stop_acquire_data()
-            pass
+        # except Exception as e:
+        #     logger.error("Error during move to position: %s", e)
+        #     # print stack trace
+        #     print(e)
+        # finally:
+        #     # self._stop_acquire_data()
+        #     pass
     
     def start_reference_search(self) -> None:
         """
