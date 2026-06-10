@@ -441,6 +441,96 @@ export type HttpValidationError = {
 export type LinActStatus = 'extended' | 'retracted' | 'unknown';
 
 /**
+ * PandoraSettings
+ */
+export type PandoraSettings = {
+    /**
+     * Device Id
+     */
+    device_id: number;
+    /**
+     * Host
+     */
+    host?: string;
+    /**
+     * Port
+     */
+    port?: number;
+    /**
+     * Pandora Server App Directory
+     */
+    pandora_server_app_directory?: string;
+};
+
+/**
+ * PandoraSettingsSet
+ */
+export type PandoraSettingsSet = {
+    /**
+     * Host
+     */
+    host?: string | null;
+    /**
+     * Port
+     */
+    port?: number | null;
+    /**
+     * Pandora Server App Directory
+     */
+    pandora_server_app_directory?: string | null;
+};
+
+/**
+ * PandoraState
+ */
+export type PandoraState = {
+    /**
+     * Device Name
+     */
+    device_name: string;
+    /**
+     * Status
+     */
+    status?: string;
+    connection_status?: ConnectionStatus;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Wheels
+     */
+    wheels?: {
+        [key: string]: PandoraWheelState;
+    };
+    /**
+     * Relays
+     */
+    relays?: {
+        [key: string]: boolean;
+    };
+    temperature_sensor?: TemperatureSensorState;
+};
+
+/**
+ * PandoraWheelState
+ */
+export type PandoraWheelState = {
+    /**
+     * Status
+     */
+    status?: string;
+    /**
+     * Position
+     */
+    position?: number | null;
+    /**
+     * Velocity
+     */
+    velocity?: number | null;
+};
+
+/**
  * PerformaxUSBDevice
  */
 export type PerformaxUsbDevice = {
@@ -534,6 +624,16 @@ export type StageState = {
      */
     moving?: boolean | null;
     connection_status?: ConnectionStatus;
+};
+
+/**
+ * TemperatureSensorState
+ */
+export type TemperatureSensorState = {
+    /**
+     * Temperature
+     */
+    temperature?: number | null;
 };
 
 /**
@@ -1759,6 +1859,145 @@ export type RaspiGetSettingsResponses = {
 };
 
 export type RaspiGetSettingsResponse = RaspiGetSettingsResponses[keyof RaspiGetSettingsResponses];
+
+export type PandoraStartServerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/server/start';
+};
+
+export type PandoraStartServerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraStartServerResponse = PandoraStartServerResponses[keyof PandoraStartServerResponses];
+
+export type PandoraStopServerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/server/stop';
+};
+
+export type PandoraStopServerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraStopServerResponse = PandoraStopServerResponses[keyof PandoraStopServerResponses];
+
+export type PandoraServerHealthCheckData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/server/health-check';
+};
+
+export type PandoraServerHealthCheckResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraServerHealthCheckResponse = PandoraServerHealthCheckResponses[keyof PandoraServerHealthCheckResponses];
+
+export type PandoraGetStateData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/state';
+};
+
+export type PandoraGetStateResponses = {
+    /**
+     * Successful Response
+     */
+    200: PandoraState;
+};
+
+export type PandoraGetStateResponse = PandoraGetStateResponses[keyof PandoraGetStateResponses];
+
+export type PandoraSetPandoraSettingsData = {
+    body: PandoraSettingsSet;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/{device_id}/settings';
+};
+
+export type PandoraSetPandoraSettingsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraSetPandoraSettingsError = PandoraSetPandoraSettingsErrors[keyof PandoraSetPandoraSettingsErrors];
+
+export type PandoraSetPandoraSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraSetPandoraSettingsResponse = PandoraSetPandoraSettingsResponses[keyof PandoraSetPandoraSettingsResponses];
+
+export type PandoraGetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/settings';
+};
+
+export type PandoraGetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PandoraSettings;
+};
+
+export type PandoraGetSettingsResponse = PandoraGetSettingsResponses[keyof PandoraGetSettingsResponses];
+
+export type PandoraGoToPositionData = {
+    body?: never;
+    path: {
+        /**
+         * Wheel Id
+         */
+        wheel_id: number;
+        /**
+         * Angle Deg
+         */
+        angle_deg: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/pandora/wheels/{wheel_id}/go-to-position/{angle_deg}';
+};
+
+export type PandoraGoToPositionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraGoToPositionError = PandoraGoToPositionErrors[keyof PandoraGoToPositionErrors];
+
+export type PandoraGoToPositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraGoToPositionResponse = PandoraGoToPositionResponses[keyof PandoraGoToPositionResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;
