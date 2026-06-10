@@ -25,3 +25,7 @@ class PandoraData(SQLModel, table=True):
 class PandoraDataResponse(BaseModel):
     device_id: int
 
+class PandoraSettingsSet(SQLModel):
+    host: Optional[str] = None
+    port: Optional[int] = None
+    pandora_server_app_directory: Optional[str] = None

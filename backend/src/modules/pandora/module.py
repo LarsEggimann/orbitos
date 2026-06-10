@@ -7,6 +7,7 @@ from src.modules.pandora.models import (
     PandoraDataResponse,
     PandoraSettings,
 )
+from src.modules.pandora.db import init_db
 from src.modules.pandora.controller import PandoraController
 from src.modules.pandora.client.pandora_control_server_api_client import Client
 
@@ -49,7 +50,7 @@ def get_pandora_client() -> Client:
     return module_state.pandora_client
 
 ControllerDep = Annotated[PandoraController, Depends(get_controller)]
-# PandoraClientDep = Annotated[Client, Depends(get_pandora_client)]
+PandoraClientDep = Annotated[Client, Depends(get_pandora_client)]
 
 ws_manager = WebSocketManager[
     PandoraState, PandoraDataResponse, PandoraSettings
@@ -61,6 +62,8 @@ def init_module() -> None:
     Initialize the module.
     """
     logger.info("Initializing pandora module ...")
+
+    init_db()
 
     # Initialize the controller with a device ID and name
     module_state.controller = PandoraController(

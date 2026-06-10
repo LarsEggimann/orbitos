@@ -110,7 +110,7 @@ class SettingsManager(Generic[T]):
         current_settings = self.get()
         changed_fields = {}
 
-        for field in current_settings.model_fields:
+        for field in current_settings.model_fields: # TODO fix this deprication error: The "__get__" method  for descriptor "model_fields" is deprecated. Accessing this attribute on the instance is deprecated, and will be removed in Pydantic V3. Instead, you should access this attribute from the model class.Pylance
             current_value = getattr(current_settings, field)
             previous_value = getattr(self._settings_before_change, field)
             if current_value != previous_value:
