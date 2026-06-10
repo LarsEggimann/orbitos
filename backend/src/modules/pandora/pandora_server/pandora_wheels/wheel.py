@@ -132,8 +132,7 @@ class Wheel():
         logger.info(f"Moving  wheel with ID {self.wheel_id} to position {angle_deg} degrees")
 
         # try:
-        this_state = self.state.get().wheels[self.wheel_id]
-        this_state.status = "moving"
+        self.state.get().wheels[self.wheel_id].status = "moving"
         self.state.update()
 
         # self._start_acquire_data()
@@ -201,9 +200,47 @@ class Wheel():
         """
         Wait for the target position to be reached.
         This method blocks until the target position is reached.
+        Send status updates to the state manager while waiting.
         """
         while not self._motor_get_position_reached():
-            time.sleep(0.1)
+            curr_pos = self._get_angular_position()
+            curr_vel = self._get_actual_velocity()
+            self.state.get().wheels[self.wheel_id].status = "moving"
+            self.state.get().wheels[self.wheel_id].position = curr_pos
+            self.state.get().wheels[self.wheel_id].velocity = curr_vel
+            self.state.update()
+            time.sleep(0.2)
+    
+    @synchronized()
+    def _get_actual_velocity(self) -> float:
+        """
+        Get the actual velocity of the chopper wheel in rps.
+
+        Returns:
+            The actual velocity in rps.
+        """
+        return self._from_microsteps(
+            self._direction_modifier * self.get_motor().actual_velocity
+        )
+
+    @synchronized()
+    def _get_angular_position(self) -> float:
+        """
+        Get the angular position of the chopper wheel in degrees.
+
+        Returns:
+            The angular position in degrees.
+        """
+        return self._steps_to_angle(
+            self._direction_modifier * self.get_motor().actual_position
+        )
+    
+    @synchronized()
+    def _motor_stop(self) -> None:
+        """
+        Stop the chopper wheel.
+        """
+        self.get_motor().stop()
 
     def _angle_to_steps(self, angle: float) -> int:
         return int(angle * self.microsteps_per_rotation / 360)
