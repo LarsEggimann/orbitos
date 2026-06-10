@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import json
 
 import websockets
 import asyncio
@@ -201,17 +202,33 @@ async def pandora_ws(websocket: WebSocket, controller: ControllerDep):
                 async with websockets.connect(pandora_server_url) as raspi_ws:
                     logger.info("Successfully connected to Pandora Server WebSocket!")
                     controller.state.update(connection_status=ConnectionStatus.CONNECTED)
-                    
+
                     async for message in raspi_ws:
-                        await websocket.send_text(message)
+                        # TODO: implement some form of differenctiation between state and data updates in future maybe we want to store position and velocity data in the database
+                        # for now we just assume its a state update, try to parse it and update the controller state, which will then broadcast to all frontend monitors via the on_state_update callback in the controller
+
+                        # await websocket.send_text(message)
+                        # try to parse this and make sure we have the "type": "state" field
+                        # if it's a state update, we also want to update the controller state so it gets broadcasted to all frontend monitors
+                        has_type_field = False
+                        try:
+                            message_dict = json.loads(message)
+                            has_type_field = "type" in message_dict
+                            if has_type_field and message_dict["type"] == "state":
+                                converted_state = PandoraServerState(**message_dict["content"])
+                                controller.update_state(converted_state)
+                        except json.JSONDecodeError:
+                            logger.warning("Received non-JSON message from Pandora Server WebSocket: %s", message)
+                        except Exception as e:
+                            logger.error("Error processing message from Pandora Server WebSocket: %s", e)
 
             except (websockets.exceptions.ConnectionClosed, ConnectionRefusedError, OSError) as e:
-                logger.warning("Pandora Server unavailable or disconnected (%s). Retrying in 3 seconds...", type(e).__name__)
+                logger.warning("Pandora Server unavailable or disconnected (%s). Retrying in 10 seconds...", type(e).__name__)
                 try:
                     controller.state.update(connection_status=ConnectionStatus.DISCONNECTED)
                 except Exception:
                     pass
-                await asyncio.sleep(3) # wait before retrying
+                await asyncio.sleep(10) # wait before retrying
 
     # r the frontend monitor and the Pandora Server stream together
     done, pending = await asyncio.wait(

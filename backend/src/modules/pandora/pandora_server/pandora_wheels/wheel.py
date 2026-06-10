@@ -130,24 +130,11 @@ class Wheel():
             angle_deg: The angle in degrees.
         """
         logger.info(f"Moving  wheel with ID {self.wheel_id} to position {angle_deg} degrees")
-
-        # try:
         self.state.get().wheels[self.wheel_id].status = "moving"
         self.state.update()
-
-        # self._start_acquire_data()
-        time.sleep(0.1)  # wait for acquisition to start
         self._motor_move_to(angle_deg)
-
         self._wait_for_target_position_reached()
 
-        # except Exception as e:
-        #     logger.error("Error during move to position: %s", e)
-        #     # print stack trace
-        #     print(e)
-        # finally:
-        #     # self._stop_acquire_data()
-        #     pass
     
     def start_reference_search(self) -> None:
         """
@@ -195,6 +182,16 @@ class Wheel():
             True if the target position is reached, False otherwise.
         """
         return self.get_motor().get_position_reached()
+    
+    def _update_wheel_state(self) -> None:
+        curr_pos = self._get_angular_position()
+        curr_vel = self._get_actual_velocity()
+        status = "moving" if abs(curr_vel) > 0.001 else "idle"
+        self.state.get().wheels[self.wheel_id].status = status
+        self.state.get().wheels[self.wheel_id].position = curr_pos
+        self.state.get().wheels[self.wheel_id].velocity = curr_vel
+        self.state.update()
+
 
     def _wait_for_target_position_reached(self) -> None:
         """
@@ -203,13 +200,9 @@ class Wheel():
         Send status updates to the state manager while waiting.
         """
         while not self._motor_get_position_reached():
-            curr_pos = self._get_angular_position()
-            curr_vel = self._get_actual_velocity()
-            self.state.get().wheels[self.wheel_id].status = "moving"
-            self.state.get().wheels[self.wheel_id].position = curr_pos
-            self.state.get().wheels[self.wheel_id].velocity = curr_vel
-            self.state.update()
+            self._update_wheel_state()
             time.sleep(0.2)
+        self._update_wheel_state()
     
     @synchronized()
     def _get_actual_velocity(self) -> float:
