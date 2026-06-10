@@ -179,103 +179,53 @@ async def go_to_position(wheel_id: int, angle_deg: float, client: PandoraClientD
 async def pandora_ws(websocket: WebSocket, controller: ControllerDep):
     device_name = controller.device_name
     await ws_manager.connect(device_name, websocket)
+
     logger.info("WebSocket connection established for %s", device_name)
 
-    # This dummy listener monitors the client socket for a disconnect event
-    async def listen_for_client_disconnect():
+    # websocket url of the raspberry pi server
+    pandora_server_url = f"ws://{controller.settings.get().host}:{controller.settings.get().port}/ws"
+
+    # monitor function, exits when frontend disconnects
+    async def monitor_frontend_disconnect():
         try:
             while True:
-                # Keep reading to catch if the client closes the connection
                 await websocket.receive_text()
         except WebSocketDisconnect:
-            logger.info("Client %s explicitly disconnected.", device_name)
+            logger.info("Frontend disconnected.")
 
-    # This listens to the remote Pandora server and updates the state
-    async def listen_to_pandora_server():
-        pandora_url = f"ws://{controller.settings.get().host}:{controller.settings.get().port}/ws"
-        try:
-            async with websockets.connect(pandora_url) as pandora_server_ws:
-                logger.info("Connected to pandora server websocket at %s", pandora_url)
-                while True:
-                    message = await pandora_server_ws.recv()
-                    try:
-                        pandora_server_state = PandoraServerState.model_validate_json(message)
-                        logger.info("Received websocket message from pandora server: %s", pandora_server_state)
-                        
-                        # Update the state (which triggers the broadcast safely)
-                        controller.update_state(pandora_server_state)
-                    except Exception as e:
-                        logger.error("Error parsing message from pandora server: %s", e)
-        except Exception as e:
-            logger.error("Lost connection to remote Pandora server: %s", e)
+    # connect to pandora-server websocket and forward messages to frontend, try to reconnect if connection is lost
+    async def manage_raspi_stream():
+        while True:
+            try:
+                logger.info("Attempting to connect to Pandora Server WebSocket at %s...", pandora_server_url)
+                async with websockets.connect(pandora_server_url) as raspi_ws:
+                    logger.info("Successfully connected to Pandora Server WebSocket!")
+                    controller.state.update(connection_status=ConnectionStatus.CONNECTED)
+                    
+                    async for message in raspi_ws:
+                        await websocket.send_text(message)
 
-    try:
-        # Run both tasks concurrently. If either task finishes or encounters 
-        # an error (like a disconnect), the other will be cancelled automatically.
-        await asyncio.gather(
-            listen_for_client_disconnect(),
-            listen_to_pandora_server(),
-            return_exceptions=False
-        )
-    except (WebSocketDisconnect, asyncio.CancelledError):
-        pass
-    finally:
-        # Ensure cleanup happens no matter which side disconnected
-        logger.info("Cleaning up WebSocket connection for %s", device_name)
-        await ws_manager.disconnect(device_name, websocket)
-    # try:
-    #     logger.info("WebSocket connection established for %s", device_name)
+            except (websockets.exceptions.ConnectionClosed, ConnectionRefusedError, OSError) as e:
+                logger.warning("Pandora Server unavailable or disconnected (%s). Retrying in 3 seconds...", type(e).__name__)
+                try:
+                    controller.state.update(connection_status=ConnectionStatus.DISCONNECTED)
+                except Exception:
+                    pass
+                await asyncio.sleep(3) # wait before retrying
 
-    #     # Build the external server URL
-    #     pandora_server_websocket_url = f"ws://{controller.settings.get().host}:{controller.settings.get().port}/ws"
-        
-    #     # Connect to the remote Pandora WebSocket server using the 'websockets' library
-    #     async with websockets.connect(pandora_server_websocket_url) as pandora_server_ws:
-    #         logger.info("Connected to pandora server websocket at %s", pandora_server_websocket_url)
-            
-    #         while True:
-    #             # 'websockets' uses .recv() instead of .receive_text()
-    #             message = await pandora_server_ws.recv() 
-                
-    #             try:
-    #                 pandora_server_state = PandoraServerState.model_validate_json(message)
-    #                 logger.info("Received websocket message from pandora server: %s", pandora_server_state)
-    #                 controller.update_state(pandora_server_state)
-    #             except Exception as e:
-    #                 logger.error(
-    #                     "Error parsing websocket message from pandora server: %s. Message: %s. Error: %s", 
-    #                     device_name, message, e
-    #                 )
-    # try:
-    #     logger.info("WebSocket connection established for %s", device_name)
+    # r the frontend monitor and the Pandora Server stream together
+    done, pending = await asyncio.wait(
+        [
+            asyncio.create_task(monitor_frontend_disconnect()),
+            asyncio.create_task(manage_raspi_stream()),
+        ],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
 
-    #     # while a websocket connection is open we connect to the websocket of the pandora server and forward any messages received there to the state manager of this module, so that the state is always up to date with the actual state of the server
-    #     pandora_server_websocket_url = f"ws://{controller.settings.get().host}:{controller.settings.get().port}/ws"
-    #     async with httpx.AsyncClient() as http_client:
-    #         async with http_client.ws_connect(pandora_server_websocket_url) as pandora_server_ws:
-    #             logger.info("Connected to pandora server websocket at %s", pandora_server_websocket_url)
-    #             while True:
-    #                 message = await pandora_server_ws.receive_text()
-    #                 try:
-    #                     pandora_server_state = PandoraServerState.model_validate_json(message)
-    #                     logger.info("Received websocket message from pandora server: %s", pandora_server_state)
-    #                     controller.update_state(pandora_server_state)
-    #                 except Exception as e:
-    #                     logger.error("Error parsing websocket message from pandora server: %s. Message: %s. Error: %s", device_name, message, e)
-    #                     # if we fail to parse the message, we will ignore it and not update the state, but we will log the error
+    # if the frontend disconnects, it kills the infinite Pandora Server retry loop here
+    for task in pending:
+        task.cancel()
 
-    #     # while True:
-    #     #     message = await websocket.receive_text()
-    #     #     # any message recieved from the client will be a PandoraServerState object in JSON format, which we will parse and use to update the state of the controller
-    #     #     try:
-    #     #         pandora_server_state = PandoraServerState.model_validate_json(message)
-    #     #         logger.info("Received websocket message from %s: %s", device_name, pandora_server_state)
-    #     #         controller.update_state(pandora_server_state)
-    #     #     except Exception as e:
-    #     #         logger.error("Error parsing websocket message from %s: %s. Error: %s", device_name, message, e)
-    #     #         # if we fail to parse the message, we will ignore it and not update the state, but we will log the error
+    await ws_manager.disconnect(device_name, websocket)
+    logger.info("Cleaned up connections for %s", device_name)
 
-    #     #     logger.info("Received websocket message from %s: %s", device_name, message)
-
-    # except WebSocketDisconnect:
-    #     await ws_manager.disconnect(device_name, websocket)
