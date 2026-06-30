@@ -1999,6 +1999,66 @@ export type PandoraGoToPositionResponses = {
 
 export type PandoraGoToPositionResponse = PandoraGoToPositionResponses[keyof PandoraGoToPositionResponses];
 
+export type PandoraStartReferenceSearchData = {
+    body?: never;
+    path: {
+        /**
+         * Wheel Id
+         */
+        wheel_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/pandora/wheels/{wheel_id}/start-reference-search';
+};
+
+export type PandoraStartReferenceSearchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraStartReferenceSearchError = PandoraStartReferenceSearchErrors[keyof PandoraStartReferenceSearchErrors];
+
+export type PandoraStartReferenceSearchResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraStartReferenceSearchResponse = PandoraStartReferenceSearchResponses[keyof PandoraStartReferenceSearchResponses];
+
+export type PandoraStopReferenceSearchData = {
+    body?: never;
+    path: {
+        /**
+         * Wheel Id
+         */
+        wheel_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/pandora/wheels/{wheel_id}/stop-reference-search';
+};
+
+export type PandoraStopReferenceSearchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraStopReferenceSearchError = PandoraStopReferenceSearchErrors[keyof PandoraStopReferenceSearchErrors];
+
+export type PandoraStopReferenceSearchResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraStopReferenceSearchResponse = PandoraStopReferenceSearchResponses[keyof PandoraStopReferenceSearchResponses];
+
 export type TypesGetWebsocketTypeData = {
     body?: never;
     path?: never;
