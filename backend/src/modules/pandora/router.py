@@ -175,6 +175,31 @@ async def go_to_position(wheel_id: int, angle_deg: float, client: PandoraClientD
         raise_server_error("Failed to move wheel to position.")
     return BaseResponse(message=f"Wheel {wheel_id} moving to position {angle_deg} degrees.")
 
+@router.post("/wheels/{wheel_id}/start-reference-search", response_model=BaseResponse)
+async def start_reference_search(wheel_id: int, client: PandoraClientDep):
+    """
+    Start the reference search for the specified wheel.
+    """
+    response = await pandora_wheels_start_reference_search.asyncio_detailed(
+        wheel_id=wheel_id, client=client
+    )
+    if response.status_code != status.HTTP_200_OK:
+        logger.error("Unexpected status code %d from start_reference_search, content: %s", response.status_code, response.content.decode())
+        raise_server_error("Failed to start reference search for wheel.")
+    return BaseResponse(message=f"Reference search started for wheel {wheel_id}.")
+
+@router.post("/wheels/{wheel_id}/stop-reference-search", response_model=BaseResponse)
+async def stop_reference_search(wheel_id: int, client: PandoraClientDep):
+    """
+    Stop the reference search for the specified wheel.
+    """
+    response = await pandora_wheels_stop_reference_search.asyncio_detailed(
+        wheel_id=wheel_id, client=client
+    )
+    if response.status_code != status.HTTP_200_OK:
+        logger.error("Unexpected status code %d from stop_reference_search, content: %s", response.status_code, response.content.decode())
+        raise_server_error("Failed to stop reference search for wheel.")
+    return BaseResponse(message=f"Reference search stopped for wheel {wheel_id}.")
 
 @router.websocket("/ws")
 async def pandora_ws(websocket: WebSocket, controller: ControllerDep):

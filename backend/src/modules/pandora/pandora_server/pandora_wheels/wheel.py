@@ -70,7 +70,10 @@ class Wheel():
         self._acquire_data_event: threading.Event = threading.Event()
 
         # connect and initialize settings
-        self.connect(connection_port) # TODO: add failsafe retry logic here or in .connect() method
+        try:
+            self.connect(connection_port) # TODO: add failsafe retry logic here or in .connect() method
+        except Exception as e:
+            logger.error(f"Failed to connect wheel {self.wheel_id} on port {connection_port}: {e}")
 
         self.get_motor().drive_settings.max_current = 50
         self.get_motor().drive_settings.standby_current = 8
