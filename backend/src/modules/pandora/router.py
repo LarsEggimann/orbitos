@@ -119,6 +119,15 @@ async def server_health_check(client: PandoraClientDep, controller: ControllerDe
         controller.state.update(connection_status=ConnectionStatus.DISCONNECTED)
         raise_server_error("Failed to connect to pandora server.")
  
+
+@router.get("/data", response_model=PandoraDataResponse)
+async def get_data(client: PandoraClientDep, controller: ControllerDep):
+    """
+    Dummy endpoint to return the device ID of the Pandora controller. This is only here in case in the future there will be some data to return.
+    i.e temperature sensor data?
+    """
+    return PandoraDataResponse(device_id=controller.device_id)
+
 @router.get("/state", response_model=PandoraState)
 async def get_state(client: PandoraClientDep, controller: ControllerDep):
     """

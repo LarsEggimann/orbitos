@@ -17,6 +17,7 @@ import { Link } from '@tanstack/react-router'
 import { MdElectricBolt, MdLineAxis } from 'react-icons/md'
 import DnsIcon from '@mui/icons-material/Dns';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import { FaHome } from 'react-icons/fa'
 import { LuShipWheel, LuAxis3D } from 'react-icons/lu'
 import { TbArrowMergeBoth } from 'react-icons/tb'
@@ -40,6 +41,7 @@ const navLinks = [
     ),
     to: '/electrometer/1/and/2',
   },
+  { text: 'PANDORA Box Control', icon: <HomeRepairServiceIcon />, to: '/pandora' },
   { text: 'Chopper Wheel', icon: <LuShipWheel />, to: '/chopperwheel' },
   { text: 'Stages', icon: <LuAxis3D />, to: '/stages' },
   { text: 'Combo Control', icon: <TbArrowMergeBoth />, to: '/combo-control' },

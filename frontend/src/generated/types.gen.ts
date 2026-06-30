@@ -441,6 +441,16 @@ export type HttpValidationError = {
 export type LinActStatus = 'extended' | 'retracted' | 'unknown';
 
 /**
+ * PandoraDataResponse
+ */
+export type PandoraDataResponse = {
+    /**
+     * Device Id
+     */
+    device_id: number;
+};
+
+/**
  * PandoraSettings
  */
 export type PandoraSettings = {
@@ -1907,6 +1917,22 @@ export type PandoraServerHealthCheckResponses = {
 };
 
 export type PandoraServerHealthCheckResponse = PandoraServerHealthCheckResponses[keyof PandoraServerHealthCheckResponses];
+
+export type PandoraGetDataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/data';
+};
+
+export type PandoraGetDataResponses = {
+    /**
+     * Successful Response
+     */
+    200: PandoraDataResponse;
+};
+
+export type PandoraGetDataResponse = PandoraGetDataResponses[keyof PandoraGetDataResponses];
 
 export type PandoraGetStateData = {
     body?: never;

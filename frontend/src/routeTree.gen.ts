@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexRouteImport } from './routes/_pathlessLayout/index'
 import { Route as PathlessLayoutStagesRouteImport } from './routes/_pathlessLayout/stages'
+import { Route as PathlessLayoutPandoraRouteImport } from './routes/_pathlessLayout/pandora'
 import { Route as PathlessLayoutComboDataViewRouteImport } from './routes/_pathlessLayout/combo-data-view'
 import { Route as PathlessLayoutComboControlRouteImport } from './routes/_pathlessLayout/combo-control'
 import { Route as PathlessLayoutChopperwheelRouteImport } from './routes/_pathlessLayout/chopperwheel'
@@ -32,6 +33,11 @@ const PathlessLayoutIndexRoute = PathlessLayoutIndexRouteImport.update({
 const PathlessLayoutStagesRoute = PathlessLayoutStagesRouteImport.update({
   id: '/stages',
   path: '/stages',
+  getParentRoute: () => PathlessLayoutRoute,
+} as any)
+const PathlessLayoutPandoraRoute = PathlessLayoutPandoraRouteImport.update({
+  id: '/pandora',
+  path: '/pandora',
   getParentRoute: () => PathlessLayoutRoute,
 } as any)
 const PathlessLayoutComboDataViewRoute =
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/combo-control': typeof PathlessLayoutComboControlRoute
   '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/pandora': typeof PathlessLayoutPandoraRoute
   '/stages': typeof PathlessLayoutStagesRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
   '/raspi-server/linear-actuator': typeof PathlessLayoutRaspiServerLinearActuatorRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/combo-control': typeof PathlessLayoutComboControlRoute
   '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/pandora': typeof PathlessLayoutPandoraRoute
   '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/_pathlessLayout/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/_pathlessLayout/combo-control': typeof PathlessLayoutComboControlRoute
   '/_pathlessLayout/combo-data-view': typeof PathlessLayoutComboDataViewRoute
+  '/_pathlessLayout/pandora': typeof PathlessLayoutPandoraRoute
   '/_pathlessLayout/stages': typeof PathlessLayoutStagesRoute
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/chopperwheel'
     | '/combo-control'
     | '/combo-data-view'
+    | '/pandora'
     | '/stages'
     | '/electrometer/$deviceId'
     | '/raspi-server/linear-actuator'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/chopperwheel'
     | '/combo-control'
     | '/combo-data-view'
+    | '/pandora'
     | '/stages'
     | '/'
     | '/electrometer/$deviceId'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/_pathlessLayout/chopperwheel'
     | '/_pathlessLayout/combo-control'
     | '/_pathlessLayout/combo-data-view'
+    | '/_pathlessLayout/pandora'
     | '/_pathlessLayout/stages'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
@@ -174,6 +186,13 @@ declare module '@tanstack/react-router' {
       path: '/stages'
       fullPath: '/stages'
       preLoaderRoute: typeof PathlessLayoutStagesRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/pandora': {
+      id: '/_pathlessLayout/pandora'
+      path: '/pandora'
+      fullPath: '/pandora'
+      preLoaderRoute: typeof PathlessLayoutPandoraRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
     '/_pathlessLayout/combo-data-view': {
@@ -232,6 +251,7 @@ interface PathlessLayoutRouteChildren {
   PathlessLayoutChopperwheelRoute: typeof PathlessLayoutChopperwheelRoute
   PathlessLayoutComboControlRoute: typeof PathlessLayoutComboControlRoute
   PathlessLayoutComboDataViewRoute: typeof PathlessLayoutComboDataViewRoute
+  PathlessLayoutPandoraRoute: typeof PathlessLayoutPandoraRoute
   PathlessLayoutStagesRoute: typeof PathlessLayoutStagesRoute
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
@@ -244,6 +264,7 @@ const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutChopperwheelRoute: PathlessLayoutChopperwheelRoute,
   PathlessLayoutComboControlRoute: PathlessLayoutComboControlRoute,
   PathlessLayoutComboDataViewRoute: PathlessLayoutComboDataViewRoute,
+  PathlessLayoutPandoraRoute: PathlessLayoutPandoraRoute,
   PathlessLayoutStagesRoute: PathlessLayoutStagesRoute,
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
