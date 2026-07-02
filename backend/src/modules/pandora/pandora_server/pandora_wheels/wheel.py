@@ -83,7 +83,7 @@ class Wheel():
 
             # reference search settings
             self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchMode, 8) # 8 = Search home switch in negative direction, ignore end switches.
-            self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchSpeed, 1500) # speed for reference search in pps
+            self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchSpeed, 2000) # speed for reference search in pps
             self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSwitchSpeed, 200) # speed for reference search in pps
 
         except Exception as e:

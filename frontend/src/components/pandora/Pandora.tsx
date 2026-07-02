@@ -32,11 +32,6 @@ const Pandora: React.FC = () => {
         dataAppendFunction: (newData) => { },
     })
 
-
-    // start stop pandora server
-
-
-
     return (
         <Box sx={{ p: 1 }}>
 
@@ -68,11 +63,20 @@ const Pandora: React.FC = () => {
                     mb: 3
                 }}
             >
-                {/* Left Side: Dynamic list of 4 Wheels */}
+                {/* Left Side: Dynamic list of 4 Wheels with live state routing */}
                 <Box sx={{ flex: 1, width: '100%' }}>
-                    {[0, 1, 2, 3].map((id) => (
-                        <PandoraWheelControl key={id} wheelId={id} />
-                    ))}
+                    {[0, 1, 2, 3].map((id) => {
+                        // Extract individual wheel updates from state mapping dictionary keys securely
+                        const wheelData = state?.wheels ? (state.wheels as any)[id] : undefined
+
+                        return (
+                            <PandoraWheelControl 
+                                key={id} 
+                                wheelId={id} 
+                                wheelState={wheelData} 
+                            />
+                        )
+                    })}
                 </Box>
 
                 {/* Right Side: Live State JSON (Sticky pinned) */}
@@ -89,7 +93,7 @@ const Pandora: React.FC = () => {
                     }}
                 >
                     <Typography variant="h6" color="primary" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                        Live State
+                        Crude Live State JSON
                     </Typography>
                     <pre style={{ margin: 0, fontSize: '0.85rem', overflowX: 'auto' }}>
                         {JSON.stringify(state, null, 2)}
@@ -98,8 +102,11 @@ const Pandora: React.FC = () => {
             </Box>
 
             <Card sx={{ p: 2, mb: 2, width: '100%' }}>
-                <Typography variant="h6" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" sx={{  }}>
                     PANDORA Server Controls
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                    Start and Stop the PANDORA Server Application on the Raspberry Pi
                 </Typography>
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1, ml: { sm: 'auto' } }}>
                     <ExecQueryButton
@@ -136,7 +143,7 @@ const Pandora: React.FC = () => {
             {/* Bottom Row: Settings Dashboard */}
             <Card sx={{ p: 2, mb: 2, width: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    Settings
+                    Settings (not yet editable via UI)
                 </Typography>
                 <pre style={{ margin: 0, fontSize: '0.85rem', overflowX: 'auto' }}>
                     {JSON.stringify(settings, null, 2)}
