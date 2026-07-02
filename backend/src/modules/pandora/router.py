@@ -39,11 +39,9 @@ from src.modules.pandora.client.pandora_control_server_api_client.api.pandora_wh
 from src.modules.pandora.pandora_server.models import PandoraState as PandoraServerState
 
 
-def run_ssh(host: str, command: str):
-    return subprocess.run(["ssh", host, command], capture_output=True, text=True, check=False)
-
 def run_ssh_async(host: str, command: str):
     """Run SSH command without waiting for response"""
+    host = f"pandora-server@{host}"
     return subprocess.Popen(["ssh", host, command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
