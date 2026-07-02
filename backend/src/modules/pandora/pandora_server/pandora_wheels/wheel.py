@@ -72,22 +72,22 @@ class Wheel():
         # connect and initialize settings
         try:
             self.connect(connection_port) # TODO: add failsafe retry logic here or in .connect() method
+
+            self.get_motor().drive_settings.max_current = 60
+            self.get_motor().drive_settings.standby_current = 10
+            self.get_motor().drive_settings.boost_current = 60
+            self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
+            self.get_motor().linear_ramp.max_acceleration = 30000
+            self.get_motor().linear_ramp.max_velocity = 10000
+            self.get_motor().set_axis_parameter(self.get_motor().AP.RelativePositioningOption, 0) # set move_by relative to the actual position = 1, last target position = 0
+
+            # reference search settings
+            self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchMode, 8) # 8 = Search home switch in negative direction, ignore end switches.
+            self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchSpeed, 1500) # speed for reference search in pps
+            self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSwitchSpeed, 200) # speed for reference search in pps
+
         except Exception as e:
             logger.error(f"Failed to connect wheel {self.wheel_id} on port {connection_port}: {e}")
-
-        self.get_motor().drive_settings.max_current = 60
-        self.get_motor().drive_settings.standby_current = 10
-        self.get_motor().drive_settings.boost_current = 60
-        self.get_motor().drive_settings.microstep_resolution = self.microstep_resolution
-        self.get_motor().linear_ramp.max_acceleration = 30000
-        self.get_motor().linear_ramp.max_velocity = 10000
-        self.get_motor().set_axis_parameter(self.get_motor().AP.RelativePositioningOption, 0) # set move_by relative to the actual position = 1, last target position = 0
-
-        # reference search settings
-        self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchMode, 8) # 8 = Search home switch in negative direction, ignore end switches.
-        self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSearchSpeed, 1500) # speed for reference search in pps
-        self.get_motor().set_axis_parameter(self.get_motor().AP.ReferenceSwitchSpeed, 200) # speed for reference search in pps
-
 
 
 

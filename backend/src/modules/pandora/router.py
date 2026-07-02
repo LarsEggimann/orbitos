@@ -75,6 +75,7 @@ async def start_server(controller: ControllerDep):
     command = f"cd {pandora_server_directory} && nohup bash ./startup.sh </dev/null >out.log 2>&1 & disown"
 
     logger.info("Starting pandora server on %s:%d", host, port)
+    logger.info("Running command: %s", command)
     
     # Start the process without waiting for it to complete
     process = run_ssh_async(host, command)
