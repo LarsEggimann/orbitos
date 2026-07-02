@@ -31,7 +31,7 @@ class WheelsController:
             0: Wheel(wheel_id=0, connection_port="/dev/ttyACM0", state=state),
             1: Wheel(wheel_id=1, connection_port="/dev/ttyACM1", state=state),
             2: Wheel(wheel_id=2, connection_port="/dev/ttyACM2", state=state),
-            3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3", state=state),
+            # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3", state=state),
         }
 
         self.ws_manager = ws_manager
