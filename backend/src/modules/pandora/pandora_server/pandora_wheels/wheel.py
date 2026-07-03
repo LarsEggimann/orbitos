@@ -68,6 +68,7 @@ class Wheel():
 
         self._acquire_data_thread: threading.Thread | None = None
         self._acquire_data_event: threading.Event = threading.Event()
+        self._reference_search_ongoing: threading.Event = threading.Event()
 
         # connect and initialize settings
         try:
@@ -123,6 +124,7 @@ class Wheel():
             self._serial_interface = None
         self._module = None
         self._motor = None
+        self._reference_search_ongoing.clear()
         logger.info(f"Wheel {self.wheel_id} disconnected from port {self.connection_port}")
 
     def go_to_position(self, angle_deg: float) -> None:
@@ -144,11 +146,13 @@ class Wheel():
         Start the reference search for the wheel.
         """
         logger.info(f"Starting reference search for wheel with ID {self.wheel_id} ...")
+        self._reference_search_ongoing.set()
         self.get_serial_interface().reference_search(
             command_type=0, # 0 starts the search, 1 stops the search, and 2 returns the status.
             motor=0 # motor index, in this case we have only one motor, so the index is 0
         )
         self._wait_for_target_position_reached()
+        self._reference_search_ongoing.clear()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     def stop_reference_search(self) -> None:
@@ -160,6 +164,7 @@ class Wheel():
             command_type=1, # 0 starts the search, 1 stops the search, and 2 returns the status.
             motor=0 # motor index, in this case we have only one motor, so the index is 0
         )
+        self._reference_search_ongoing.clear()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     @synchronized()
@@ -189,7 +194,10 @@ class Wheel():
     def _update_wheel_state(self) -> None:
         curr_pos = self._get_angular_position()
         curr_vel = self._get_actual_velocity()
-        status = "moving" if abs(curr_vel) > 0.001 else "idle"
+        if self._reference_search_ongoing.is_set():
+            status = "reference_search"
+        else:
+            status = "moving" if abs(curr_vel) > 0.001 else "idle"
         self.state.get().wheels[self.wheel_id].status = status
         self.state.get().wheels[self.wheel_id].position = curr_pos
         self.state.get().wheels[self.wheel_id].velocity = curr_vel
@@ -205,6 +213,8 @@ class Wheel():
         while not self._motor_get_position_reached():
             self._update_wheel_state()
             time.sleep(0.2)
+
+        time.sleep(0.1) # wait a bit to make sure the motor has stopped and position is updated
         self._update_wheel_state()
     
     @synchronized()
