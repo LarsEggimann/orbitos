@@ -153,6 +153,7 @@ class Wheel():
         )
         self._wait_for_target_position_reached()
         self._reference_search_ongoing.clear()
+        self._update_wheel_state()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     def stop_reference_search(self) -> None:
@@ -165,6 +166,7 @@ class Wheel():
             motor=0 # motor index, in this case we have only one motor, so the index is 0
         )
         self._reference_search_ongoing.clear()
+        self._update_wheel_state()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     @synchronized()
