@@ -222,6 +222,7 @@ async def turn_on_relay(relay_id: int, client: PandoraClientDep):
     if response.status_code != status.HTTP_200_OK:
         logger.error("Unexpected status code %d from turn_on_relay, content: %s", response.status_code, response.content.decode())
         raise_server_error("Failed to turn on relay.")
+    logger.info("Relay %d turned on successfully.", relay_id)
     return BaseResponse(message=f"Relay {relay_id} turned on.")
 
 @router.post("/relays/{relay_id}/off", response_model=BaseResponse)
@@ -233,6 +234,7 @@ async def turn_off_relay(relay_id: int, client: PandoraClientDep):
     if response.status_code != status.HTTP_200_OK:
         logger.error("Unexpected status code %d from turn_off_relay, content: %s", response.status_code, response.content.decode())
         raise_server_error("Failed to turn off relay.")
+    logger.info("Relay %d turned off successfully.", relay_id)
     return BaseResponse(message=f"Relay {relay_id} turned off.")
 
 @router.websocket("/ws")
