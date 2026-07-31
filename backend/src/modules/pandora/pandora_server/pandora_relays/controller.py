@@ -4,7 +4,7 @@ from src.shared.websocket_manager import WebSocketManager
 from src.shared.state_manager import StateManager
 
 from .relay import Relay
-from ..models import PandoraState
+from ..models import PandoraState, RelayState
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,17 @@ class RelaysController:
 
         self.ws_manager = ws_manager
         self.state = state
+
+
+        # add relays to the state
+        relay_dict = self.state.get().relays
+        for relay_id, relay in self._relays.items():
+            if relay_id not in relay_dict:
+                relay_dict[relay_id] = RelayState(
+                    is_on=relay.is_on(),
+                    description=f"Relay {relay_id} on GPIO pin {relay._gpio.pin}"
+                )
+
 
         try:
             self.update_relays_state()
