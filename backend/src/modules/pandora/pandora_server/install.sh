@@ -16,7 +16,7 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install "fastapi[standard]"
 pip install sqlmodel # sql, also installs sqlalchemy and pydantic
-pip install orjson numpy pyserial pytrinamic pylablib-lightweight
+pip install orjson numpy pyserial pytrinamic pylablib-lightweight gpiozero
 
 # done, set finish message
 echo "Setup complete!"

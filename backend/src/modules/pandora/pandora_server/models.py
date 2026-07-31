@@ -5,14 +5,18 @@ class BaseResponse(BaseModel):
     message: str
 
 class PandoraWheelState(BaseModel):
-    status: str = "unknown" # can be anything
+    status: str = "unknown"          # can be anything
     position: Optional[float] = None # position in degrees relative to home position
     velocity: Optional[float] = None # velocity in degrees per second
 
 class TemperatureSensorState(BaseModel):
     temperature: Optional[float] = None # temperature in degrees Celsius
 
+class RelayState(BaseModel):
+    is_on: bool = False               # True = voltage applied, False = no voltage applied
+    description: Optional[str] = None # optional description of the relay
+
 class PandoraState(BaseModel):
     wheels: dict[int, PandoraWheelState] = Field(default_factory=dict) # wheel ID (we have four wheels -> 0-3) to wheel state
-    relays: dict[int, bool] = Field(default_factory=dict) # relay ID (we have six relays -> 0-5) to on/off state, e.g True = voltage applied, False = no voltage applied
+    relays: dict[int, RelayState] = Field(default_factory=dict) # relay ID (we have six relays -> 0-5) to on/off state, e.g True = voltage applied, False = no voltage applied
     temperature_sensor: TemperatureSensorState = Field(default_factory=TemperatureSensorState)

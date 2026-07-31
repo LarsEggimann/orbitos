@@ -153,7 +153,7 @@ class Wheel():
         )
         self._wait_for_target_position_reached()
         self._reference_search_ongoing.clear()
-        self._update_wheel_state()
+        self._publish_wheel_state()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     def stop_reference_search(self) -> None:
@@ -166,7 +166,7 @@ class Wheel():
             motor=0 # motor index, in this case we have only one motor, so the index is 0
         )
         self._reference_search_ongoing.clear()
-        self._update_wheel_state()
+        self._publish_wheel_state()
         logger.info(f"Reference search for wheel with ID {self.wheel_id} completed.")
 
     @synchronized()
@@ -192,8 +192,12 @@ class Wheel():
             True if the target position is reached, False otherwise.
         """
         return self.get_motor().get_position_reached()
-    
-    def _update_wheel_state(self) -> None:
+
+    def update_wheel_state(self) -> None:
+        """
+        Update the wheel state in the state manager.
+        Does not trigger websocket update, call state.update() after this method to trigger websocket update.
+        """
         curr_pos = self._get_angular_position()
         curr_vel = self._get_actual_velocity()
         if self._reference_search_ongoing.is_set():
@@ -203,8 +207,10 @@ class Wheel():
         self.state.get().wheels[self.wheel_id].status = status
         self.state.get().wheels[self.wheel_id].position = curr_pos
         self.state.get().wheels[self.wheel_id].velocity = curr_vel
+    
+    def _publish_wheel_state(self) -> None:
+        self.update_wheel_state()
         self.state.update()
-
 
     def _wait_for_target_position_reached(self) -> None:
         """
@@ -213,11 +219,11 @@ class Wheel():
         Send status updates to the state manager while waiting.
         """
         while not self._motor_get_position_reached():
-            self._update_wheel_state()
+            self._publish_wheel_state()
             time.sleep(0.2)
 
         time.sleep(0.1) # wait a bit to make sure the motor has stopped and position is updated
-        self._update_wheel_state()
+        self._publish_wheel_state()
     
     @synchronized()
     def _get_actual_velocity(self) -> float:

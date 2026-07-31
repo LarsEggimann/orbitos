@@ -12,12 +12,14 @@ from src.core.logging import setup_logging
 from .module import init_pandora_server, shutdown_pandora_server
 from .router import router as pandora_server_router
 from .pandora_wheels.router import router as wheels_router
+from .pandora_relays.router import router as relays_router
 
 logger = logging.getLogger(__name__)
 
 api_router = APIRouter()
 api_router.include_router(pandora_server_router)
 api_router.include_router(wheels_router)
+api_router.include_router(relays_router)
 
 
 

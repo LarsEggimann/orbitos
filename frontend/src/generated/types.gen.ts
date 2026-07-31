@@ -517,7 +517,7 @@ export type PandoraState = {
      * Relays
      */
     relays?: {
-        [key: string]: boolean;
+        [key: string]: RelayState;
     };
     temperature_sensor?: TemperatureSensorState;
 };
@@ -599,6 +599,20 @@ export type RaspiState = {
     bus_status?: {
         [key: string]: BusStatus;
     } | null;
+};
+
+/**
+ * RelayState
+ */
+export type RelayState = {
+    /**
+     * Is On
+     */
+    is_on?: boolean;
+    /**
+     * Description
+     */
+    description?: string | null;
 };
 
 /**
@@ -2084,6 +2098,36 @@ export type PandoraStopReferenceSearchResponses = {
 };
 
 export type PandoraStopReferenceSearchResponse = PandoraStopReferenceSearchResponses[keyof PandoraStopReferenceSearchResponses];
+
+export type PandoraTurnOnRelayData = {
+    body?: never;
+    path: {
+        /**
+         * Relay Id
+         */
+        relay_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/pandora/relays/{relay_id}/on';
+};
+
+export type PandoraTurnOnRelayErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraTurnOnRelayError = PandoraTurnOnRelayErrors[keyof PandoraTurnOnRelayErrors];
+
+export type PandoraTurnOnRelayResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraTurnOnRelayResponse = PandoraTurnOnRelayResponses[keyof PandoraTurnOnRelayResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;

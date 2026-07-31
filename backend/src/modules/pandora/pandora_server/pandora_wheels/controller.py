@@ -37,6 +37,11 @@ class WheelsController:
         self.ws_manager = ws_manager
         self.state = state
 
+        try:
+            self.update_wheels_state()
+        except Exception as e:
+            logger.error("Error updating wheels state during initialization: %s", e)
+
     def get_wheel(self, wheel_id: int) -> Wheel:
         if wheel_id not in self._wheels:
             raise ValueError(f"Wheel with ID {wheel_id} not found.")
@@ -50,3 +55,7 @@ class WheelsController:
 
     def stop_reference_search(self, wheel_id: int):
         self.get_wheel(wheel_id).stop_reference_search()
+
+    def update_wheels_state(self):
+        for wheel in self._wheels.values():
+            wheel.update_wheel_state()

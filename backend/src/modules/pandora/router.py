@@ -35,6 +35,10 @@ from src.modules.pandora.client.pandora_control_server_api_client.api.pandora_wh
     pandora_wheels_start_reference_search,
     pandora_wheels_stop_reference_search
 )
+from src.modules.pandora.client.pandora_control_server_api_client.api.pandora_relays import (
+    pandora_relays_turn_on,
+    pandora_relays_turn_off
+)
 
 from src.modules.pandora.pandora_server.models import PandoraState as PandoraServerState
 
@@ -208,6 +212,28 @@ async def stop_reference_search(wheel_id: int, client: PandoraClientDep):
         logger.error("Unexpected status code %d from stop_reference_search, content: %s", response.status_code, response.content.decode())
         raise_server_error("Failed to stop reference search for wheel.")
     return BaseResponse(message=f"Reference search stopped for wheel {wheel_id}.")
+
+@router.post("/relays/{relay_id}/on", response_model=BaseResponse)
+async def turn_on_relay(relay_id: int, client: PandoraClientDep):
+    """
+    Turn on the specified relay.
+    """
+    response = await pandora_relays_turn_on.asyncio_detailed(relay_id=relay_id, client=client)
+    if response.status_code != status.HTTP_200_OK:
+        logger.error("Unexpected status code %d from turn_on_relay, content: %s", response.status_code, response.content.decode())
+        raise_server_error("Failed to turn on relay.")
+    return BaseResponse(message=f"Relay {relay_id} turned on.")
+
+@router.post("/relays/{relay_id}/off", response_model=BaseResponse)
+async def turn_off_relay(relay_id: int, client: PandoraClientDep):
+    """
+    Turn off the specified relay.
+    """
+    response = await pandora_relays_turn_off.asyncio_detailed(relay_id=relay_id, client=client)
+    if response.status_code != status.HTTP_200_OK:
+        logger.error("Unexpected status code %d from turn_off_relay, content: %s", response.status_code, response.content.decode())
+        raise_server_error("Failed to turn off relay.")
+    return BaseResponse(message=f"Relay {relay_id} turned off.")
 
 @router.websocket("/ws")
 async def pandora_ws(websocket: WebSocket, controller: ControllerDep):
