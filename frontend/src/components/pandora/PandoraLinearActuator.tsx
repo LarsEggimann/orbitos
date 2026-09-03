@@ -84,16 +84,32 @@ function Actuator({
                     }}
                 />
             </Box>
-            <Stack direction="row" spacing={1}>
+            <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{
+                    width: '100%',
+                    justifyContent: 'center',
+                }}
+            >
                 <ExecQueryButton
                     color="warning"
                     onClick={onExtend}
+                    sx={{
+                        minWidth: 0,
+                        flex: 1,
+                    }}
                 >
                     Extend
                 </ExecQueryButton>
+
                 <ExecQueryButton
                     color="success"
                     onClick={onRetract}
+                    sx={{
+                        minWidth: 0,
+                        flex: 1,
+                    }}
                 >
                     Retract
                 </ExecQueryButton>
@@ -242,11 +258,13 @@ const PandoraLinearActuator: React.FC = () => {
                             return (
                                 <Stack
                                     key={id}
+                                    spacing={1}
                                     sx={{
                                         alignItems: 'center',
-                                        mx: 2,
+                                        flex: '1 1 0',
+                                        minWidth: 0,
+                                        mx: 1,
                                     }}
-                                    spacing={1}
                                 >
                                     <DirtyTextField
                                         label="Description"
