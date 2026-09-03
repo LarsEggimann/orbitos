@@ -16,7 +16,7 @@ import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { useConfig } from '~/provider/ConfigProvider'
 import PandoraWheelControl from './PandoraWheelControl'
 
-const Pandora: React.FC = () => {
+const PandoraWheels: React.FC = () => {
     const { API_WEBSOCKET_URL } = useConfig()
 
     const { state, settings, connected } = useDeviceWebSocket<
@@ -105,4 +105,4 @@ const Pandora: React.FC = () => {
     )
 }
 
-export default Pandora
+export default PandoraWheels

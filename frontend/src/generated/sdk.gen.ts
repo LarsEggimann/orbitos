@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ChopperwheelConnectToChopperWheelData, ChopperwheelConnectToChopperWheelErrors, ChopperwheelConnectToChopperWheelResponses, ChopperwheelDisconnectChopperWheelData, ChopperwheelDisconnectChopperWheelResponses, ChopperwheelFindHomeChopperWheelData, ChopperwheelFindHomeChopperWheelResponses, ChopperwheelFlashBeamChopperWheelData, ChopperwheelFlashBeamChopperWheelResponses, ChopperwheelGetAvailableComPortsData, ChopperwheelGetAvailableComPortsResponses, ChopperwheelGetChopperWheelDataData, ChopperwheelGetChopperWheelDataErrors, ChopperwheelGetChopperWheelDataResponses, ChopperwheelGetChopperWheelSettingsData, ChopperwheelGetChopperWheelSettingsResponses, ChopperwheelGetChopperWheelStateData, ChopperwheelGetChopperWheelStateResponses, ChopperwheelGoToPositionChopperWheelData, ChopperwheelGoToPositionChopperWheelErrors, ChopperwheelGoToPositionChopperWheelResponses, ChopperwheelResetChopperWheelErrorData, ChopperwheelResetChopperWheelErrorResponses, ChopperwheelRotateDemoChopperWheelData, ChopperwheelRotateDemoChopperWheelResponses, ChopperwheelSetChopperWheelSettingsData, ChopperwheelSetChopperWheelSettingsErrors, ChopperwheelSetChopperWheelSettingsResponses, ElectrometerConnectToElectrometerData, ElectrometerConnectToElectrometerErrors, ElectrometerConnectToElectrometerResponses, ElectrometerDisconnectElectrometerData, ElectrometerDisconnectElectrometerErrors, ElectrometerDisconnectElectrometerResponses, ElectrometerGetCurrentDataData, ElectrometerGetCurrentDataErrors, ElectrometerGetCurrentDataResponses, ElectrometerGetElectrometerSettingsData, ElectrometerGetElectrometerSettingsErrors, ElectrometerGetElectrometerSettingsResponses, ElectrometerGetElectrometerStateData, ElectrometerGetElectrometerStateErrors, ElectrometerGetElectrometerStateResponses, ElectrometerGetSourceVoltageDataData, ElectrometerGetSourceVoltageDataErrors, ElectrometerGetSourceVoltageDataResponses, ElectrometerResetElectrometerData, ElectrometerResetElectrometerErrorData, ElectrometerResetElectrometerErrorErrors, ElectrometerResetElectrometerErrorResponses, ElectrometerResetElectrometerResponses, ElectrometerSetElectrometerSettingsData, ElectrometerSetElectrometerSettingsErrors, ElectrometerSetElectrometerSettingsResponses, ElectrometerStartContinuousMeasurementData, ElectrometerStartContinuousMeasurementErrors, ElectrometerStartContinuousMeasurementResponses, ElectrometerStartSourceVoltageSweepData, ElectrometerStartSourceVoltageSweepErrors, ElectrometerStartSourceVoltageSweepResponses, ElectrometerStartTriggerBasedMeasurementData, ElectrometerStartTriggerBasedMeasurementErrors, ElectrometerStartTriggerBasedMeasurementResponses, ElectrometerStopContinuousMeasurementData, ElectrometerStopContinuousMeasurementErrors, ElectrometerStopContinuousMeasurementResponses, ElectrometerTurnOffSourceVoltageData, ElectrometerTurnOffSourceVoltageErrors, ElectrometerTurnOffSourceVoltageResponses, PandoraGetDataData, PandoraGetDataResponses, PandoraGetSettingsData, PandoraGetSettingsResponses, PandoraGetStateData, PandoraGetStateResponses, PandoraGoToPositionData, PandoraGoToPositionErrors, PandoraGoToPositionResponses, PandoraServerHealthCheckData, PandoraServerHealthCheckResponses, PandoraSetPandoraSettingsData, PandoraSetPandoraSettingsErrors, PandoraSetPandoraSettingsResponses, PandoraStartReferenceSearchData, PandoraStartReferenceSearchErrors, PandoraStartReferenceSearchResponses, PandoraStartServerData, PandoraStartServerResponses, PandoraStopReferenceSearchData, PandoraStopReferenceSearchErrors, PandoraStopReferenceSearchResponses, PandoraStopServerData, PandoraStopServerResponses, PandoraTurnOnRelayData, PandoraTurnOnRelayErrors, PandoraTurnOnRelayResponses, RaspiExtendLinActData, RaspiExtendLinActErrors, RaspiExtendLinActResponses, RaspiGetBusStatusData, RaspiGetBusStatusResponses, RaspiGetSettingsData, RaspiGetSettingsResponses, RaspiGetStateData, RaspiGetStateResponses, RaspiRetractLinActData, RaspiRetractLinActErrors, RaspiRetractLinActResponses, RaspiServerHealthCheckData, RaspiServerHealthCheckResponses, RaspiStartServerData, RaspiStartServerResponses, RaspiStopServerData, RaspiStopServerResponses, TypesGetBaseStateTypeData, TypesGetBaseStateTypeResponses, TypesGetWebsocketTypeData, TypesGetWebsocketTypeResponses, XyStagesConnectToStageData, XyStagesConnectToStageErrors, XyStagesConnectToStageResponses, XyStagesDisconnectStageData, XyStagesDisconnectStageErrors, XyStagesDisconnectStageResponses, XyStagesGetAvailableUsbDevicesData, XyStagesGetAvailableUsbDevicesResponses, XyStagesGetStagesDataData, XyStagesGetStagesDataErrors, XyStagesGetStagesDataResponses, XyStagesGetStagesSettingsData, XyStagesGetStagesSettingsResponses, XyStagesGetStagesStateData, XyStagesGetStagesStateResponses, XyStagesMoveAxisByMmData, XyStagesMoveAxisByMmErrors, XyStagesMoveAxisByMmResponses, XyStagesMoveAxisToPositionData, XyStagesMoveAxisToPositionErrors, XyStagesMoveAxisToPositionResponses, XyStagesResetStagesErrorData, XyStagesResetStagesErrorResponses, XyStagesSetAxisCurrentPositionToZeroData, XyStagesSetAxisCurrentPositionToZeroErrors, XyStagesSetAxisCurrentPositionToZeroResponses, XyStagesSetStagesSettingsData, XyStagesSetStagesSettingsErrors, XyStagesSetStagesSettingsResponses } from './types.gen';
+import type { ChopperwheelConnectToChopperWheelData, ChopperwheelConnectToChopperWheelErrors, ChopperwheelConnectToChopperWheelResponses, ChopperwheelDisconnectChopperWheelData, ChopperwheelDisconnectChopperWheelResponses, ChopperwheelFindHomeChopperWheelData, ChopperwheelFindHomeChopperWheelResponses, ChopperwheelFlashBeamChopperWheelData, ChopperwheelFlashBeamChopperWheelResponses, ChopperwheelGetAvailableComPortsData, ChopperwheelGetAvailableComPortsResponses, ChopperwheelGetChopperWheelDataData, ChopperwheelGetChopperWheelDataErrors, ChopperwheelGetChopperWheelDataResponses, ChopperwheelGetChopperWheelSettingsData, ChopperwheelGetChopperWheelSettingsResponses, ChopperwheelGetChopperWheelStateData, ChopperwheelGetChopperWheelStateResponses, ChopperwheelGoToPositionChopperWheelData, ChopperwheelGoToPositionChopperWheelErrors, ChopperwheelGoToPositionChopperWheelResponses, ChopperwheelResetChopperWheelErrorData, ChopperwheelResetChopperWheelErrorResponses, ChopperwheelRotateDemoChopperWheelData, ChopperwheelRotateDemoChopperWheelResponses, ChopperwheelSetChopperWheelSettingsData, ChopperwheelSetChopperWheelSettingsErrors, ChopperwheelSetChopperWheelSettingsResponses, ElectrometerConnectToElectrometerData, ElectrometerConnectToElectrometerErrors, ElectrometerConnectToElectrometerResponses, ElectrometerDisconnectElectrometerData, ElectrometerDisconnectElectrometerErrors, ElectrometerDisconnectElectrometerResponses, ElectrometerGetCurrentDataData, ElectrometerGetCurrentDataErrors, ElectrometerGetCurrentDataResponses, ElectrometerGetElectrometerSettingsData, ElectrometerGetElectrometerSettingsErrors, ElectrometerGetElectrometerSettingsResponses, ElectrometerGetElectrometerStateData, ElectrometerGetElectrometerStateErrors, ElectrometerGetElectrometerStateResponses, ElectrometerGetSourceVoltageDataData, ElectrometerGetSourceVoltageDataErrors, ElectrometerGetSourceVoltageDataResponses, ElectrometerResetElectrometerData, ElectrometerResetElectrometerErrorData, ElectrometerResetElectrometerErrorErrors, ElectrometerResetElectrometerErrorResponses, ElectrometerResetElectrometerResponses, ElectrometerSetElectrometerSettingsData, ElectrometerSetElectrometerSettingsErrors, ElectrometerSetElectrometerSettingsResponses, ElectrometerStartContinuousMeasurementData, ElectrometerStartContinuousMeasurementErrors, ElectrometerStartContinuousMeasurementResponses, ElectrometerStartSourceVoltageSweepData, ElectrometerStartSourceVoltageSweepErrors, ElectrometerStartSourceVoltageSweepResponses, ElectrometerStartTriggerBasedMeasurementData, ElectrometerStartTriggerBasedMeasurementErrors, ElectrometerStartTriggerBasedMeasurementResponses, ElectrometerStopContinuousMeasurementData, ElectrometerStopContinuousMeasurementErrors, ElectrometerStopContinuousMeasurementResponses, ElectrometerTurnOffSourceVoltageData, ElectrometerTurnOffSourceVoltageErrors, ElectrometerTurnOffSourceVoltageResponses, PandoraGetDataData, PandoraGetDataResponses, PandoraGetSettingsData, PandoraGetSettingsResponses, PandoraGetStateData, PandoraGetStateResponses, PandoraGoToPositionData, PandoraGoToPositionErrors, PandoraGoToPositionResponses, PandoraServerHealthCheckData, PandoraServerHealthCheckResponses, PandoraSetPandoraSettingsData, PandoraSetPandoraSettingsErrors, PandoraSetPandoraSettingsResponses, PandoraStartReferenceSearchData, PandoraStartReferenceSearchErrors, PandoraStartReferenceSearchResponses, PandoraStartServerData, PandoraStartServerResponses, PandoraStopReferenceSearchData, PandoraStopReferenceSearchErrors, PandoraStopReferenceSearchResponses, PandoraStopServerData, PandoraStopServerResponses, PandoraTurnOffRelayData, PandoraTurnOffRelayErrors, PandoraTurnOffRelayResponses, PandoraTurnOnRelayData, PandoraTurnOnRelayErrors, PandoraTurnOnRelayResponses, RaspiExtendLinActData, RaspiExtendLinActErrors, RaspiExtendLinActResponses, RaspiGetBusStatusData, RaspiGetBusStatusResponses, RaspiGetSettingsData, RaspiGetSettingsResponses, RaspiGetStateData, RaspiGetStateResponses, RaspiRetractLinActData, RaspiRetractLinActErrors, RaspiRetractLinActResponses, RaspiServerHealthCheckData, RaspiServerHealthCheckResponses, RaspiStartServerData, RaspiStartServerResponses, RaspiStopServerData, RaspiStopServerResponses, TypesGetBaseStateTypeData, TypesGetBaseStateTypeResponses, TypesGetWebsocketTypeData, TypesGetWebsocketTypeResponses, XyStagesConnectToStageData, XyStagesConnectToStageErrors, XyStagesConnectToStageResponses, XyStagesDisconnectStageData, XyStagesDisconnectStageErrors, XyStagesDisconnectStageResponses, XyStagesGetAvailableUsbDevicesData, XyStagesGetAvailableUsbDevicesResponses, XyStagesGetStagesDataData, XyStagesGetStagesDataErrors, XyStagesGetStagesDataResponses, XyStagesGetStagesSettingsData, XyStagesGetStagesSettingsResponses, XyStagesGetStagesStateData, XyStagesGetStagesStateResponses, XyStagesMoveAxisByMmData, XyStagesMoveAxisByMmErrors, XyStagesMoveAxisByMmResponses, XyStagesMoveAxisToPositionData, XyStagesMoveAxisToPositionErrors, XyStagesMoveAxisToPositionResponses, XyStagesResetStagesErrorData, XyStagesResetStagesErrorResponses, XyStagesSetAxisCurrentPositionToZeroData, XyStagesSetAxisCurrentPositionToZeroErrors, XyStagesSetAxisCurrentPositionToZeroResponses, XyStagesSetStagesSettingsData, XyStagesSetStagesSettingsErrors, XyStagesSetStagesSettingsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -691,23 +691,6 @@ export class Pandora {
     }
     
     /**
-     * Set Pandora Settings
-     *
-     * Set the one or more setting of the pandora module.
-     */
-    public static pandoraSetPandoraSettings<ThrowOnError extends boolean = false>(options: Options<PandoraSetPandoraSettingsData, ThrowOnError>): RequestResult<PandoraSetPandoraSettingsResponses, PandoraSetPandoraSettingsErrors, ThrowOnError> {
-        return (options.client ?? client).post<PandoraSetPandoraSettingsResponses, PandoraSetPandoraSettingsErrors, ThrowOnError>({
-            responseType: 'json',
-            url: '/orbitos-api/v1/pandora/{device_id}/settings',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    /**
      * Get Settings
      *
      * Get the current settings for the pandora server.
@@ -717,6 +700,23 @@ export class Pandora {
             responseType: 'json',
             url: '/orbitos-api/v1/pandora/settings',
             ...options
+        });
+    }
+    
+    /**
+     * Set Pandora Settings
+     *
+     * Set the one or more setting of the pandora module.
+     */
+    public static pandoraSetPandoraSettings<ThrowOnError extends boolean = false>(options: Options<PandoraSetPandoraSettingsData, ThrowOnError>): RequestResult<PandoraSetPandoraSettingsResponses, PandoraSetPandoraSettingsErrors, ThrowOnError> {
+        return (options.client ?? client).post<PandoraSetPandoraSettingsResponses, PandoraSetPandoraSettingsErrors, ThrowOnError>({
+            responseType: 'json',
+            url: '/orbitos-api/v1/pandora/settings',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
     
@@ -768,6 +768,19 @@ export class Pandora {
         return (options.client ?? client).post<PandoraTurnOnRelayResponses, PandoraTurnOnRelayErrors, ThrowOnError>({
             responseType: 'json',
             url: '/orbitos-api/v1/pandora/relays/{relay_id}/on',
+            ...options
+        });
+    }
+    
+    /**
+     * Turn Off Relay
+     *
+     * Turn off the specified relay.
+     */
+    public static pandoraTurnOffRelay<ThrowOnError extends boolean = false>(options: Options<PandoraTurnOffRelayData, ThrowOnError>): RequestResult<PandoraTurnOffRelayResponses, PandoraTurnOffRelayErrors, ThrowOnError> {
+        return (options.client ?? client).post<PandoraTurnOffRelayResponses, PandoraTurnOffRelayErrors, ThrowOnError>({
+            responseType: 'json',
+            url: '/orbitos-api/v1/pandora/relays/{relay_id}/off',
             ...options
         });
     }

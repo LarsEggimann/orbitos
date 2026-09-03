@@ -45,8 +45,8 @@ const navLinks = [
   { text: 'Stages', icon: <LuAxis3D />, to: '/stages' },
   { text: 'Combo Control', icon: <TbArrowMergeBoth />, to: '/combo-control' },
   { text: 'Combo Data View', icon: <MdLineAxis />, to: '/combo-data-view' },
-  // { text: 'Raspi Server Linear Actuator', icon: <OpenInFullIcon />, to: '/raspi-server/linear-actuator' },
-  { text: 'PANDORA Box Control', icon: <HomeRepairServiceIcon />, to: '/pandora' },
+  { text: 'PANDORA Wheels Control', icon: <HomeRepairServiceIcon />, to: '/pandora/wheels' },
+  { text: 'PANDORA Linear Actuator', icon: <OpenInFullIcon />, to: '/pandora/linear-actuator' },
   { text: 'PANDORA Server Manage', icon: <DnsIcon />, to: '/pandora/manage' },
 ]
 

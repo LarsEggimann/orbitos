@@ -150,7 +150,7 @@ async def get_state(client: PandoraClientDep, controller: ControllerDep):
         controller.update_state(converted_state)
     return controller.state.get()
 
-@router.post("/{device_id}/settings", response_model=BaseResponse)
+@router.post("/settings", response_model=BaseResponse)
 def set_pandora_settings(
     controller: ControllerDep, settings: PandoraSettingsSet
 ):

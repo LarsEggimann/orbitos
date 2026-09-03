@@ -470,6 +470,30 @@ export type PandoraSettings = {
      * Pandora Server App Directory
      */
     pandora_server_app_directory?: string;
+    /**
+     * Pandora Relay 1 Description
+     */
+    pandora_relay_1_description?: string | null;
+    /**
+     * Pandora Relay 2 Description
+     */
+    pandora_relay_2_description?: string | null;
+    /**
+     * Pandora Relay 3 Description
+     */
+    pandora_relay_3_description?: string | null;
+    /**
+     * Pandora Relay 4 Description
+     */
+    pandora_relay_4_description?: string | null;
+    /**
+     * Pandora Relay 5 Description
+     */
+    pandora_relay_5_description?: string | null;
+    /**
+     * Pandora Relay 6 Description
+     */
+    pandora_relay_6_description?: string | null;
 };
 
 /**
@@ -488,6 +512,30 @@ export type PandoraSettingsSet = {
      * Pandora Server App Directory
      */
     pandora_server_app_directory?: string | null;
+    /**
+     * Pandora Relay 1 Description
+     */
+    pandora_relay_1_description?: string | null;
+    /**
+     * Pandora Relay 2 Description
+     */
+    pandora_relay_2_description?: string | null;
+    /**
+     * Pandora Relay 3 Description
+     */
+    pandora_relay_3_description?: string | null;
+    /**
+     * Pandora Relay 4 Description
+     */
+    pandora_relay_4_description?: string | null;
+    /**
+     * Pandora Relay 5 Description
+     */
+    pandora_relay_5_description?: string | null;
+    /**
+     * Pandora Relay 6 Description
+     */
+    pandora_relay_6_description?: string | null;
 };
 
 /**
@@ -1964,11 +2012,27 @@ export type PandoraGetStateResponses = {
 
 export type PandoraGetStateResponse = PandoraGetStateResponses[keyof PandoraGetStateResponses];
 
+export type PandoraGetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/orbitos-api/v1/pandora/settings';
+};
+
+export type PandoraGetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PandoraSettings;
+};
+
+export type PandoraGetSettingsResponse = PandoraGetSettingsResponses[keyof PandoraGetSettingsResponses];
+
 export type PandoraSetPandoraSettingsData = {
     body: PandoraSettingsSet;
     path?: never;
     query?: never;
-    url: '/orbitos-api/v1/pandora/{device_id}/settings';
+    url: '/orbitos-api/v1/pandora/settings';
 };
 
 export type PandoraSetPandoraSettingsErrors = {
@@ -1988,22 +2052,6 @@ export type PandoraSetPandoraSettingsResponses = {
 };
 
 export type PandoraSetPandoraSettingsResponse = PandoraSetPandoraSettingsResponses[keyof PandoraSetPandoraSettingsResponses];
-
-export type PandoraGetSettingsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/orbitos-api/v1/pandora/settings';
-};
-
-export type PandoraGetSettingsResponses = {
-    /**
-     * Successful Response
-     */
-    200: PandoraSettings;
-};
-
-export type PandoraGetSettingsResponse = PandoraGetSettingsResponses[keyof PandoraGetSettingsResponses];
 
 export type PandoraGoToPositionData = {
     body?: never;
@@ -2128,6 +2176,36 @@ export type PandoraTurnOnRelayResponses = {
 };
 
 export type PandoraTurnOnRelayResponse = PandoraTurnOnRelayResponses[keyof PandoraTurnOnRelayResponses];
+
+export type PandoraTurnOffRelayData = {
+    body?: never;
+    path: {
+        /**
+         * Relay Id
+         */
+        relay_id: number;
+    };
+    query?: never;
+    url: '/orbitos-api/v1/pandora/relays/{relay_id}/off';
+};
+
+export type PandoraTurnOffRelayErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PandoraTurnOffRelayError = PandoraTurnOffRelayErrors[keyof PandoraTurnOffRelayErrors];
+
+export type PandoraTurnOffRelayResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponse;
+};
+
+export type PandoraTurnOffRelayResponse = PandoraTurnOffRelayResponses[keyof PandoraTurnOffRelayResponses];
 
 export type TypesGetWebsocketTypeData = {
     body?: never;
