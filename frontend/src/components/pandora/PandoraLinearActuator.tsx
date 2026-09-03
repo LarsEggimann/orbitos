@@ -243,13 +243,17 @@ const PandoraLinearActuator: React.FC = () => {
                             return (
                                 <Stack
                                     key={id}
-                                    sx={{ alignItems: 'center' }}
+                                    sx={{
+                                        alignItems: 'center',
+                                        mx: 2,
+                                    }}
                                     spacing={1}
                                 >
                                     <DirtyTextField
                                         label="Description"
                                         value={settings?.[descriptionKey] ?? ''}
                                         onApply={makeSettingApplyHandler(descriptionKey)}
+                                        type='text'
                                     />
 
                                     <Actuator
