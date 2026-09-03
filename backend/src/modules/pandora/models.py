@@ -1,7 +1,6 @@
-from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel, Index
+from sqlmodel import Field, SQLModel
 
 from src.shared.models import BaseState, BaseSetting
 from src.modules.pandora.pandora_server.models import (
