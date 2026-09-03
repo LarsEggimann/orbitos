@@ -12,12 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as PathlessLayoutIndexRouteImport } from './routes/_pathlessLayout/index'
 import { Route as PathlessLayoutStagesRouteImport } from './routes/_pathlessLayout/stages'
-import { Route as PathlessLayoutPandoraRouteImport } from './routes/_pathlessLayout/pandora'
 import { Route as PathlessLayoutComboDataViewRouteImport } from './routes/_pathlessLayout/combo-data-view'
 import { Route as PathlessLayoutComboControlRouteImport } from './routes/_pathlessLayout/combo-control'
 import { Route as PathlessLayoutChopperwheelRouteImport } from './routes/_pathlessLayout/chopperwheel'
+import { Route as PathlessLayoutPandoraIndexRouteImport } from './routes/_pathlessLayout/pandora/index'
 import { Route as PathlessLayoutRaspiServerManageRouteImport } from './routes/_pathlessLayout/raspi-server/manage'
 import { Route as PathlessLayoutRaspiServerLinearActuatorRouteImport } from './routes/_pathlessLayout/raspi-server/linear-actuator'
+import { Route as PathlessLayoutPandoraManageRouteImport } from './routes/_pathlessLayout/pandora/manage'
 import { Route as PathlessLayoutElectrometerDeviceIdRouteImport } from './routes/_pathlessLayout/electrometer.$deviceId'
 import { Route as PathlessLayoutElectrometerDeviceId1AndDeviceId2RouteImport } from './routes/_pathlessLayout/electrometer.$deviceId1.and.$deviceId2'
 
@@ -33,11 +34,6 @@ const PathlessLayoutIndexRoute = PathlessLayoutIndexRouteImport.update({
 const PathlessLayoutStagesRoute = PathlessLayoutStagesRouteImport.update({
   id: '/stages',
   path: '/stages',
-  getParentRoute: () => PathlessLayoutRoute,
-} as any)
-const PathlessLayoutPandoraRoute = PathlessLayoutPandoraRouteImport.update({
-  id: '/pandora',
-  path: '/pandora',
   getParentRoute: () => PathlessLayoutRoute,
 } as any)
 const PathlessLayoutComboDataViewRoute =
@@ -58,6 +54,12 @@ const PathlessLayoutChopperwheelRoute =
     path: '/chopperwheel',
     getParentRoute: () => PathlessLayoutRoute,
   } as any)
+const PathlessLayoutPandoraIndexRoute =
+  PathlessLayoutPandoraIndexRouteImport.update({
+    id: '/pandora/',
+    path: '/pandora/',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
 const PathlessLayoutRaspiServerManageRoute =
   PathlessLayoutRaspiServerManageRouteImport.update({
     id: '/raspi-server/manage',
@@ -68,6 +70,12 @@ const PathlessLayoutRaspiServerLinearActuatorRoute =
   PathlessLayoutRaspiServerLinearActuatorRouteImport.update({
     id: '/raspi-server/linear-actuator',
     path: '/raspi-server/linear-actuator',
+    getParentRoute: () => PathlessLayoutRoute,
+  } as any)
+const PathlessLayoutPandoraManageRoute =
+  PathlessLayoutPandoraManageRouteImport.update({
+    id: '/pandora/manage',
+    path: '/pandora/manage',
     getParentRoute: () => PathlessLayoutRoute,
   } as any)
 const PathlessLayoutElectrometerDeviceIdRoute =
@@ -88,23 +96,25 @@ export interface FileRoutesByFullPath {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/combo-control': typeof PathlessLayoutComboControlRoute
   '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
-  '/pandora': typeof PathlessLayoutPandoraRoute
   '/stages': typeof PathlessLayoutStagesRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/pandora/manage': typeof PathlessLayoutPandoraManageRoute
   '/raspi-server/linear-actuator': typeof PathlessLayoutRaspiServerLinearActuatorRoute
   '/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
+  '/pandora/': typeof PathlessLayoutPandoraIndexRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesByTo {
   '/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/combo-control': typeof PathlessLayoutComboControlRoute
   '/combo-data-view': typeof PathlessLayoutComboDataViewRoute
-  '/pandora': typeof PathlessLayoutPandoraRoute
   '/stages': typeof PathlessLayoutStagesRoute
   '/': typeof PathlessLayoutIndexRoute
   '/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/pandora/manage': typeof PathlessLayoutPandoraManageRoute
   '/raspi-server/linear-actuator': typeof PathlessLayoutRaspiServerLinearActuatorRoute
   '/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
+  '/pandora': typeof PathlessLayoutPandoraIndexRoute
   '/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRoutesById {
@@ -113,12 +123,13 @@ export interface FileRoutesById {
   '/_pathlessLayout/chopperwheel': typeof PathlessLayoutChopperwheelRoute
   '/_pathlessLayout/combo-control': typeof PathlessLayoutComboControlRoute
   '/_pathlessLayout/combo-data-view': typeof PathlessLayoutComboDataViewRoute
-  '/_pathlessLayout/pandora': typeof PathlessLayoutPandoraRoute
   '/_pathlessLayout/stages': typeof PathlessLayoutStagesRoute
   '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
   '/_pathlessLayout/electrometer/$deviceId': typeof PathlessLayoutElectrometerDeviceIdRoute
+  '/_pathlessLayout/pandora/manage': typeof PathlessLayoutPandoraManageRoute
   '/_pathlessLayout/raspi-server/linear-actuator': typeof PathlessLayoutRaspiServerLinearActuatorRoute
   '/_pathlessLayout/raspi-server/manage': typeof PathlessLayoutRaspiServerManageRoute
+  '/_pathlessLayout/pandora/': typeof PathlessLayoutPandoraIndexRoute
   '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2': typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 export interface FileRouteTypes {
@@ -128,23 +139,25 @@ export interface FileRouteTypes {
     | '/chopperwheel'
     | '/combo-control'
     | '/combo-data-view'
-    | '/pandora'
     | '/stages'
     | '/electrometer/$deviceId'
+    | '/pandora/manage'
     | '/raspi-server/linear-actuator'
     | '/raspi-server/manage'
+    | '/pandora/'
     | '/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/chopperwheel'
     | '/combo-control'
     | '/combo-data-view'
-    | '/pandora'
     | '/stages'
     | '/'
     | '/electrometer/$deviceId'
+    | '/pandora/manage'
     | '/raspi-server/linear-actuator'
     | '/raspi-server/manage'
+    | '/pandora'
     | '/electrometer/$deviceId1/and/$deviceId2'
   id:
     | '__root__'
@@ -152,12 +165,13 @@ export interface FileRouteTypes {
     | '/_pathlessLayout/chopperwheel'
     | '/_pathlessLayout/combo-control'
     | '/_pathlessLayout/combo-data-view'
-    | '/_pathlessLayout/pandora'
     | '/_pathlessLayout/stages'
     | '/_pathlessLayout/'
     | '/_pathlessLayout/electrometer/$deviceId'
+    | '/_pathlessLayout/pandora/manage'
     | '/_pathlessLayout/raspi-server/linear-actuator'
     | '/_pathlessLayout/raspi-server/manage'
+    | '/_pathlessLayout/pandora/'
     | '/_pathlessLayout/electrometer/$deviceId1/and/$deviceId2'
   fileRoutesById: FileRoutesById
 }
@@ -188,13 +202,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutStagesRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
-    '/_pathlessLayout/pandora': {
-      id: '/_pathlessLayout/pandora'
-      path: '/pandora'
-      fullPath: '/pandora'
-      preLoaderRoute: typeof PathlessLayoutPandoraRouteImport
-      parentRoute: typeof PathlessLayoutRoute
-    }
     '/_pathlessLayout/combo-data-view': {
       id: '/_pathlessLayout/combo-data-view'
       path: '/combo-data-view'
@@ -216,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutChopperwheelRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
+    '/_pathlessLayout/pandora/': {
+      id: '/_pathlessLayout/pandora/'
+      path: '/pandora'
+      fullPath: '/pandora/'
+      preLoaderRoute: typeof PathlessLayoutPandoraIndexRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
     '/_pathlessLayout/raspi-server/manage': {
       id: '/_pathlessLayout/raspi-server/manage'
       path: '/raspi-server/manage'
@@ -228,6 +242,13 @@ declare module '@tanstack/react-router' {
       path: '/raspi-server/linear-actuator'
       fullPath: '/raspi-server/linear-actuator'
       preLoaderRoute: typeof PathlessLayoutRaspiServerLinearActuatorRouteImport
+      parentRoute: typeof PathlessLayoutRoute
+    }
+    '/_pathlessLayout/pandora/manage': {
+      id: '/_pathlessLayout/pandora/manage'
+      path: '/pandora/manage'
+      fullPath: '/pandora/manage'
+      preLoaderRoute: typeof PathlessLayoutPandoraManageRouteImport
       parentRoute: typeof PathlessLayoutRoute
     }
     '/_pathlessLayout/electrometer/$deviceId': {
@@ -251,12 +272,13 @@ interface PathlessLayoutRouteChildren {
   PathlessLayoutChopperwheelRoute: typeof PathlessLayoutChopperwheelRoute
   PathlessLayoutComboControlRoute: typeof PathlessLayoutComboControlRoute
   PathlessLayoutComboDataViewRoute: typeof PathlessLayoutComboDataViewRoute
-  PathlessLayoutPandoraRoute: typeof PathlessLayoutPandoraRoute
   PathlessLayoutStagesRoute: typeof PathlessLayoutStagesRoute
   PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
   PathlessLayoutElectrometerDeviceIdRoute: typeof PathlessLayoutElectrometerDeviceIdRoute
+  PathlessLayoutPandoraManageRoute: typeof PathlessLayoutPandoraManageRoute
   PathlessLayoutRaspiServerLinearActuatorRoute: typeof PathlessLayoutRaspiServerLinearActuatorRoute
   PathlessLayoutRaspiServerManageRoute: typeof PathlessLayoutRaspiServerManageRoute
+  PathlessLayoutPandoraIndexRoute: typeof PathlessLayoutPandoraIndexRoute
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route: typeof PathlessLayoutElectrometerDeviceId1AndDeviceId2Route
 }
 
@@ -264,14 +286,15 @@ const PathlessLayoutRouteChildren: PathlessLayoutRouteChildren = {
   PathlessLayoutChopperwheelRoute: PathlessLayoutChopperwheelRoute,
   PathlessLayoutComboControlRoute: PathlessLayoutComboControlRoute,
   PathlessLayoutComboDataViewRoute: PathlessLayoutComboDataViewRoute,
-  PathlessLayoutPandoraRoute: PathlessLayoutPandoraRoute,
   PathlessLayoutStagesRoute: PathlessLayoutStagesRoute,
   PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
   PathlessLayoutElectrometerDeviceIdRoute:
     PathlessLayoutElectrometerDeviceIdRoute,
+  PathlessLayoutPandoraManageRoute: PathlessLayoutPandoraManageRoute,
   PathlessLayoutRaspiServerLinearActuatorRoute:
     PathlessLayoutRaspiServerLinearActuatorRoute,
   PathlessLayoutRaspiServerManageRoute: PathlessLayoutRaspiServerManageRoute,
+  PathlessLayoutPandoraIndexRoute: PathlessLayoutPandoraIndexRoute,
   PathlessLayoutElectrometerDeviceId1AndDeviceId2Route:
     PathlessLayoutElectrometerDeviceId1AndDeviceId2Route,
 }

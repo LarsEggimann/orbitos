@@ -41,13 +41,13 @@ const navLinks = [
     ),
     to: '/electrometer/1/and/2',
   },
-  { text: 'PANDORA Box Control', icon: <HomeRepairServiceIcon />, to: '/pandora' },
   { text: 'Chopper Wheel', icon: <LuShipWheel />, to: '/chopperwheel' },
   { text: 'Stages', icon: <LuAxis3D />, to: '/stages' },
   { text: 'Combo Control', icon: <TbArrowMergeBoth />, to: '/combo-control' },
   { text: 'Combo Data View', icon: <MdLineAxis />, to: '/combo-data-view' },
-  { text: 'Raspi Server Linear Actuator', icon: <OpenInFullIcon />, to: '/raspi-server/linear-actuator' },
-  { text: 'Raspi Server Manage', icon: <DnsIcon />, to: '/raspi-server/manage' },
+  // { text: 'Raspi Server Linear Actuator', icon: <OpenInFullIcon />, to: '/raspi-server/linear-actuator' },
+  { text: 'PANDORA Box Control', icon: <HomeRepairServiceIcon />, to: '/pandora' },
+  { text: 'PANDORA Server Manage', icon: <DnsIcon />, to: '/pandora/manage' },
 ]
 
 type LayoutProps = {

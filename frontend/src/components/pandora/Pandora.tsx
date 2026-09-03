@@ -101,54 +101,6 @@ const Pandora: React.FC = () => {
                 </Card>
             </Box>
 
-            <Card sx={{ p: 2, mb: 2, width: '100%' }}>
-                <Typography variant="h6" sx={{  }}>
-                    PANDORA Server Controls
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    Start and Stop the PANDORA Server Application on the Raspberry Pi
-                </Typography>
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1, ml: { sm: 'auto' } }}>
-                    <ExecQueryButton
-                        onClick={async () => {
-                            return await PandoraService.pandoraStartServer()
-                        }}
-                        size="small"
-                        tooltip={`Start PANDORA server - this will launch the pandora server app on the raspberry`}
-                    >
-                        Start PANDORA Server
-                    </ExecQueryButton>
-
-                    <ExecQueryButton
-                        onClick={async () => {
-                            return await PandoraService.pandoraStopServer()
-                        }}
-                        size="small"
-                        tooltip={`Stop PANDORA server - this will stop the pandora server app on the raspberry`}
-                    >
-                        Stop PANDORA Server
-                    </ExecQueryButton>
-                    <ExecQueryButton
-                        onClick={async () => {
-                            return await PandoraService.pandoraServerHealthCheck()
-                        }}
-                        size="small"
-                        tooltip={`Check PANDORA server health - this will verify the status of the pandora server app on the raspberry`}
-                    >
-                        Check PANDORA Server Health
-                    </ExecQueryButton>
-                </Stack>
-            </Card>
-
-            {/* Bottom Row: Settings Dashboard */}
-            <Card sx={{ p: 2, mb: 2, width: '100%' }}>
-                <Typography variant="h6" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    Settings (not yet editable via UI)
-                </Typography>
-                <pre style={{ margin: 0, fontSize: '0.85rem', overflowX: 'auto' }}>
-                    {JSON.stringify(settings, null, 2)}
-                </pre>
-            </Card>
         </Box>
     )
 }
