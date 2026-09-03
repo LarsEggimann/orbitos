@@ -214,7 +214,7 @@ const PandoraLinearActuator: React.FC = () => {
                         <Box
                             sx={{
                                 position: 'absolute',
-                                top: '65%',
+                                top: '70%',
                                 left: 0,
                                 right: 0,
                                 height: 4,
@@ -226,8 +226,8 @@ const PandoraLinearActuator: React.FC = () => {
                             variant="body2"
                             sx={{
                                 position: 'absolute',
-                                left: 8,
-                                top: 'calc(65% - 20px)',
+                                left: 'calc(0% - 5px)',
+                                top: 'calc(70% - 25px)',
                                 color: 'text.secondary',
                             }}
                         >
