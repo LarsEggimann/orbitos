@@ -11,7 +11,6 @@ import {
     type PandoraSettings,
     type PandoraDataResponse
 } from '~/generated'
-import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import { useConfig } from '~/provider/ConfigProvider'
 import PandoraWheelControl from './PandoraWheelControl'
@@ -29,7 +28,7 @@ const PandoraWheels: React.FC = () => {
             (await PandoraService.pandoraGetState()).data!,
         fetchInitialSettings: async () =>
             (await PandoraService.pandoraGetSettings()).data!,
-        dataAppendFunction: (newData) => { },
+        dataAppendFunction: (_) => { },
     })
 
     return (

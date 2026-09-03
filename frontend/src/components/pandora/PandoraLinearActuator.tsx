@@ -5,10 +5,9 @@ import Chip from '@mui/material/Chip'
 import Divider from '@mui/material/Divider'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { createFileRoute } from '@tanstack/react-router'
 import ExecQueryButton from '~/components/ui/ExecQueryButton'
 import { useConfig } from '~/provider/ConfigProvider'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDeviceWebSocket } from '~/utils/webSocketHook'
 import type { AxiosError, AxiosResponse } from 'axios'
 import { useSnackbarContext } from '~/provider/SnackbarProvider'
@@ -116,7 +115,7 @@ const PandoraLinearActuator: React.FC = () => {
             (await PandoraService.pandoraGetState()).data!,
         fetchInitialSettings: async () =>
             (await PandoraService.pandoraGetSettings()).data!,
-        dataAppendFunction: (newData) => { },
+        dataAppendFunction: (_) => { },
     })
 
       const { openSnackbar } = useSnackbarContext()

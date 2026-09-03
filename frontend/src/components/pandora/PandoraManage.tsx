@@ -31,7 +31,7 @@ const PandoraManage: React.FC = () => {
             (await PandoraService.pandoraGetState()).data!,
         fetchInitialSettings: async () =>
             (await PandoraService.pandoraGetSettings()).data!,
-        dataAppendFunction: (newData) => { },
+        dataAppendFunction: (_) => { },
     })
 
     return (
