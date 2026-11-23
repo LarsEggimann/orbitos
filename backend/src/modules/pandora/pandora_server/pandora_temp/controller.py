@@ -9,7 +9,6 @@ from src.shared.state_manager import StateManager
 from ..models import PandoraState, RelayState
 
 
-
 logger = logging.getLogger(__name__)
 
 # calibration data from Sascha:
@@ -46,7 +45,7 @@ class ThermistorCalibration:
 
     def convert_PT_to_K(self, PT, full=1023):
         """
-        Converts the incoming thermistor ADC value to a temperature based on claibration
+        Converts the incoming thermistor ADC value to a temperature based on calibration
         full is the full range, 1023 bits
         """
         if not 0 < PT < full: 
@@ -75,10 +74,9 @@ class TemperatureReadoutController:
             logger.error("Failed to connect to Arduino on %s: %s", self.serial_port, e)
             self.serial_connection = None
 
-
-    def fetch_temperature(self):
+    def _get_pt_and_tp(self):
         """
-        Fetch the temperature from the arduino and update the state.
+        Read the raw ADC values for the thermistor (PT) and thermopile (TP) from the Arduino.
         """
         debug_print = True
         try:
@@ -98,18 +96,72 @@ class TemperatureReadoutController:
 
             PT = self.thermistor_calibration.convert_PT_to_K(pt)
             TP = self.thermopile_calibration.convert_TP_to_K(tp_notsynch, PT)
-            self.state.get().temperature_sensor.ambient_temperature = PT - 273.15  # convert to Celsius
-            self.state.get().temperature_sensor.object_temperature  = TP - 273.15  # convert to Celsius
-            self.state.update()
 
-            return self.state.get().temperature_sensor.ambient_temperature, self.state.get().temperature_sensor.object_temperature
+            return PT, TP
 
         except Exception as e:
-            logger.error("Error fetching temperature: %s", e)
+            logger.error("Error reading temperature from Arduino: %s", e)
             return np.nan, np.nan
+
+
+    def fetch_temperature(self):
+        """
+        Fetch the temperature from the arduino and update the state.
+        """
+        pt, tp = self._get_pt_and_tp()
+        self.state.get().temperature_sensor.ambient_temperature = pt - 273.15  # convert to Celsius
+        self.state.get().temperature_sensor.object_temperature  = tp - 273.15  # convert to Celsius
+        self.state.update()
+        return self.state.get().temperature_sensor.ambient_temperature, self.state.get().temperature_sensor.object_temperature
 
     def update_state(self):
         """
         Update the state of the temperature sensor in the PandoraState model.
         """
         self.fetch_temperature()  # This will update the state with the latest temperature readings
+
+    def calibrate(self):
+        """
+        Calibrate the thermopile and thermistor based on current readings.
+        This method should be called when the system is in a known stable temperature environment.
+        """
+        # --------------------------- calibration ---------------------------
+        # def calibrate(tp, pt,calib_V0,context):
+        #     # to = ta => S*(to-ta)^4 = 0 -> V=c*ta+V0
+        #     const = context["constants"]
+        #     calib_length = const["calibration_samples"]
+        #     if len(calib_V0) < calib_length :
+        #         taKnorm = convertPTtoK(pt,const)/300
+        #         calib_V0.append(tp-const["thermopile"]["c"]*taKnorm)
+        #         return True
+        #     else:
+        #         new_V0 = float(np.nanmean(calib_V0))
+        #         if np.isfinite(new_V0): #safety against
+        #             const["thermopile"]["V0"] = round(new_V0, 4)
+        #             with open(context["const_fp"], "w") as f:
+        #                 json.dump(const, f, indent=2)
+        #         else:
+        #             print("no calibration samples were valid (all NaN)")
+        #         calib_V0.clear()
+        #         return False
+        #     #  ---------------------------   ---------------------------
+
+        # gather 100 samples for calibration
+        old_V0 = self.thermopile_calibration.V0
+        logger.info("Starting calibration of thermopile. Old V0: %f", old_V0)
+        
+        calib_samples = 100
+        calib_V0 = []
+        for i in range(calib_samples):
+            pt, tp = self._get_pt_and_tp()
+            pt_norm = pt / 300  # normalize from saschas code, not sure why, but it seems to be necessary for the calibration to work properly
+            calib_V0.append(tp - self.thermopile_calibration.c * pt_norm)
+            logger.info(f"Calibration sample {i+1}/{calib_samples}: Thermopile TP={tp:.4f}, Thermistor PT={pt:.4f}, V0_sample={calib_V0[-1]:.4f}")
+            time.sleep(0.1)  # small delay between samples to avoid overwhelming the Arduino
+
+        new_V0 = float(np.nanmean(calib_V0))
+        if np.isfinite(new_V0):
+            self.thermopile_calibration.V0 = round(new_V0, 4)
+            logger.info("Calibration completed successfully. New V0: %f", self.thermopile_calibration.V0)
+        else:
+            logger.error("Calibration failed. No valid samples were obtained (all NaN).")

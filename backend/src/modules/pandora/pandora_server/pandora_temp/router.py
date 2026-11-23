@@ -13,7 +13,7 @@ router = APIRouter(
     prefix="/temperature",
 )
 
-@router.post("/fetch", response_model=BaseResponse)
+@router.get("/fetch", response_model=BaseResponse)
 def fetch_temperature(pandora_server: PandoraServerDep):
     """
     Fetch the temperature from the arduino and update the state.
@@ -24,5 +24,19 @@ def fetch_temperature(pandora_server: PandoraServerDep):
 
     return BaseResponse(
         message="Temperature fetched successfully."
+    )
+
+
+
+
+@router.post("/calibrate", response_model=BaseResponse)
+def calibrate_temperature(pandora_server: PandoraServerDep):
+    """
+    Calibrate the temperature sensors.
+    """
+    pandora_server.temperature_readout_controller.calibrate()
+
+    return BaseResponse(
+        message="Temperature calibration completed successfully."
     )
 
