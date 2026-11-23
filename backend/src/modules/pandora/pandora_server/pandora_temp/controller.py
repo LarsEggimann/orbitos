@@ -70,7 +70,7 @@ class TemperatureReadoutController:
 
         try:
             self.serial_connection = serial.Serial(self.serial_port, baudrate=9600, timeout=1)
-            logger.info("Connected to Arduino on %s", self.serial_port)
+            logger.info("Connected to Temperature Readout Arduino on %s", self.serial_port)
         except serial.SerialException as e:
             logger.error("Failed to connect to Arduino on %s: %s", self.serial_port, e)
             self.serial_connection = None
