@@ -126,6 +126,7 @@ class TemperatureReadoutController:
         Calibrate the thermopile and thermistor based on current readings.
         This method should be called when the system is in a known stable temperature environment.
         """
+        # TODO: This is currently not working, somehow the calibration does not give sensible V0 values
 
         old_V0 = self.thermopile_calibration.V0
         calib_samples = 50
