@@ -107,7 +107,7 @@ const DirtyTextField = forwardRef<DirtyTextFieldHandle, DirtyTextFieldProps>(
         }}
         onKeyDown={handleKeyDown}
         color={dirty ? 'warning' : rest.color || 'primary'}
-        type={'number'}
+        type={rest.type ?? 'number'}
         focused={dirty || rest.focused}
         sx={sx}
       />
