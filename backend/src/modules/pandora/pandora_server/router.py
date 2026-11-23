@@ -21,6 +21,7 @@ def get_state(pandora_server: PandoraServerDep):
     """
     pandora_server.wheels_controller.update_wheels_state()
     pandora_server.relays_controller.update_relays_state()
+    pandora_server.temperature_readout_controller.update_state()
     pandora_server.state.update()  # publish to websocket manager
     return pandora_server.state.get()
 

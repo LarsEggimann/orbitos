@@ -20,7 +20,7 @@ def fetch_temperature(pandora_server: PandoraServerDep):
     """
     t_ambient, t_object = pandora_server.temperature_readout_controller.fetch_temperature()
 
-    print(f"Fetched temperature: ambient={t_ambient:.2f} °C, object={t_object:.2f} °C")
+    logger.info(f"Fetched temperature: ambient={t_ambient:.2f} °C, object={t_object:.2f} °C")
 
     return BaseResponse(
         message="Temperature fetched successfully."

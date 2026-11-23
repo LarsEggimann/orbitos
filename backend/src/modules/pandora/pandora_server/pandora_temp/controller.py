@@ -80,35 +80,36 @@ class TemperatureReadoutController:
         """
         Fetch the temperature from the arduino and update the state.
         """
+        debug_print = True
         try:
-                #             line = context["ser"].readline().decode('utf-8').strip()
-                # tp_notsynch, pt = map(float, line.split()[1::3])
-                # tp_buf.append(tp_notsynch)
-                # if len(tp_buf) < (lag + 1):
-                #     continue
-                # tp = tp_buf[0]
-                # if tp <= const["thermopile"]["tp_min"]:
-                #     continue
-                # if getline is True:
-                #     PT = convertPTtoK(pt,const)
-                #     TP = convertTPtoK(tp,PT,const)
-                #     print(f"ambient temperature: {PT}, object temperatur: {TP}")
-            line = self.serial_connection.readline().decode('utf-8').strip()
-            tp_notsynch, pt = map(float, line.split()[1::3])
+            line = self.serial_connection.readline().decode('utf-8').strip() # sould look something like "Thermopile 0 : Thermistor 441"
+
+            if debug_print:
+                logger.info(f"Raw Arduino string response: {line}")
+
+            tp_notsynch, pt = map(float, line.split()[1::3]) # take every 3rd element starting from index 1, convert to float
+            
+            if debug_print:
+                logger.info(f"Thermopile: {tp_notsynch}, Thermistor: {pt}")
+
             if tp_notsynch <= self.thermopile_calibration.tp_min:
-                logger.warning("Thermopile reading below minimum threshold: %f", tp_notsynch)
-                return
+                logger.info("Thermopile reading below minimum threshold: %f (threshold: %f)", tp_notsynch, self.thermopile_calibration.tp_min)
+                return np.nan, np.nan
+
             PT = self.thermistor_calibration.convert_PT_to_K(pt)
             TP = self.thermopile_calibration.convert_TP_to_K(tp_notsynch, PT)
             self.state.get().temperature_sensor.ambient_temperature = PT - 273.15  # convert to Celsius
             self.state.get().temperature_sensor.object_temperature  = TP - 273.15  # convert to Celsius
             self.state.update()
 
-            # debugging print
-            # print(f"ambient temperature: {PT - 273.15:.2f} °C, object temperature: {TP - 273.15:.2f} °C")
-
             return self.state.get().temperature_sensor.ambient_temperature, self.state.get().temperature_sensor.object_temperature
 
         except Exception as e:
             logger.error("Error fetching temperature: %s", e)
+            return np.nan, np.nan
 
+    def update_state(self):
+        """
+        Update the state of the temperature sensor in the PandoraState model.
+        """
+        self.fetch_temperature()  # This will update the state with the latest temperature readings
