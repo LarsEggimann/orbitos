@@ -26,12 +26,12 @@ from .wheel import Wheel
 
 class WheelsController:
     def __init__(self, state: StateManager[PandoraState], ws_manager: WebSocketManager):
-
+        # run `python -m serial.tools.list_ports -v` to find the correct port for each wheel, this is hardcoded since it is not expected to change unless the hardware is changed
         self._wheels: dict[int, Wheel] = {
-            0: Wheel(wheel_id=0, connection_port="/dev/ttyACM0", state=state),
-            1: Wheel(wheel_id=1, connection_port="/dev/ttyACM1", state=state),
-            2: Wheel(wheel_id=2, connection_port="/dev/ttyACM2", state=state),
-            # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM3", state=state),
+            0: Wheel(wheel_id=0, connection_port="/dev/ttyACM1", state=state),
+            1: Wheel(wheel_id=1, connection_port="/dev/ttyACM2", state=state),
+            2: Wheel(wheel_id=2, connection_port="/dev/ttyACM3", state=state),
+            # 3: Wheel(wheel_id=3, connection_port="/dev/ttyACM4", state=state),
         }
 
         self.ws_manager = ws_manager

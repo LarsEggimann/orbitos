@@ -10,7 +10,8 @@ class PandoraWheelState(BaseModel):
     velocity: Optional[float] = None # velocity in degrees per second
 
 class TemperatureSensorState(BaseModel):
-    temperature: Optional[float] = None # temperature in degrees Celsius
+    ambient_temperature: Optional[float] = None # ambient temperature in degrees Celsius
+    object_temperature: Optional[float] = None # temperature in degrees Celsius
 
 class RelayState(BaseModel):
     is_on: bool = False               # True = voltage applied, False = no voltage applied

@@ -7,6 +7,7 @@ from src.shared.state_manager import StateManager
 
 from .pandora_wheels.controller import WheelsController
 from .pandora_relays.controller import RelaysController
+from .pandora_temp.controller import TemperatureReadoutController
 
 # imports from parent folders ... I think this is not very clean, but I can reuse the stuff I already have so I think it makes sense for now
 from src.shared.websocket_manager import WebSocketManager
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 class PandoraServer:
     wheels_controller: WheelsController
     relays_controller: RelaysController
+    temperature_readout_controller: TemperatureReadoutController
 
     def __init__(
             self,
@@ -53,6 +55,10 @@ def init_pandora_server():
         ws_manager=ws_manager
     )
     pandora_server.relays_controller = RelaysController(
+        state=pandora_server.state,
+        ws_manager=ws_manager
+    )
+    pandora_server.temperature_readout_controller = TemperatureReadoutController(
         state=pandora_server.state,
         ws_manager=ws_manager
     )
